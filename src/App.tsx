@@ -3,7 +3,7 @@ import { AnimatePresence } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { AppRoutes } from './components/AppRoutes';
 import { ObservationDetail } from './components/ObservationDetail';
-import { mockObservationRepository } from './repositories/mockObservationRepository';
+import { activeObservationRepository } from './repositories/observationRepositoryProvider';
 import type { Observation, PageId } from './types';
 
 export default function App() {
@@ -22,8 +22,8 @@ export default function App() {
         setIsLoadingObservations(true);
         setObservationLoadError(null);
         const [nextObservations, nextUniqueSpeciesCount] = await Promise.all([
-          mockObservationRepository.listObservations(),
-          mockObservationRepository.countUniqueSpecies(),
+          activeObservationRepository.listObservations(),
+          activeObservationRepository.countUniqueSpecies(),
         ]);
 
         if (!isCurrent) return;

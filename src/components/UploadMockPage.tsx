@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 import { createDefaultUploadFormValues, createImagePreviewUrl, createObservationInputFromForm } from '../features/upload/uploadForm';
-import { mockObservationRepository } from '../repositories/mockObservationRepository';
+import { activeObservationRepository } from '../repositories/observationRepositoryProvider';
 import { validateObservationInput } from '../utils/observationValidation';
 import type { ObservationRepository } from '../repositories/observationRepository';
 import type { Coordinates, CreateObservationInput } from '../types';
@@ -17,7 +17,7 @@ interface UploadMockPageProps {
 
 const MOCK_UPLOAD_ALERT_MESSAGE = '현재 파일은 디자인 시안이라 저장 기능을 연결하지 않았습니다. 다음 단계에서 DB/API를 붙이면 됩니다.';
 
-export const UploadMockPage = ({ onCancel, createObservation = mockObservationRepository.createObservation }: UploadMockPageProps) => {
+export const UploadMockPage = ({ onCancel, createObservation = activeObservationRepository.createObservation }: UploadMockPageProps) => {
   const [formData, setFormData] = useState(createDefaultUploadFormValues);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

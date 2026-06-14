@@ -1,5 +1,7 @@
 import type { CreateObservationInput, Observation } from '../types';
 
+export type ObservationRepositoryKind = 'mock' | 'supabase';
+
 export interface ObservationRepository {
   listObservations(): Promise<Observation[]>;
   getObservationById(id: string): Promise<Observation | null>;
