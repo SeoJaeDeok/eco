@@ -1,12 +1,23 @@
-import { useState, type MouseEvent } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { DEFAULT_MAP_BOUNDS, DEFAULT_MAP_CENTER, percentToCoordinates, projectCoordinatesToPercent } from '../../features/map/mapProjection';
-import type { Coordinates, LocationPickerProps } from '../../features/map/mapTypes';
+import type { Coordinates, EcoLocationPickerProps, LocationPickerProps } from '../../features/map/mapTypes';
 import { CampusLabels, MapTexture } from './StaticMapDecor';
 
-export const StaticLocationPicker = ({ onLocationSelect }: LocationPickerProps) => {
-  const [coords, setCoords] = useState<Coordinates | null>(null);
-  const [marker, setMarker] = useState<{ left: string; top: string }>(() => projectCoordinatesToPercent(DEFAULT_MAP_CENTER));
+type StaticLocationPickerProps = Partial<EcoLocationPickerProps> & Partial<LocationPickerProps>;
+
+export const StaticLocationPicker = ({ value, center = DEFAULT_MAP_CENTER, onChange, onLocationSelect, className }: StaticLocationPickerProps) => {
+  const [coords, setCoords] = useState<Coordinates | null>(value ?? null);
+  const [marker, setMarker] = useState<{ left: string; top: string }>(() => projectCoordinatesToPercent(value ?? center));
+  const rootClassName = className
+    ? `w-full h-full border border-zinc-200 relative overflow-hidden bg-gradient-to-br from-zinc-50 via-white to-emerald-50 cursor-crosshair ${className}`
+    : 'w-full h-full border border-zinc-200 relative overflow-hidden bg-gradient-to-br from-zinc-50 via-white to-emerald-50 cursor-crosshair';
+
+  useEffect(() => {
+    if (!value) return;
+    setCoords(value);
+    setMarker(projectCoordinatesToPercent(value));
+  }, [value]);
 
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -15,11 +26,12 @@ export const StaticLocationPicker = ({ onLocationSelect }: LocationPickerProps) 
     const next = percentToCoordinates(x, y, DEFAULT_MAP_BOUNDS);
     setCoords(next);
     setMarker({ left: `${x * 100}%`, top: `${y * 100}%` });
-    onLocationSelect(next.lat, next.lng);
+    onChange?.(next);
+    onLocationSelect?.(next.lat, next.lng);
   };
 
   return (
-    <div className="w-full h-full border border-zinc-200 relative overflow-hidden bg-gradient-to-br from-zinc-50 via-white to-emerald-50 cursor-crosshair" id="design-picker-container" onClick={handleClick}>
+    <div className={rootClassName} id="design-picker-container" onClick={handleClick}>
       <MapTexture />
       <CampusLabels />
       <div className="absolute inset-4 border border-zinc-200/60" />

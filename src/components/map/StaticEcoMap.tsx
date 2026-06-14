@@ -6,12 +6,14 @@ import { TaxonBadge } from '../TaxonBadge';
 import { CampusLabels, MapTexture } from './StaticMapDecor';
 import { MapNoticePanel } from './MapNoticePanel';
 
-export const StaticEcoMap = ({ observations = [], onSelect }: StaticMapProps) => {
+export const StaticEcoMap = ({ observations = [], onSelect, onSelectObservation, className }: StaticMapProps) => {
   const [zoom, setZoom] = useState(1);
+  const handleSelectObservation = onSelectObservation ?? onSelect;
+  const rootClassName = className ? `relative w-full h-full overflow-hidden bg-zinc-100 ${className}` : 'relative w-full h-full overflow-hidden bg-zinc-100';
   const bounds = useMemo(() => createBoundsFromCoordinates(observations.map((obs) => obs.coords)), [observations]);
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-zinc-100" id="design-map">
+    <div className={rootClassName} id="design-map">
       <div className="absolute inset-0 bg-gradient-to-br from-zinc-50 via-white to-emerald-50" />
       <MapTexture />
       <div className="absolute inset-10 border border-zinc-200/70 bg-white/20 backdrop-blur-[1px]" />
@@ -32,7 +34,7 @@ export const StaticEcoMap = ({ observations = [], onSelect }: StaticMapProps) =>
             <button
               type="button"
               key={obs.id}
-              onClick={() => onSelect?.(obs)}
+              onClick={() => handleSelectObservation?.(obs)}
               className="absolute z-20 group -translate-x-1/2 -translate-y-1/2 focus:outline-none"
               style={pos}
               aria-label={`${obs.name} 관찰 지점`}
