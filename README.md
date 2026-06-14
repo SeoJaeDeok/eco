@@ -36,6 +36,12 @@ npm.cmd run typecheck
 npm.cmd run build
 ```
 
+## 환경변수
+
+현재 design-only 앱은 환경변수 없이 동작합니다.
+
+Supabase 또는 Kakao Map 실제 구현 단계가 시작되면 `.env.example`을 `.env.local`로 복사해 로컬 값을 채우세요. 실제 API key, token, `.env.local`은 커밋하지 않습니다.
+
 ## 주요 폴더 구조
 
 ```text
