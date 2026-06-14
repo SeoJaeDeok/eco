@@ -15,7 +15,7 @@ export interface ObservationDbRow {
   image_url: string | null;
   status: ObservationDbStatus;
   created_at: string;
-  updated_at: string | null;
+  updated_at: string;
 }
 
 export interface ObservationInsertRow {
@@ -27,8 +27,6 @@ export interface ObservationInsertRow {
   description: string | null;
   latitude: number;
   longitude: number;
-  image_url: string | null;
-  status: 'pending';
 }
 
 export type ObservationUpdateRow = Partial<

@@ -75,6 +75,8 @@ Public read:
 Public insert:
 
 - `anon` and `authenticated` can insert rows only when the final row has `status = 'pending'`.
+- The app insert payload should not send `status`; the database default sets it to `pending`.
+- Public insert column grants exclude `id`, `status`, `image_url`, `created_at`, and `updated_at`.
 - The client cannot publish a row by inserting `approved`.
 
 Admin access:
@@ -134,12 +136,13 @@ An empty list can be correct if all rows are `pending` or `rejected`.
 Fix:
 
 - insert or update at least one observation with `status = 'approved'`
+- approved seed rows can be inserted from SQL Editor for local testing
 - confirm the row passes the taxon/status/coordinate constraints
 - confirm RLS is enabled and policies exist
 
 ### Pending Insert Is Not Returned By Public Select
 
-This is expected. The public repository inserts pending observations, but public select policies expose only approved rows. A pending row should become visible only after admin approval.
+This is expected. The public repository inserts observations without sending `status`; the database default creates them as `pending`, and public select policies expose only approved rows. A pending row should become visible only after admin approval.
 
 ### Invalid Taxon Error
 
@@ -193,4 +196,4 @@ Image upload should be handled in a later step after deciding:
 - allowed MIME types
 - cleanup of rejected/pending images
 
-Until then, `image_url` remains nullable and image uploads remain out of scope.
+Until then, `image_url` remains nullable, app insert payloads do not send `image_url`, and image uploads remain out of scope.

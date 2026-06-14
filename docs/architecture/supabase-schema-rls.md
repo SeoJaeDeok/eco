@@ -42,6 +42,10 @@ The current app remains a design-only React starter with static sample data and 
 - Repository mapping can convert `observed_date` to `Observation.date`.
 - Repository mapping can convert `latitude` and `longitude` into `Observation.coords`.
 - `image_url` should remain nullable because images are optional in the MVP.
+- Public create payloads should not include `image_url`; Storage integration should populate it in a later step.
+- Public create payloads should not include `id`, `status`, `created_at`, or `updated_at`.
+- `status` should use the DB default of `'pending'` for public submissions.
+- `updated_at` should be `not null default now()` and maintained by the update trigger.
 - `scientific_name` and `description` should be nullable at the DB level even if current mock UI still renders them as strings.
 
 ## Status Design
@@ -157,17 +161,21 @@ Policy:
 - Role: `anon`, optionally `authenticated`
 - Operation: `insert`
 - Check: inserted rows must have `status = 'pending'`
+- Payload: public clients should omit `status`; the DB default should set it to `'pending'`
+- Column grants: public clients should only be able to insert `name`, `scientific_name`, `taxon`, `location`, `observed_date`, `description`, `latitude`, and `longitude`
 
 Purpose:
 
 - Allow public submissions without exposing approve/reject powers.
 - Ensure submitted observations cannot publish themselves.
+- Prevent public clients from directly inserting `id`, `status`, `image_url`, `created_at`, or `updated_at`.
 
 Risk:
 
 - Unauthenticated submissions can be spammed.
 - Text content and image paths can be abusive or malicious.
 - Client-side validation is not enough for production abuse prevention.
+- Column grants reduce accidental or malicious field injection, but they do not replace abuse controls.
 
 ### Public Update
 
@@ -484,7 +492,25 @@ as $$
   );
 $$;
 
+alter table public.profiles enable row level security;
 alter table public.observations enable row level security;
+
+grant usage on schema public to anon, authenticated;
+revoke all on public.profiles from anon, authenticated;
+revoke all on public.observations from anon, authenticated;
+grant select on public.profiles to authenticated;
+grant select on public.observations to anon, authenticated;
+grant insert (
+  name,
+  scientific_name,
+  taxon,
+  location,
+  observed_date,
+  description,
+  latitude,
+  longitude
+) on public.observations to anon, authenticated;
+grant update, delete on public.observations to authenticated;
 
 create policy "Public can read approved observations"
 on public.observations
@@ -608,7 +634,9 @@ Repository mapping should convert this row into the existing `Observation` shape
 
 - It should not include `imageFile`.
 - It should not include `imagePreviewUrl`.
-- It should set or rely on default `status = 'pending'`.
+- It should not include `id`, `status`, `image_url`, `created_at`, or `updated_at`.
+- It should rely on the DB default `status = 'pending'`.
+- It should leave `image_url` for a later Storage upload/update flow.
 - It should split `coords` into `latitude` and `longitude`.
 - It should map optional blank strings to `null` where appropriate.
 

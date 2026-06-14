@@ -8,7 +8,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   role text not null default 'user',
   created_at timestamptz not null default now(),
-  updated_at timestamptz,
+  updated_at timestamptz not null default now(),
 
   constraint profiles_role_check
     check (role in ('user', 'admin'))
@@ -27,7 +27,7 @@ create table if not exists public.observations (
   image_url text,
   status text not null default 'pending',
   created_at timestamptz not null default now(),
-  updated_at timestamptz,
+  updated_at timestamptz not null default now(),
 
   constraint observations_name_not_empty
     check (char_length(trim(name)) > 0),
@@ -103,9 +103,23 @@ alter table public.profiles enable row level security;
 alter table public.observations enable row level security;
 
 -- Supabase APIs need both table grants and RLS policies.
+-- Keep public insert scoped to user-provided fields only. id, status, image_url,
+-- created_at, and updated_at are intentionally excluded from public insert grants.
 grant usage on schema public to anon, authenticated;
+revoke all on public.profiles from anon, authenticated;
+revoke all on public.observations from anon, authenticated;
 grant select on public.profiles to authenticated;
-grant select, insert on public.observations to anon, authenticated;
+grant select on public.observations to anon, authenticated;
+grant insert (
+  name,
+  scientific_name,
+  taxon,
+  location,
+  observed_date,
+  description,
+  latitude,
+  longitude
+) on public.observations to anon, authenticated;
 grant update, delete on public.observations to authenticated;
 
 -- Profiles RLS.

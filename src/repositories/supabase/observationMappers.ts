@@ -38,7 +38,5 @@ export const mapCreateObservationInputToInsertRow = (input: CreateObservationInp
     description: nullableText(input.description),
     latitude: input.coords.lat,
     longitude: input.coords.lng,
-    image_url: null,
-    status: 'pending',
   };
 };
