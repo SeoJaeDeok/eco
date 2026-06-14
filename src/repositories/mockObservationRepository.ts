@@ -3,9 +3,9 @@ import type { ObservationRepository } from './observationRepository';
 import { countUniqueSpecies } from '../utils/observationStats';
 
 export const mockObservationRepository: ObservationRepository = {
-  listObservations: () => [...sampleObservations],
-  getObservationById: (id) => sampleObservations.find((observation) => observation.id === id) ?? null,
-  countUniqueSpecies: () => countUniqueSpecies(sampleObservations),
+  listObservations: async () => [...sampleObservations],
+  getObservationById: async (id) => sampleObservations.find((observation) => observation.id === id) ?? null,
+  countUniqueSpecies: async () => countUniqueSpecies(sampleObservations),
   createObservation: async (input) => ({
     id: `mock-${Date.now()}`,
     name: input.name,

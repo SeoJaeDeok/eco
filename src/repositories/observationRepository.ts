@@ -1,8 +1,8 @@
 import type { CreateObservationInput, Observation } from '../types';
 
 export interface ObservationRepository {
-  listObservations(): Observation[];
-  getObservationById(id: string): Observation | null;
-  countUniqueSpecies(): number;
+  listObservations(): Promise<Observation[]>;
+  getObservationById(id: string): Promise<Observation | null>;
+  countUniqueSpecies(): Promise<number>;
   createObservation(input: CreateObservationInput): Promise<Observation>;
 }
