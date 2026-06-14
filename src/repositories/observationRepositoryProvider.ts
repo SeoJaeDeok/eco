@@ -1,6 +1,12 @@
 import { mockObservationRepository } from './mockObservationRepository';
 import type { ObservationRepository, ObservationRepositoryKind } from './observationRepository';
 
+const OBSERVATION_REPOSITORY_ENV_KEY = 'VITE_OBSERVATION_REPOSITORY';
+
+type ViteImportMeta = ImportMeta & {
+  env: Record<string, string | undefined>;
+};
+
 export const DEFAULT_OBSERVATION_REPOSITORY_KIND: ObservationRepositoryKind = 'mock';
 
 const loadSupabaseObservationRepository = async (): Promise<ObservationRepository> => {
@@ -27,6 +33,28 @@ const lazySupabaseObservationRepository: ObservationRepository = {
   },
 };
 
+export const resolveObservationRepositoryKind = (value?: string): ObservationRepositoryKind => {
+  const normalizedValue = value?.trim().toLowerCase();
+
+  if (!normalizedValue || normalizedValue === 'mock') {
+    return DEFAULT_OBSERVATION_REPOSITORY_KIND;
+  }
+
+  if (normalizedValue === 'supabase') {
+    return 'supabase';
+  }
+
+  console.warn(
+    `Unsupported ${OBSERVATION_REPOSITORY_ENV_KEY} value "${value}". Falling back to the mock observation repository.`,
+  );
+
+  return DEFAULT_OBSERVATION_REPOSITORY_KIND;
+};
+
+export const getConfiguredObservationRepositoryKind = (): ObservationRepositoryKind => {
+  return resolveObservationRepositoryKind((import.meta as ViteImportMeta).env[OBSERVATION_REPOSITORY_ENV_KEY]);
+};
+
 export const getObservationRepository = (
   kind: ObservationRepositoryKind = DEFAULT_OBSERVATION_REPOSITORY_KIND,
 ): ObservationRepository => {
@@ -38,4 +66,4 @@ export const getObservationRepository = (
   }
 };
 
-export const activeObservationRepository = mockObservationRepository;
+export const activeObservationRepository = getObservationRepository(getConfiguredObservationRepositoryKind());

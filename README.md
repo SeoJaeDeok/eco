@@ -40,6 +40,8 @@ npm.cmd run build
 
 현재 design-only 앱은 환경변수 없이 동작합니다.
 
+기본 observation repository는 `mock`입니다. Supabase repository를 실험할 때만 `.env.local`에서 `VITE_OBSERVATION_REPOSITORY=supabase`로 바꾸세요. 이 경우 `VITE_SUPABASE_URL`과 `VITE_SUPABASE_ANON_KEY`도 필요합니다.
+
 Supabase 또는 Kakao Map 실제 구현 단계가 시작되면 `.env.example`을 `.env.local`로 복사해 로컬 값을 채우세요. 실제 API key, token, `.env.local`은 커밋하지 않습니다.
 
 ## 주요 폴더 구조
