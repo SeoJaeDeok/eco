@@ -1,7 +1,9 @@
 import { useState, type ChangeEvent } from 'react';
 import { createDefaultUploadFormValues, createImagePreviewUrl, createObservationInputFromForm } from '../features/upload/uploadForm';
+import { mockObservationRepository } from '../repositories/mockObservationRepository';
 import { validateObservationInput } from '../utils/observationValidation';
-import type { Coordinates } from '../types';
+import type { ObservationRepository } from '../repositories/observationRepository';
+import type { Coordinates, CreateObservationInput } from '../types';
 import { UploadFormActions } from './upload/UploadFormActions';
 import { UploadImagePicker } from './upload/UploadImagePicker';
 import { UploadLocationSection } from './upload/UploadLocationSection';
@@ -10,10 +12,14 @@ import { PageHeader } from './ui/PageHeader';
 
 interface UploadMockPageProps {
   onCancel: () => void;
+  createObservation?: ObservationRepository['createObservation'];
 }
 
-export const UploadMockPage = ({ onCancel }: UploadMockPageProps) => {
+const MOCK_UPLOAD_ALERT_MESSAGE = '현재 파일은 디자인 시안이라 저장 기능을 연결하지 않았습니다. 다음 단계에서 DB/API를 붙이면 됩니다.';
+
+export const UploadMockPage = ({ onCancel, createObservation = mockObservationRepository.createObservation }: UploadMockPageProps) => {
   const [formData, setFormData] = useState(createDefaultUploadFormValues);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -22,12 +28,38 @@ export const UploadMockPage = ({ onCancel }: UploadMockPageProps) => {
     setFormData((current) => ({ ...current, imageFile: file, imagePreviewUrl }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+
     const input = createObservationInputFromForm(formData);
-    if (input) {
-      validateObservationInput(input);
+    const validationInput: Partial<CreateObservationInput> = input ?? {
+      name: formData.name,
+      scientificName: formData.scientificName || undefined,
+      taxon: formData.taxon,
+      location: formData.location,
+      date: formData.date,
+      description: formData.description || undefined,
+      coords: formData.coords ?? undefined,
+      imageFile: formData.imageFile ?? undefined,
+      imagePreviewUrl: formData.imagePreviewUrl ?? undefined,
+    };
+    const validation = validateObservationInput(validationInput);
+
+    if (!validation.isValid || !input) {
+      console.warn('Invalid observation input.', validation.missingFields);
+      alert(MOCK_UPLOAD_ALERT_MESSAGE);
+      return;
     }
-    alert('현재 파일은 디자인 시안이라 저장 기능을 연결하지 않았습니다. 다음 단계에서 DB/API를 붙이면 됩니다.');
+
+    try {
+      setIsSubmitting(true);
+      await createObservation(input);
+    } catch (error) {
+      console.error('Failed to create mock observation.', error);
+    } finally {
+      setIsSubmitting(false);
+      alert(MOCK_UPLOAD_ALERT_MESSAGE);
+    }
   };
 
   const handleLocationSelect = (coords: Coordinates) => {
@@ -50,7 +82,7 @@ export const UploadMockPage = ({ onCancel }: UploadMockPageProps) => {
           <UploadImagePicker imagePreviewUrl={formData.imagePreviewUrl} onImageChange={handleImageChange} />
           <UploadLocationSection coords={formData.coords} onLocationSelect={handleLocationSelect} />
         </UploadObservationFields>
-        <UploadFormActions onCancel={onCancel} onSubmit={handleSubmit} />
+        <UploadFormActions onCancel={onCancel} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
       </div>
     </div>
   );
