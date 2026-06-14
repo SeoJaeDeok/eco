@@ -1,32 +1,38 @@
 # AGENTS.md
 
-## Project identity
+## Project Identity
 
-This repository is the design-only starting point for a biodiversity monitoring and eco-map web app for Kyungpook National University Daegu Campus.
+This repository is the design-only starter for a biodiversity monitoring and eco-map web app for Kyungpook National University Daegu Campus.
 
-The current project is intentionally a front-end design reference. It must preserve the visual language while the real service is rebuilt from a clean architecture.
+The current app is intentionally a static/mock front-end reference. It has no real map provider, no real database, no server, no authentication, no persistence, and no real upload pipeline. Preserving the existing visual design and Korean UI copy is the first priority until the user explicitly chooses an implementation phase.
 
-The user wants to start from a blank implementation path while reusing the existing design. Do not reintroduce Kakao Map, Firebase, Firestore, Express, upload APIs, or any backend dependency unless the user explicitly asks for that step.
+Do not reintroduce Kakao Map, Naver Map, Leaflet, MapLibre, Firebase, Supabase, Express, server APIs, local persistence, upload APIs, image storage, or auth unless the user explicitly requests that phase.
 
-## Current stack
+## Current Stack
 
-- Runtime: Vite + React + TypeScript
+- Runtime/build: Vite + React + TypeScript
 - Styling: Tailwind CSS v4 through `@tailwindcss/vite`
 - Animation: `motion/react`
 - Icons: `lucide-react`
 - Current data source: static sample data in `src/data/sampleObservations.ts`
-- Current map: static design-only components in `src/components/DesignMap.tsx` and `src/components/MapPreview.tsx`
+- Current map: static design-only components through `src/components/DesignMap.tsx`, `src/components/MapPreview.tsx`, `src/components/map/*`, and `src/features/map/*`
+- Current repository: mock observation repository in `src/repositories/mockObservationRepository.ts`
+- No real map SDK/provider
+- No real DB
+- No server code in the active app
+- No real file upload or image storage
 
-## Setup commands
+## Setup And Verification
 
-Use npm unless the user asks to migrate package managers.
+Use npm unless the user explicitly asks to migrate package managers.
+
+On Windows PowerShell, prefer `npm.cmd` because `npm.ps1` may be blocked by execution policy.
 
 ```bash
-npm install
-npm run dev
-npm run typecheck
-npm run build
-npm audit --audit-level=high
+npm.cmd ci --registry=https://registry.npmjs.org/ --no-audit --no-fund
+npm.cmd run dev
+npm.cmd run typecheck
+npm.cmd run build
 ```
 
 The dev server is configured for:
@@ -35,429 +41,237 @@ The dev server is configured for:
 http://localhost:3000
 ```
 
-## Non-negotiable boundaries
+Run these after code changes:
 
-1. Do not add Kakao Map SDK, Naver Map SDK, Leaflet, MapLibre, Firebase, Supabase, Express, or server code until the user chooses that implementation phase.
-2. Do not hardcode API keys, tokens, service-role keys, database URLs, or private configuration.
-3. Do not create or commit `.env`, `.env.local`, `.env.production`, or other secret-bearing files.
-4. If environment variables become necessary, add only `.env.example` with placeholder values.
-5. Keep the existing design tone: minimal, academic, white/zinc palette, serif Korean headings, small uppercase metadata, subtle borders, calm motion.
-6. Keep Korean UI copy unless the user asks for another language.
-7. Avoid large rewrites. Prefer small, reviewable changes with a short explanation of what changed and why.
-8. Before modifying code, inspect the relevant files and state the intended change plan.
-9. After modifying code, run `npm run typecheck` and `npm run build`. Run `npm audit --audit-level=high` when dependencies change.
-10. Do not replace the design-only map with a real map provider until the map-provider decision has been made.
+```bash
+npm.cmd run typecheck
+npm.cmd run build
+```
 
-## Repository structure
+Run `npm audit --audit-level=high` only when dependencies change.
+
+## Non-Negotiable Boundaries
+
+1. Do not add Kakao Map SDK before explicit user approval.
+2. Do not add Naver Map SDK before explicit user approval.
+3. Do not add Leaflet or MapLibre before explicit user approval.
+4. Do not add Firebase, Supabase, Express, server APIs, or backend code before explicit user approval.
+5. Do not add `localStorage`, IndexedDB, or other persistence before explicit user approval.
+6. Do not add real file upload, image storage, media APIs, or storage buckets before explicit user approval.
+7. Do not add authentication or authorization before explicit user approval.
+8. Do not add new dependencies unless the user explicitly approves the dependency change.
+9. Do not hardcode API keys, tokens, service-role keys, database URLs, or private configuration.
+10. Do not create or commit `.env`, `.env.local`, `.env.production`, or other secret-bearing files.
+11. If environment variables become necessary, add only `.env.example` with placeholder values.
+12. Do not change UI design, Korean copy, colors, spacing, layout, animations, or behavior unless the user explicitly asks.
+13. Do not replace the static design-only map with a real map provider until the provider decision has been made.
+14. Do not mix feature work with refactoring. Keep changes small and reviewable.
+15. Do not make large folder moves, framework migrations, or barrel `index.ts` sweeps without explicit approval.
+16. Do not modify `package.json` or `package-lock.json` unless there is a clear, user-approved reason.
+
+## Current Source Structure
 
 ```text
 src/App.tsx
-  Current top-level page state and modal state. This file should become thinner over time.
+  Small app shell: page state, selected observation modal state, repository read, Navbar, routes.
 
-src/types.ts
-  Shared domain types. Expand this before adding persistence or API code.
-
-src/index.css
-  Global font imports, Tailwind import, theme font tokens, base styles.
-
-src/components/Navbar.tsx
-  Main navigation and project status counts.
+src/components/AppRoutes.tsx
+  Simple state-based route switch. No React Router yet.
 
 src/components/Hero.tsx
-  Landing hero design.
+  Landing/hero section. Treat as a distinct design surface, not a generic PageHeader.
+
+src/components/Navbar.tsx
+  Main navigation and mobile menu. Not yet split; refactor only as a dedicated step.
 
 src/components/IntroPage.tsx
-  Biodiversity guide/species overview design.
+  Biodiversity guide page state and species grouping/filtering composition.
 
 src/components/ObservationListPage.tsx
-  Observation list, search, taxon filter, and sort design.
+  Observation list state, filtering/sorting composition, and card selection wiring.
 
 src/components/ObservationDetail.tsx
-  Full-screen observation detail modal.
+  Full-screen observation detail modal wrapper and detail component composition.
 
 src/components/UploadMockPage.tsx
-  Design-only upload form and image preview.
+  Design-only upload form state and mock submit alert. No persistence.
 
 src/components/DesignMap.tsx
-  Static visual map, marker projection, static location preview, design-only location picker.
+  Compatibility wrapper for static map, static position preview, and static location picker.
 
 src/components/MapPreview.tsx
-  Full map-page composition around the static map design.
+  Full map-page composition around the static map design and design-only messaging.
 
-src/data/sampleObservations.ts
-  Temporary design data. Keep as seed/mock data until a real data source is selected.
-
-public/observations/*
-  Static sample images used by the design.
-```
-
-## Target architecture blueprint
-
-The long-term goal is a modular eco-map application. Build it in layers.
-
-### Layer 1: Presentation
-
-Purpose: preserve and improve the existing visual design.
-
-Target folders:
-
-```text
-src/components/layout/
 src/components/ui/
-src/features/observations/components/
-src/features/map/components/
-src/features/upload/components/
-```
+  Small reusable UI primitives only:
+  Button, ImageFrame, PageHeader, SearchInput, TaxonFilterButton.
 
-Guidelines:
+src/components/intro/
+  IntroPage-only UI:
+  IntroPageHeader, IntroToolbar, IntroTaxonFilter, SpeciesCard, SpeciesGrid.
 
-- Extract repeated UI patterns only when there is real repetition.
-- Good candidates: `TaxonBadge`, `SearchInput`, `ObservationCard`, `PageShell`, `SectionHeader`, `EmptyState`, `ImageFrame`, `PrimaryButton`, `SecondaryButton`.
-- Keep Tailwind utility classes close to components unless a token or primitive is used broadly.
-- Do not introduce a component library unless the user requests it.
+src/components/observations/
+  Observation list UI:
+  ObservationCard, ObservationGrid, ObservationListHeader, ObservationTaxonFilter.
 
-### Layer 2: Domain model
+src/components/observations/detail/
+  Observation detail modal UI:
+  ObservationDetailHeader, ObservationDetailImage, ObservationDetailInfo, ObservationDetailLocation.
 
-Purpose: define stable data contracts before APIs are added.
+src/components/upload/
+  Upload mock page UI:
+  UploadFormActions, UploadImagePicker, UploadLocationSection, UploadObservationFields.
 
-Start by evolving `src/types.ts` into explicit domain types.
+src/components/map/
+  Static design-only map UI:
+  StaticEcoMap, StaticLocationPicker, StaticPositionPreview, MapLegend, MapNoticePanel, StaticMapDecor.
 
-Suggested shape:
-
-```ts
-export type Taxon = '식물' | '포유류' | '조류' | '곤충' | '양서/파충류' | '균류' | '기타';
-
-export interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
-export interface Observation {
-  id: string;
-  name: string;
-  scientificName?: string;
-  taxon: Taxon;
-  locationName: string;
-  observedAt: string;
-  description?: string;
-  coords: Coordinates;
-  imageUrl?: string;
-  status: 'sample' | 'pending' | 'approved' | 'rejected';
-  createdAt?: string;
-  updatedAt?: string;
-}
-```
-
-Migration note: the current `location` and `date` fields can remain temporarily, but new implementation work should move toward `locationName` and `observedAt`.
-
-### Layer 3: Data access
-
-Purpose: make the UI independent from the eventual database.
-
-Target folder:
-
-```text
-src/features/observations/api/
-```
-
-Start with a mock repository:
-
-```ts
-export interface ObservationRepository {
-  listObservations(): Promise<Observation[]>;
-  getObservation(id: string): Promise<Observation | null>;
-  createObservation(input: CreateObservationInput): Promise<Observation>;
-}
-```
-
-Initial implementation:
-
-```text
-mockObservationRepository.ts
-```
-
-Future implementations may be:
-
-```text
-supabaseObservationRepository.ts
-firebaseObservationRepository.ts
-localJsonObservationRepository.ts
-```
-
-Do not add those future implementations until the user chooses the backend.
-
-### Layer 4: Map provider abstraction
-
-Purpose: avoid locking the project to Kakao Map or any other provider too early.
-
-Target folder:
-
-```text
 src/features/map/
+  Provider-neutral map types and static projection logic:
+  mapTypes, mapProjection, mapProvider.
+  Only the static provider is allowed in the current phase.
+
+src/features/upload/
+  Upload mock form helpers:
+  default form values, image preview helper, form-to-create-input conversion.
+
+src/repositories/
+  Data access layer:
+  ObservationRepository interface and mockObservationRepository.
+  Future real implementations must be added only after backend selection.
+
+src/utils/
+  UI-independent helpers:
+  observationFilters, observationStats, observationValidation.
+
+src/constants/
+  Shared constants:
+  taxon list, taxon filter values, taxon style/color mapping.
+
+src/data/
+  Static sample data only:
+  sampleObservations.ts.
+
+src/types.ts
+  Shared domain types:
+  Taxon, Coordinates, Observation, ObservationStatus, CreateObservationInput,
+  CreateObservationFormValues, PageId.
+
+public/observations/
+  Static sample images used by the design.
+
+before/
+  Legacy/reference material only. It may contain old Firebase/Kakao/server artifacts.
+  Do not copy patterns from this folder into the active app without explicit user approval.
 ```
 
-Recommended structure:
+## Domain And Data Rules
+
+- Keep `Taxon`, `Coordinates`, and shared observation contracts in `src/types.ts` unless a dedicated domain split is explicitly planned.
+- Keep taxon lists and taxon color/style mapping in `src/constants/taxon.ts`.
+- Keep current `Observation.location` and `Observation.date` fields until a dedicated migration step. The future direction may be `locationName` and `observedAt`, but do not rename them casually.
+- `Observation.isFixed` and sample/mock compatibility fields should not be removed without a dedicated cleanup step.
+- Keep sample observations in `src/data/sampleObservations.ts`.
+- UI should read observation data through the mock repository or existing selectors/helpers, not from a new API.
+- Do not mutate sample observations for mock create behavior unless the user asks for a persistence simulation.
+- Treat submitted observation data as potentially public. Do not store private contact information without a defined privacy policy and purpose.
+- Future image uploads should use object storage and save only URLs/metadata in a database. Do not store large base64 images in database documents.
+
+## Map Rules
+
+- Static map components are intentional design placeholders, not errors.
+- Keep `No Map API` / design-only messaging until a real provider is implemented.
+- Marker colors must remain taxon-based.
+- Keep the static fallback design available even after a future real provider is selected.
+- Provider-neutral types and projection logic belong in `src/features/map/`.
+- Static map UI belongs in `src/components/map/`.
+- `src/components/DesignMap.tsx` is a compatibility wrapper. Do not remove it casually.
+- Do not add SDK loaders, API keys, script tags, environment variables, or provider implementation files until the user chooses a provider.
+
+## UI And Design Rules
+
+- Preserve the calm academic visual language.
+- Preserve Korean UI copy unless the user asks for another language.
+- Preserve serif Korean headings, small uppercase metadata, subtle borders, light shadows, white/zinc palette, and muted accent colors.
+- Do not change spacing, layout, color, typography, button labels, placeholder text, or animation timing during refactors.
+- Keep Tailwind utility classes close to the component unless a pattern is genuinely reusable.
+- Use existing reusable primitives in `src/components/ui/` only when they preserve visual output.
+- Do not over-abstract. Extract repeated UI only when it reduces real duplication without changing behavior.
+- Do not add a component library unless the user asks.
+
+## Working Style
+
+- Before modifying code, inspect relevant files and state a short plan with expected files.
+- Work in small, reviewable steps.
+- Keep refactors separate from feature work.
+- Preserve existing import compatibility where wrappers already exist.
+- Avoid large rewrites and broad folder moves.
+- Avoid adding barrel files unless the user asks for that cleanup.
+- Use TypeScript strict mode and explicit prop interfaces for exported components.
+- Avoid `any`; prefer concrete types or `unknown` plus narrowing.
+- Buttons that perform UI actions must use `type="button"` unless they are intentionally submit/reset buttons.
+- Images must have meaningful `alt` text or empty alt if purely decorative.
+- Add comments sparingly, only when they clarify non-obvious code.
+- Use `rg`/`rg --files` for searches when available.
+
+## Git And Lockfile Hygiene
+
+- The checkpoint for the design-only refactor through 8A is:
 
 ```text
-src/features/map/components/EcoMap.tsx
-src/features/map/components/StaticEcoMap.tsx
-src/features/map/components/LocationPicker.tsx
-src/features/map/mapTypes.ts
-src/features/map/mapProvider.ts
+bd83cec chore: checkpoint design-only refactor through 8A
+tag: design-only-refactor-8A
 ```
 
-Keep the current static design as the default provider:
-
-```text
-StaticEcoMap = current DesignMap behavior
-```
-
-Only when the user chooses a real provider, add one implementation:
-
-```text
-KakaoEcoMap.tsx
-NaverEcoMap.tsx
-LeafletEcoMap.tsx
-MapLibreEcoMap.tsx
-```
-
-Real map-provider rules:
-
-- Load SDKs from a single map-provider module.
-- Store public client keys in environment variables only.
-- Add `.env.example` with placeholder names.
-- Show graceful error states when the map script fails.
-- Keep a static fallback map for development, testing, and API-key-free demos.
-
-### Layer 5: Routing and page state
-
-Current `App.tsx` uses string page state. That is acceptable for the design-only phase.
-
-Before production, choose one:
-
-1. Keep simple state routing for a small presentation/demo project.
-2. Add React Router if the app needs shareable page URLs.
-3. Move to Next.js only if server rendering, file routing, metadata, or deployment needs justify the migration.
-
-Do not migrate frameworks without explicit user approval.
-
-### Layer 6: Submissions and admin
-
-Do not implement this until the data source is chosen.
-
-Target concepts:
-
-```text
-Observation submission
-Admin approval queue
-Edit/delete observation
-Media upload
-Status transitions
-```
-
-Suggested status flow:
-
-```text
-draft -> pending -> approved -> rejected
-```
-
-Public users should not be able to delete or modify approved data unless authentication and authorization exist.
-
-### Layer 7: App expansion
-
-Default route: web first, then PWA, then Capacitor only if native features are needed.
-
-App-readiness checks:
-
-- Mobile navigation
-- Bottom-sheet detail panel for map markers
-- Safe-area spacing
-- Touch target size
-- Image compression before upload
-- Location permission UX
-- Offline fallback for sample/map data
-
-Do not create a separate React Native app unless the user explicitly chooses that direction.
-
-## Recommended implementation phases
-
-### Phase 0: Design preservation
-
-Goal: keep the uploaded design safe and API-free.
-
-Tasks:
-
-- Keep static data in `sampleObservations.ts`.
-- Keep map as static design.
-- Confirm `npm run typecheck` and `npm run build`.
-
-### Phase 1: Project structure cleanup
-
-Goal: make the code easier to grow without changing behavior.
-
-Tasks:
-
-- Split `App.tsx` into a small shell and page components.
-- Move page-specific logic into feature folders.
-- Extract safe reusable UI primitives.
-- Keep visual output nearly identical.
-
-### Phase 2: Domain model cleanup
-
-Goal: prepare for real data without adding real data storage.
-
-Tasks:
-
-- Normalize observation fields.
-- Add `Taxon`, `Coordinates`, `ObservationStatus`, and create-input types.
-- Add mock repository functions.
-- Keep seed data compatible.
-
-### Phase 3: Map abstraction
-
-Goal: make the map provider swappable.
-
-Tasks:
-
-- Rename static map components into map feature components.
-- Define provider-neutral marker and picker props.
-- Keep the static map as the default.
-
-### Phase 4: Backend decision
-
-Goal: choose one persistence path.
-
-Options to present to the user:
-
-- Supabase/Postgres for structured spatial data and admin workflows.
-- Firebase for quick student-project deployment and simple auth/storage.
-- Local JSON/static build for presentation-only use.
-
-Do not implement any option before the user chooses.
-
-### Phase 5: Production MVP
-
-Goal: real map, real data, safe submission flow.
-
-Tasks:
-
-- Add selected map provider.
-- Add selected data repository.
-- Add media storage.
-- Add submission form persistence.
-- Add admin approval flow.
-- Add validation and error states.
-
-### Phase 6: PWA/app packaging
-
-Goal: mobile-friendly app experience.
-
-Tasks:
-
-- Add manifest and service worker if PWA is chosen.
-- Add offline fallback if useful.
-- Add Capacitor only after PWA behavior is stable.
-
-## Coding style
-
-- Use TypeScript strict mode.
-- Prefer explicit prop interfaces for exported components.
-- Keep domain types in `src/types.ts` until the feature folders justify splitting them.
-- Prefer `useMemo` only for non-trivial derived data or expensive calculations.
-- Avoid `any`; use `unknown` plus narrowing when necessary.
-- Use semantic HTML where possible.
-- Buttons that perform UI actions must use `type="button"`.
-- Images must have meaningful `alt` text or an empty alt if purely decorative.
-- Keep Korean labels natural and concise.
-- Avoid adding global CSS except for fonts, theme tokens, and true base styles.
-
-## Visual design rules
-
-- Preserve the calm academic mood.
-- Prefer white, zinc, black, muted emerald, blue, purple, amber, teal, and orange accents.
-- Keep large serif Korean headings.
-- Keep small uppercase English metadata for scientific/catalog feeling.
-- Prefer subtle borders and light shadows over heavy cards.
-- Preserve spacious layouts on desktop.
-- On mobile, prioritize readability and touch comfort over dense information.
-
-## Map design rules
-
-- Static map components are not fake failures; they are intentional design placeholders.
-- Do not remove the `No Map API`/design-only messaging unless a real provider is implemented.
-- Marker colors should remain taxon-based.
-- If the map becomes real, keep the same marker, legend, and detail-panel visual language.
-- If provider loading fails, show a graceful fallback rather than an alert.
-
-## Data and privacy rules
-
-- Treat submitted observation data as potentially public.
-- Do not store private contact information unless the user explicitly defines a privacy policy and purpose.
-- Do not store original large base64 images in database documents.
-- Future image uploads should use object storage and save only URLs/metadata in the database.
-- Strip or avoid unnecessary EXIF/location metadata unless the user explicitly wants it.
-
-## Accessibility checklist
-
-Before finishing UI work, check:
-
-- Keyboard access for navigation, modal close, marker buttons, filters, and forms.
-- Visible focus states.
-- Meaningful button labels and `aria-label` where text is not visible.
-- Modal close behavior.
-- Sufficient color contrast for small labels.
-- Mobile tap targets around filters, nav buttons, and map markers.
-
-## Review checklist before final response
+- Do not commit `node_modules`, `dist`, `.env`, `.env.local`, or secret-bearing files.
+- `package-lock.json` should resolve public packages through `https://registry.npmjs.org/`.
+- If `npm ci` fails with `EPERM` on Windows, check for a running dev server or locked native module before editing the lockfile.
+- Do not change dependency versions or `lockfileVersion` unless the user explicitly approves and the reason is documented.
+
+## Completed Refactor Phases
+
+- Phase 1: `App.tsx` thinned and page routing/page state moved into `AppRoutes`/page components.
+- Phase 2: `Taxon`, taxon constants/style mapping, and `TaxonBadge` organized.
+- Phase 3: Observation repository interface and mock repository structure added.
+- Phase 4: Static map layer split into provider-neutral map types/projection and static map components.
+- Phase 5: `CreateObservationInput`, upload form values, upload helpers, and validation helper prepared.
+- Phase 6A: `UploadMockPage` split into upload-specific components.
+- Phase 6B: `ObservationListPage` split into observation list components.
+- Phase 6C: `ObservationDetail` modal split into detail components.
+- Phase 6D: `IntroPage` biodiversity guide split into intro components.
+- Phase 7A: `SearchInput` common UI component added and minimally applied.
+- Phase 7B: `ImageFrame` common UI component added and minimally applied.
+- Phase 7C: `Button` common UI component added and minimally applied to simple CTA buttons.
+- Phase 7D: `TaxonFilterButton` common UI component added and minimally applied.
+- Phase 7E: `PageHeader` common UI component added and minimally applied.
+- Phase 8A: Structure check, lockfile registry check, `npm ci`, `typecheck`, and `build` baseline completed.
+
+## Recommended Next Steps
+
+- Update `README.md` to match the design-only architecture and current commands.
+- Write an architecture decision note before choosing a backend.
+- Write an architecture decision note before choosing a real map provider.
+- Review whether `Navbar.tsx` should be split in a dedicated navigation refactor.
+- Review whether `Hero.tsx` should remain a standalone landing section or be split into smaller presentation pieces.
+- Decide on backend path only when ready:
+  Supabase/Postgres, Firebase, or static/local JSON.
+- Decide on map provider only when ready:
+  Kakao, Naver, Leaflet, MapLibre, or continued static-only.
+- Do not implement production submission/admin/media/auth flows until the data source and privacy model are chosen.
+
+## Review Checklist Before Final Response
 
 For every code-changing task, report:
 
-- Files changed.
-- What behavior changed.
-- Commands run and whether they passed.
-- Any remaining risks or TODOs.
+- Files changed
+- What changed and why
+- Whether UI behavior changed
+- Commands run and pass/fail results
+- Any remaining risks or TODOs
 
-Minimum verification after code changes:
+For documentation-only tasks, report:
 
-```bash
-npm run typecheck
-npm run build
-```
-
-When dependency changes are made:
-
-```bash
-npm audit --audit-level=high
-```
-
-## Useful Codex prompts for this project
-
-### Architecture review only
-
-```text
-이 프로젝트는 생태지도 웹앱의 디자인 레퍼런스입니다. Kakao Map, Firebase, Express 서버, 실제 업로드 API는 의도적으로 제거되어 있습니다.
-코드를 수정하지 말고 현재 구조를 분석한 뒤, 디자인을 유지하면서 실제 구현으로 확장하기 위한 작은 단계의 계획을 제안해 주세요.
-```
-
-### Safe refactor
-
-```text
-디자인과 동작을 최대한 유지하면서 App.tsx를 얇게 만들고, 페이지 단위 컴포넌트와 공통 UI 후보를 정리해 주세요.
-외부 지도 SDK, Firebase, Supabase, Express, 서버 코드는 추가하지 마세요.
-수정 후 npm run typecheck와 npm run build를 실행해 주세요.
-```
-
-### Data model cleanup
-
-```text
-현재 Observation 타입과 sampleObservations를 실제 구현에 맞게 정리해 주세요.
-아직 DB/API는 추가하지 말고, mock repository와 타입만 준비해 주세요.
-기존 화면 디자인은 깨지지 않게 호환 레이어를 유지해 주세요.
-```
-
-### Map abstraction without real API
-
-```text
-현재 DesignMap/MapPreview를 실제 지도 SDK를 나중에 붙이기 쉬운 구조로 정리해 주세요.
-단, 지금은 API 키 없이 동작하는 static map provider만 유지하세요.
-```
+- Files changed
+- Main sections updated
+- Whether app code or package files changed
+- Whether verification commands were run
