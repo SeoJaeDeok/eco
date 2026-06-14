@@ -1,0 +1,34 @@
+{
+  "entities": {
+    "Observation": {
+      "title": "Observation",
+      "description": "A biological observation recorded by a user",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Common name of the species" },
+        "scientificName": { "type": "string", "description": "Scientific name of the species" },
+        "taxon": { "type": "string", "description": "Taxonomic group (e.g. Plant, Mammal)" },
+        "location": { "type": "string", "description": "General location description" },
+        "date": { "type": "string", "description": "Observation date string" },
+        "description": { "type": "string", "description": "Detailed description" },
+        "coords": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          },
+          "required": ["lat", "lng"]
+        },
+        "imageUrl": { "type": "string", "description": "URL to the uploaded image" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "scientificName", "taxon", "date", "location", "coords", "imageUrl", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/observations/{observationId}": {
+      "schema": "Observation",
+      "description": "Collection of all biological observations"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "경북대학교 생물다양성 모니터링",
+  "description": "경북대학교 대구캠퍼스의 생물다양성을 관찰하고 기록하며 조별과제를 수행하는 플랫폼입니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

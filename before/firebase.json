@@ -1,0 +1,6 @@
+{
+  "firestore": {
+    "database": "ai-studio-knubiodiversitym-3c0cee45-9f7a-4d06-92ea-7fc2c91e5403",
+    "rules": "firestore.rules"
+  }
+}

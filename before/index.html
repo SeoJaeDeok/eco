@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>경북대학교 생물다양성 모니터링</title>
+    <script>
+      // Safely mock/override alert to prevent Kakao Map domain mismatch errors or iframe sandbox policy from blocking/crashing the page.
+      window.alert = function(message) {
+        console.warn("Intercepted alert:", message);
+      };
+    </script>
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=27ad6afa2f4c14b221ea9909185f1b2d&libraries=services,clusterer,drawing"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
