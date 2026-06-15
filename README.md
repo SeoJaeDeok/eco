@@ -1,252 +1,192 @@
-# Eco Design-Only Starter
+# KNU Eco Map
 
-## Admin Approval MVP
+Kyungpook National University Daegu Campus biodiversity monitoring and eco-map web app.
 
-The app now includes an optional Supabase-backed admin approval flow. The default public app can still run in mock mode, but when `.env.local` sets `VITE_OBSERVATION_REPOSITORY=supabase`, approved observations are loaded from Supabase and public submissions are inserted as `pending`.
+This repository started as a design-only starter and now has the first Supabase-backed observation workflow prepared. The public app can still run with mock data, and Supabase can be enabled through local environment variables.
 
-### Admin Access
+## Current Status
 
-- Admin route: `/#admin`
-- The admin route is intentionally hidden from `Navbar`.
-- Hiding the route is not a security boundary.
-- Real protection depends on Supabase Auth, RLS, and `public.profiles.role = 'admin'`.
+- Stack: Vite + React + TypeScript
+- Styling: Tailwind CSS
+- Public data source: `mock` or `supabase`, selected by `VITE_OBSERVATION_REPOSITORY`
+- Default repository: `mock` when no local env value is set
+- Real repository option: Supabase public approved read and pending insert
+- Admin access: hidden `/#admin` route
+- Current map: static design-only map
+- Kakao Map: not implemented yet
+- Image upload and Supabase Storage: not implemented yet
 
-### Implemented Admin Features
+## Implemented Features
 
-- Email/password admin login.
-- Current session and admin role check.
-- Sign out.
-- Pending observation list.
-- Pending observation detail review.
-- Approve pending observations.
-- Reject pending observations.
-- Approved observations appear in the public observation list.
-- Pending and rejected observations do not appear in the public observation list.
+- Home screen
+- Biodiversity guide screen
+- Observation list
+- Observation detail modal
+- Upload screen
+- Supabase pending observation submit
+- Public approved observation read
+- Hidden admin page at `/#admin`
+- Admin email/password login
+- Admin role check through Supabase Auth + RLS + `public.profiles.role = 'admin'`
+- Pending observation list for admin users
+- Pending observation detail review
+- Approve pending observations
+- Reject pending observations
+- Sign out
 
-### Supabase Admin Preparation
+Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
-1. Create a Supabase Auth user in the Supabase Dashboard.
-2. Insert or update the same user id in `public.profiles` with `role = 'admin'`.
-3. Copy `.env.example` to `.env.local`.
-4. Set `VITE_OBSERVATION_REPOSITORY=supabase`.
-5. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+## Admin Access
 
-Do not commit `.env.local`. Never put a Supabase service role key in frontend env variables.
+Open:
 
-### Approval Flow
-
-- Public submit creates a `pending` observation.
-- Public list reads only `approved` observations.
-- Admin approve changes `pending` to `approved`.
-- Admin reject changes `pending` to `rejected`.
-- `pending` and `rejected` rows stay hidden from the public list.
-
-### Test Checklist
-
-```bash
-npm.cmd run typecheck
-npm.cmd run build
+```text
+http://localhost:3000/#admin
 ```
 
-Manual checks:
+The admin route is intentionally not exposed in `Navbar`.
 
-- Open `/#admin` while signed out and confirm only the login form is visible.
-- Sign in with an admin account.
-- Confirm the pending list is visible.
-- Approve or reject a pending row.
-- Confirm approved rows appear in the public observation list.
-- Confirm rejected rows do not appear in the public observation list.
-- Sign out and confirm the pending list is hidden.
-- Check the public home, guide, observation list, detail modal, upload page, and static map.
+This hidden route is not a security boundary. Real protection depends on Supabase Auth, Row Level Security, and `public.profiles.role = 'admin'`.
 
-If no pending row exists, insert a test row in Supabase SQL Editor. Let the database default set `status = 'pending'`; do not include the `status` column.
+## Run Locally
 
-```sql
-insert into public.observations (
-  name,
-  scientific_name,
-  taxon,
-  location,
-  observed_date,
-  description,
-  latitude,
-  longitude
-) values (
-  'admin-review-test',
-  'Admin review species',
-  '식물',
-  '경북대학교 대구캠퍼스',
-  current_date,
-  '관리자 승인 검증용 pending 기록',
-  35.8897,
-  128.6104
-);
-```
-
-### Not Implemented Yet
-
-- Image upload and Supabase Storage.
-- Reject note.
-- Audit log.
-- Bulk approval.
-- Admin menu in `Navbar`.
-- User account management UI.
-- Spam protection, rate limit, or CAPTCHA.
-- Real map API integration.
-- PWA/app packaging.
-
-경북대학교 대구캠퍼스 생물다양성 모니터링 및 생태지도 웹앱을 위한 design-only 스타터입니다.
-
-이 저장소는 실제 서비스 구현 전, 화면 구조와 시각 디자인을 안전하게 보존하기 위한 정적/Mock 기반 프론트엔드 기준점입니다. 현재는 실제 지도 API, 실제 DB, 서버, 저장 기능, 인증, 이미지 업로드/스토리지가 연결되어 있지 않습니다.
-
-## 현재 상태
-
-- Vite + React + TypeScript 기반 프론트엔드
-- Tailwind CSS v4 기반 스타일
-- 정적 샘플 데이터 사용
-- mock observation repository 사용
-- 정적 지도 디자인 사용
-- 업로드 화면은 저장 없는 mock 화면
-- 기존 디자인, 한국어 문구, 색감, 레이아웃 보존 우선
-
-## 실행 방법
-
-Windows PowerShell에서는 `npm.ps1` 실행 정책 문제가 있을 수 있으므로 `npm.cmd`를 권장합니다.
+Install dependencies:
 
 ```bash
 npm.cmd ci --registry=https://registry.npmjs.org/ --no-audit --no-fund
+```
+
+Start the dev server:
+
+```bash
 npm.cmd run dev
 ```
 
-개발 서버:
+Default local URL:
 
 ```text
 http://localhost:3000
 ```
 
-검증:
+Verify:
 
 ```bash
 npm.cmd run typecheck
 npm.cmd run build
 ```
 
-## 환경변수
+Security audit:
 
-현재 design-only 앱은 환경변수 없이 동작합니다.
-
-기본 observation repository는 `mock`입니다. Supabase repository를 실험할 때만 `.env.local`에서 `VITE_OBSERVATION_REPOSITORY=supabase`로 바꾸세요. 이 경우 `VITE_SUPABASE_URL`과 `VITE_SUPABASE_ANON_KEY`도 필요합니다.
-
-Supabase 또는 Kakao Map 실제 구현 단계가 시작되면 `.env.example`을 `.env.local`로 복사해 로컬 값을 채우세요. 실제 API key, token, `.env.local`은 커밋하지 않습니다.
-
-## 주요 폴더 구조
-
-```text
-src/App.tsx
-  앱 shell, 페이지 상태, 선택된 관찰 상세 모달 상태
-
-src/components/ui/
-  공통 UI: Button, ImageFrame, PageHeader, SearchInput, TaxonFilterButton
-
-src/components/intro/
-  생물다양성 도감 화면 전용 컴포넌트
-
-src/components/observations/
-  관찰 목록 화면 전용 컴포넌트
-
-src/components/observations/detail/
-  관찰 상세 모달 전용 컴포넌트
-
-src/components/upload/
-  업로드 mock 화면 전용 컴포넌트
-
-src/components/map/
-  정적 지도 디자인 컴포넌트
-
-src/features/map/
-  지도 타입, static provider, 좌표 projection 로직
-
-src/features/upload/
-  업로드 form 초기값, preview, 변환 helper
-
-src/repositories/
-  ObservationRepository interface와 mock repository
-
-src/utils/
-  관찰 필터, 통계, validation helper
-
-src/constants/
-  분류군 상수와 색상/스타일 매핑
-
-src/data/
-  정적 샘플 관찰 데이터
-
-src/types.ts
-  Taxon, Coordinates, Observation, CreateObservationInput 등 공유 타입
-
-public/observations/
-  샘플 관찰 이미지
+```bash
+npm.cmd audit --audit-level=high
 ```
 
-## 현재 구현된 화면
+## Environment Variables
 
-- 홈
-- 생물다양성 도감
-- 관찰 목록
-- 관찰 상세 모달
-- 업로드 mock 화면
-- 정적 생태지도
+For local Supabase testing, copy `.env.example` to `.env.local` and fill local values.
 
-## 아직 포함되지 않은 것
+```text
+VITE_OBSERVATION_REPOSITORY=mock
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_STORAGE_BUCKET=observation-images
+VITE_KAKAO_MAP_JAVASCRIPT_KEY=
+```
 
-- 실제 지도 API
-- Kakao Map SDK
-- Naver Map SDK
-- Leaflet / MapLibre
-- Firebase / Firestore
-- Supabase
-- Express 또는 서버 API
-- 실제 DB
-- 실제 저장 기능
-- localStorage / IndexedDB 저장
-- 실제 파일 업로드
-- 이미지 스토리지
-- 인증 / 권한 관리
-- 관리자 승인 기능
+Use `VITE_OBSERVATION_REPOSITORY=mock` for the default mock repository.
 
-## 다음 단계 후보
+Use `VITE_OBSERVATION_REPOSITORY=supabase` only when Supabase is configured and you want to test the real repository.
 
-- README와 AGENTS 기준으로 개발 규칙 유지
-- 저장소 선택 설계
-  - Supabase/Postgres
-  - Firebase
-  - static/local JSON
-- 지도 provider 선택 설계
-  - Kakao Map
-  - Naver Map
-  - Leaflet
-  - MapLibre
-  - static-only 유지
-- 실제 저장 기능 구현 전 architecture decision 문서 작성
-- 관리자 기능과 승인 흐름 설계
-- PWA 또는 앱 확장 가능성 검토
-- Navbar / Hero 리팩터링 검토
+Do not commit `.env.local`, `.env`, API keys, tokens, or secrets. Never put a Supabase service role key in frontend environment variables.
 
-## 보안 주의
+## Important Folders
 
-- API key, token, secret을 코드에 하드코딩하지 마세요.
-- `.env`, `.env.local`, `.env.production`을 커밋하지 마세요.
-- 환경 변수가 필요해지면 placeholder만 담은 `.env.example`을 추가하세요.
-- 실제 저장 기능을 붙이기 전에는 개인정보와 공개 범위를 먼저 정의하세요.
-- 이미지 업로드를 구현할 때는 DB에 대용량 base64를 저장하지 말고, object storage와 URL/metadata 저장 구조를 사용하세요.
+```text
+src/components/ui/
+  Shared UI primitives such as Button, ImageFrame, PageHeader, SearchInput, and TaxonFilterButton.
 
-## Design-Only 원칙
+src/components/intro/
+  Biodiversity guide screen components.
 
-현재 프로젝트는 디자인 기준점입니다. 기능 구현 전까지 다음을 유지합니다.
+src/components/observations/
+  Observation list and card components.
 
-- 기존 디자인과 한국어 문구 보존
-- 정적 지도 유지
-- mock 데이터 유지
-- 새 의존성 추가 금지
-- 실제 API, DB, 서버, 저장, 인증 기능 추가 금지
-- 기능 추가와 리팩터링 분리
+src/components/observations/detail/
+  Observation detail modal components.
+
+src/components/upload/
+  Upload screen components.
+
+src/components/admin/
+  Hidden admin login and pending review UI.
+
+src/components/map/
+  Static map UI components.
+
+src/features/map/
+  Provider-neutral map types, static provider selection, and projection helpers.
+
+src/features/upload/
+  Upload form helpers.
+
+src/repositories/
+  Public, admin, and auth repository contracts and implementations.
+
+src/repositories/supabase/
+  Supabase client helper, public observation repository, admin observation repository, auth repository, DB row types, and mappers.
+
+src/data/
+  Mock sample observations.
+
+supabase/migrations/
+  SQL migration draft for observations, profiles, RLS, and admin policies.
+
+docs/architecture/
+  Architecture notes, setup guides, admin flow docs, and session handoff docs.
+
+docs/adr/
+  Architecture decision records.
+```
+
+## Supabase Setup Notes
+
+Supabase setup is documented in:
+
+- `docs/architecture/supabase-setup.md`
+- `docs/architecture/supabase-schema-rls.md`
+- `supabase/migrations/0001_create_observation_schema.sql`
+
+Admin approval flow is documented in:
+
+- `docs/architecture/admin-approval-flow.md`
+- `docs/architecture/admin-ui-routing-plan.md`
+
+## Not Implemented Yet
+
+- Image upload
+- Supabase Storage bucket and policies
+- Kakao Map real provider
+- Naver Map, Leaflet, or MapLibre provider
+- Reject note
+- Audit log
+- Bulk approval
+- Admin menu in `Navbar`
+- User account management UI
+- Spam protection, rate limit, or CAPTCHA
+- PWA/app packaging
+
+## Next Steps
+
+Recommended next phase:
+
+1. 16A: Supabase Storage image upload design document
+2. 16B: Storage bucket/policy SQL or setup document
+3. 16C: Connect image upload to upload submit flow
+4. 16D: Verify image display in admin review and public detail views
+5. After Storage: implement the real Kakao Map provider
+
+For a new Codex session, start with:
+
+```text
+AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. 다음 작업은 16A Supabase Storage 이미지 업로드 설계입니다.
+```
