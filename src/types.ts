@@ -45,4 +45,4 @@ export interface CreateObservationFormValues {
   imagePreviewUrl: string | null;
 }
 
-export type PageId = 'home' | 'intro' | 'observations' | 'map' | 'upload';
+export type PageId = 'home' | 'intro' | 'observations' | 'map' | 'upload' | 'admin';

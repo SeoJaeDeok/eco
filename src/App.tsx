@@ -6,8 +6,18 @@ import { ObservationDetail } from './components/ObservationDetail';
 import { activeObservationRepository } from './repositories/observationRepositoryProvider';
 import type { Observation, PageId } from './types';
 
+const ADMIN_HASH = '#admin';
+
+const getInitialPage = (): PageId => {
+  if (typeof window !== 'undefined' && window.location.hash === ADMIN_HASH) {
+    return 'admin';
+  }
+
+  return 'home';
+};
+
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<PageId>('home');
+  const [currentPage, setCurrentPage] = useState<PageId>(() => getInitialPage());
   const [observations, setObservations] = useState<Observation[]>([]);
   const [uniqueSpeciesCount, setUniqueSpeciesCount] = useState(0);
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
@@ -46,7 +56,32 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const syncPageFromHash = () => {
+      if (window.location.hash === ADMIN_HASH) {
+        setCurrentPage('admin');
+        setSelectedObservation(null);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      setCurrentPage((page) => (page === 'admin' ? 'home' : page));
+    };
+
+    window.addEventListener('hashchange', syncPageFromHash);
+
+    return () => {
+      window.removeEventListener('hashchange', syncPageFromHash);
+    };
+  }, []);
+
   const navigate = (page: PageId) => {
+    if (page === 'admin') {
+      window.location.hash = 'admin';
+    } else if (window.location.hash === ADMIN_HASH) {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+    }
+
     setCurrentPage(page);
     setSelectedObservation(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });

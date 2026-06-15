@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Hero } from './Hero';
 import { IntroPage } from './IntroPage';
@@ -5,6 +6,8 @@ import { MapPage } from './MapPage';
 import { ObservationListPage } from './ObservationListPage';
 import { UploadMockPage } from './UploadMockPage';
 import type { Observation, PageId } from '../types';
+
+const AdminPage = lazy(() => import('./admin/AdminPage').then((module) => ({ default: module.AdminPage })));
 
 interface AppRoutesProps {
   currentPage: PageId;
@@ -39,6 +42,13 @@ export const AppRoutes = ({ currentPage, observations, onNavigate, onSelectObser
       {currentPage === 'upload' && (
         <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <UploadMockPage onCancel={() => onNavigate('observations')} />
+        </motion.div>
+      )}
+      {currentPage === 'admin' && (
+        <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <Suspense fallback={<div className="min-h-screen bg-white px-6 pt-32 text-sm text-zinc-500">관리자 화면을 불러오는 중입니다.</div>}>
+            <AdminPage />
+          </Suspense>
         </motion.div>
       )}
     </AnimatePresence>
