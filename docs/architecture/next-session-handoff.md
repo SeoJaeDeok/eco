@@ -78,8 +78,10 @@ Read this together with:
 - 16D.5 public rejected-row read check returned 0 visible rows.
 - 16D.5 temporary dev server check returned HTTP 200 at the root page.
 - 16D.5 full upload/admin UI smoke test was not run because this session has no browser automation dependency and no admin test credentials.
+- A later full-smoke-test attempt rechecked the same constraints: typecheck/build passed, `.env.local` exists without being printed, Supabase client configuration is present, 10 approved rows were readable, 0 pending/rejected rows were visible to the public anon client, and a temporary Vite server returned HTTP 200.
+- The later attempt still did not run the full upload/admin/approve UI path because no browser automation dependency is installed and no admin test credentials are configured.
 - 16E documented orphan cleanup, rejected-image cleanup, anonymous upload abuse risk, signed URL expiration UX risk, and pre-17A Storage TODOs.
-- Phase 16 Storage work is in local commit `b80c9ce`, which may still be unpushed while the branch is `main...origin/main [ahead 1]`.
+- Phase 16 Storage commits `b80c9ce` and `53e4fe0` were pushed to GitHub; the branch was synced with `origin/main` after push.
 
 ## Core Architecture
 
@@ -345,6 +347,24 @@ Completed in this session:
 - Started a temporary Vite dev server on a non-default port and confirmed the root page returned HTTP 200.
 - Stopped the temporary dev server after the check.
 - Did not create test Storage objects or test observation rows, because cleanup/approval requires admin test credentials.
+
+Later full-smoke-test attempt result:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed.
+- `.env.local` exists, but its contents were not printed.
+- `VITE_OBSERVATION_REPOSITORY=supabase` is configured locally.
+- Supabase client configuration is present locally without printing URL or key values.
+- No browser automation dependency is installed.
+- No admin test email/password variables are configured for automated login.
+- Read-only anon Supabase check succeeded again:
+  - 10 approved rows were sampled
+  - 0 sampled approved rows had `image_path`
+  - public pending-row query returned 0 visible rows
+  - public rejected-row query returned 0 visible rows
+  - no query errors were reported
+- A temporary Vite dev server returned HTTP 200 at the root page and was stopped.
+- Full upload/admin/approve UI smoke verification was not run in this automated session.
 
 Still needs manual full smoke verification:
 
