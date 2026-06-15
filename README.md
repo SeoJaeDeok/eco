@@ -1,5 +1,100 @@
 # Eco Design-Only Starter
 
+## Admin Approval MVP
+
+The app now includes an optional Supabase-backed admin approval flow. The default public app can still run in mock mode, but when `.env.local` sets `VITE_OBSERVATION_REPOSITORY=supabase`, approved observations are loaded from Supabase and public submissions are inserted as `pending`.
+
+### Admin Access
+
+- Admin route: `/#admin`
+- The admin route is intentionally hidden from `Navbar`.
+- Hiding the route is not a security boundary.
+- Real protection depends on Supabase Auth, RLS, and `public.profiles.role = 'admin'`.
+
+### Implemented Admin Features
+
+- Email/password admin login.
+- Current session and admin role check.
+- Sign out.
+- Pending observation list.
+- Pending observation detail review.
+- Approve pending observations.
+- Reject pending observations.
+- Approved observations appear in the public observation list.
+- Pending and rejected observations do not appear in the public observation list.
+
+### Supabase Admin Preparation
+
+1. Create a Supabase Auth user in the Supabase Dashboard.
+2. Insert or update the same user id in `public.profiles` with `role = 'admin'`.
+3. Copy `.env.example` to `.env.local`.
+4. Set `VITE_OBSERVATION_REPOSITORY=supabase`.
+5. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+
+Do not commit `.env.local`. Never put a Supabase service role key in frontend env variables.
+
+### Approval Flow
+
+- Public submit creates a `pending` observation.
+- Public list reads only `approved` observations.
+- Admin approve changes `pending` to `approved`.
+- Admin reject changes `pending` to `rejected`.
+- `pending` and `rejected` rows stay hidden from the public list.
+
+### Test Checklist
+
+```bash
+npm.cmd run typecheck
+npm.cmd run build
+```
+
+Manual checks:
+
+- Open `/#admin` while signed out and confirm only the login form is visible.
+- Sign in with an admin account.
+- Confirm the pending list is visible.
+- Approve or reject a pending row.
+- Confirm approved rows appear in the public observation list.
+- Confirm rejected rows do not appear in the public observation list.
+- Sign out and confirm the pending list is hidden.
+- Check the public home, guide, observation list, detail modal, upload page, and static map.
+
+If no pending row exists, insert a test row in Supabase SQL Editor. Let the database default set `status = 'pending'`; do not include the `status` column.
+
+```sql
+insert into public.observations (
+  name,
+  scientific_name,
+  taxon,
+  location,
+  observed_date,
+  description,
+  latitude,
+  longitude
+) values (
+  'admin-review-test',
+  'Admin review species',
+  '식물',
+  '경북대학교 대구캠퍼스',
+  current_date,
+  '관리자 승인 검증용 pending 기록',
+  35.8897,
+  128.6104
+);
+```
+
+### Not Implemented Yet
+
+- Image upload and Supabase Storage.
+- Reject note.
+- Audit log.
+- Bulk approval.
+- Admin menu in `Navbar`.
+- User account management UI.
+- Spam protection, rate limit, or CAPTCHA.
+- Real map API integration.
+- PWA/app packaging.
+
 경북대학교 대구캠퍼스 생물다양성 모니터링 및 생태지도 웹앱을 위한 design-only 스타터입니다.
 
 이 저장소는 실제 서비스 구현 전, 화면 구조와 시각 디자인을 안전하게 보존하기 위한 정적/Mock 기반 프론트엔드 기준점입니다. 현재는 실제 지도 API, 실제 DB, 서버, 저장 기능, 인증, 이미지 업로드/스토리지가 연결되어 있지 않습니다.

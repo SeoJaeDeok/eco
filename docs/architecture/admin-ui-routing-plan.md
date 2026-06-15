@@ -13,7 +13,7 @@ The admin MVP should support:
 - clear separation from the normal public user screens
 - no admin menu in `Navbar` for the first implementation
 
-This document is a planning note only. It does not add admin UI, Auth UI, routing code, repository wiring, dependencies, environment files, Storage, server code, or map APIs.
+This document started as the implementation plan for the admin route. It now also records the implemented 15B/15C/15D status.
 
 ## Current Routing Structure
 
@@ -117,9 +117,51 @@ Cons:
 
 Decision: defer until route complexity justifies it.
 
+## Current Implementation Status
+
+Implemented:
+
+- `/#admin` hidden route.
+- No admin menu item in `Navbar`.
+- Email/password login form.
+- Supabase Auth session check.
+- `profiles.role = 'admin'` admin check.
+- Sign out.
+- Pending observation list.
+- Pending observation detail panel.
+- Approve action.
+- Reject action.
+- Refresh pending list after approve/reject.
+
+Verified:
+
+- Signed-out `/#admin` shows login form.
+- Signed-out `/#admin` hides the pending list.
+- Admin login succeeds.
+- Admin pending list is visible after login.
+- Sign out returns to login form and hides admin data.
+- Public home, guide, observation list, detail modal, upload page, and static map still work.
+- 15C approve/reject smoke test passed with seeded pending rows.
+- 15D regression test passed; approve/reject was skipped in 15D because there were no pending rows.
+- No console/runtime errors were observed.
+
+Not implemented:
+
+- Image upload and Storage.
+- Reject note.
+- Audit log.
+- Bulk approval.
+- Admin menu in `Navbar`.
+- User account management UI.
+- Spam protection, rate limiting, or CAPTCHA.
+- Real map API integration.
+- PWA/app packaging.
+
 ## Implementation Stages
 
 ### 15B: Admin Shell And Auth Gate
+
+Status: implemented.
 
 Scope:
 
@@ -158,6 +200,8 @@ Implementation note:
 
 ### 15C: Pending Review And Approve/Reject
 
+Status: implemented.
+
 Scope:
 
 - call `supabaseAdminObservationRepository.listPendingObservations`
@@ -186,6 +230,8 @@ supabaseAdminObservationRepository.rejectObservation(id)
 ```
 
 ### 15D: Smoke Test
+
+Status: completed. The full approve/reject smoke test passed in 15C. The 15D regression pass found zero pending rows, so approve/reject was not repeated in that pass.
 
 Test flow:
 
@@ -305,6 +351,40 @@ Rules:
 - Non-admin users should fail to load pending rows or approve/reject rows.
 - Missing profiles should be treated as non-admin.
 - The frontend must never use the service role key.
+
+## Admin Setup For Testing
+
+1. Create a Supabase Auth user.
+2. Add the same user id to `public.profiles`.
+3. Set `role = 'admin'`.
+4. Configure `.env.local` with Supabase client values.
+5. Set `VITE_OBSERVATION_REPOSITORY=supabase`.
+
+Do not commit `.env.local`. Do not use or expose the service role key in the frontend.
+
+If there are no pending rows, create one in Supabase SQL Editor. Omit `status` so the database default creates a pending row.
+
+```sql
+insert into public.observations (
+  name,
+  scientific_name,
+  taxon,
+  location,
+  observed_date,
+  description,
+  latitude,
+  longitude
+) values (
+  'admin-review-test',
+  'Admin review species',
+  '식물',
+  '경북대학교 대구캠퍼스',
+  current_date,
+  '관리자 승인 검증용 pending 기록',
+  35.8897,
+  128.6104
+);
+```
 
 ## UI Principles
 

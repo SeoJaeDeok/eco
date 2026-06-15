@@ -10,7 +10,7 @@ The MVP should let admins review `pending` observations and move them to `approv
 - creating only `pending` observations
 - never updating, deleting, approving, or rejecting observations
 
-This document is a planning note only. It does not add app code, Auth UI, migrations, environment variables, or repository changes.
+This document started as a planning note. It now also records the implemented admin approval MVP status and remaining gaps.
 
 ## Current State
 
@@ -20,11 +20,17 @@ This document is a planning note only. It does not add app code, Auth UI, migrat
 - A manually approved row becomes visible in the app list after `status` is updated to `approved`.
 - Admin authorization is designed around Supabase Auth plus `public.profiles.role = 'admin'`.
 - The frontend must never use a Supabase service role key.
-- Image upload, Storage, Auth UI, and admin UI are not implemented yet.
+- `/#admin` is implemented as a hidden admin route.
+- Signed-out users see the admin login form and do not see the pending list.
+- Admin users can sign in with email/password, load pending observations, review details, approve, reject, and sign out.
+- After sign out, the admin session panel and pending list are hidden.
+- Approved rows appear in the public observation list.
+- Rejected rows stay hidden from the public observation list.
+- Image upload, Storage, reject notes, audit logs, bulk approval, and admin user-management UI are not implemented yet.
 
 ## Admin MVP Scope
 
-The first admin implementation should include:
+The current admin MVP includes:
 
 - Admin sign-in.
 - Admin session detection.
@@ -35,7 +41,7 @@ The first admin implementation should include:
 - Reject action.
 - Basic loading and error states.
 
-The first admin implementation should not include:
+The current admin MVP does not include:
 
 - Delete as a default workflow.
 - Bulk approval.
@@ -160,6 +166,14 @@ Do not rely only on client-side role checks. Client checks are for UX. RLS remai
 
 ## Admin Route Candidates
 
+Current implemented route:
+
+```text
+/#admin
+```
+
+The route is intentionally not shown in `Navbar`. This is only a hidden entry point for convenience and is not a security boundary.
+
 With the current state-based routing model, add these page ids only when implementation begins:
 
 ```text
@@ -174,7 +188,7 @@ If React Router is adopted later, route candidates are:
 /admin/pending
 ```
 
-For the current app, a minimal state-based route is likely enough for the first admin MVP. Do not migrate routing frameworks just for this feature.
+For the current app, a minimal state-based route plus hash handling is enough for the first admin MVP. Do not migrate routing frameworks just for this feature.
 
 ## UI Composition
 
@@ -252,9 +266,66 @@ For approve/reject, the UI can refresh the pending list after success instead of
 - Never rely on user-editable metadata for authorization.
 - Prefer `profiles.role = 'admin'` or non-user-editable app metadata.
 - Keep RLS enabled for `observations` and `profiles`.
-- Treat admin routes as convenience UI only; RLS must enforce all privileged operations.
+- Treat `/#admin` as convenience UI only; RLS must enforce all privileged operations.
 - Keep `.env.local` out of git.
 - Do not log keys, access tokens, refresh tokens, or full Supabase URLs in app logs.
+
+## Admin Setup
+
+1. Create a Supabase Auth user in the Supabase Dashboard.
+2. Insert or update the same user id in `public.profiles` with `role = 'admin'`.
+3. Set Supabase values in `.env.local`.
+4. Set `VITE_OBSERVATION_REPOSITORY=supabase`.
+
+Rules:
+
+- Do not commit `.env.local`.
+- Do not put the service role key in frontend code or Vite env variables.
+- Do not document real URLs, keys, tokens, emails, or passwords.
+
+## Pending Test Row
+
+If the admin queue is empty during testing, insert a pending row in Supabase SQL Editor. Do not include the `status` column; the database default should set `pending`.
+
+```sql
+insert into public.observations (
+  name,
+  scientific_name,
+  taxon,
+  location,
+  observed_date,
+  description,
+  latitude,
+  longitude
+) values (
+  'admin-review-test',
+  'Admin review species',
+  '식물',
+  '경북대학교 대구캠퍼스',
+  current_date,
+  '관리자 승인 검증용 pending 기록',
+  35.8897,
+  128.6104
+);
+```
+
+## Verification Checklist
+
+- Run `npm.cmd run typecheck`.
+- Run `npm.cmd run build`.
+- Open `/#admin` while signed out.
+- Confirm the login form is visible.
+- Confirm the pending list is hidden while signed out.
+- Sign in with an admin Auth user.
+- Confirm the pending list is visible.
+- Approve a pending row.
+- Confirm the row is removed from the pending list and appears in the public list.
+- Reject a pending row.
+- Confirm the row is removed from the pending list and remains hidden from the public list.
+- Sign out.
+- Confirm the admin session panel and pending list are hidden.
+- Check public home, guide, observation list, detail modal, upload page, and static map.
+- Confirm no console/runtime errors.
 
 ## Implementation Plan
 
@@ -285,4 +356,3 @@ For approve/reject, the UI can refresh the pending list after success instead of
 - Should anonymous public insert remain enabled before spam protection exists?
 - How will Storage images be reviewed when image upload is added?
 - Should multiple admins be supported immediately, and how will role assignment be managed?
-
