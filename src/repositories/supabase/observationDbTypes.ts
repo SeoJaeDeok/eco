@@ -13,6 +13,9 @@ export interface ObservationDbRow {
   latitude: number;
   longitude: number;
   image_url: string | null;
+  image_path: string | null;
+  image_mime_type: string | null;
+  image_size_bytes: number | null;
   status: ObservationDbStatus;
   created_at: string;
   updated_at: string;
@@ -27,6 +30,9 @@ export interface ObservationInsertRow {
   description: string | null;
   latitude: number;
   longitude: number;
+  image_path?: string;
+  image_mime_type?: string;
+  image_size_bytes?: number;
 }
 
 export type ObservationUpdateRow = Partial<
@@ -41,6 +47,9 @@ export type ObservationUpdateRow = Partial<
     | 'latitude'
     | 'longitude'
     | 'image_url'
+    | 'image_path'
+    | 'image_mime_type'
+    | 'image_size_bytes'
     | 'status'
   >
 >;

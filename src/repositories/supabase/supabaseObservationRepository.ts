@@ -7,6 +7,10 @@ import {
   mapObservationRowToObservation,
   mapObservationRowsToObservations,
 } from './observationMappers';
+import {
+  resolveObservationImageSignedUrl,
+  uploadObservationImage,
+} from './supabaseObservationImageStorage';
 import { getSupabaseClient } from './supabaseClient';
 
 const OBSERVATIONS_TABLE = 'observations';
@@ -40,6 +44,20 @@ const createPendingObservationFromInput = (input: CreateObservationInput): Obser
   };
 };
 
+const createImageDisplayFieldsById = async (rows: ObservationDbRow[]) => {
+  const entries = await Promise.all(rows.map(async (row) => {
+    const signedImageUrl = await resolveObservationImageSignedUrl(row.image_path);
+    return signedImageUrl ? [row.id, { imageUrl: signedImageUrl }] as const : null;
+  }));
+
+  return new Map(entries.filter((entry): entry is [string, { imageUrl: string }] => entry !== null));
+};
+
+const mapObservationRowWithSignedImageUrl = async (row: ObservationDbRow) => {
+  const signedImageUrl = await resolveObservationImageSignedUrl(row.image_path);
+  return mapObservationRowToObservation(row, signedImageUrl ? { imageUrl: signedImageUrl } : undefined);
+};
+
 export const supabaseObservationRepository: ObservationRepository = {
   async listObservations() {
     const { data, error } = await getSupabaseClient()
@@ -52,7 +70,10 @@ export const supabaseObservationRepository: ObservationRepository = {
       throw createRepositoryError('Failed to list approved observations from Supabase.', error);
     }
 
-    return mapObservationRowsToObservations((data ?? []) as ObservationDbRow[]);
+    const rows = (data ?? []) as ObservationDbRow[];
+    const displayFieldsById = await createImageDisplayFieldsById(rows);
+
+    return mapObservationRowsToObservations(rows, displayFieldsById);
   },
 
   async getObservationById(id) {
@@ -67,7 +88,7 @@ export const supabaseObservationRepository: ObservationRepository = {
       throw createRepositoryError(`Failed to get approved observation "${id}" from Supabase.`, error);
     }
 
-    return data ? mapObservationRowToObservation(data as ObservationDbRow) : null;
+    return data ? mapObservationRowWithSignedImageUrl(data as ObservationDbRow) : null;
   },
 
   async countUniqueSpecies() {
@@ -76,12 +97,14 @@ export const supabaseObservationRepository: ObservationRepository = {
   },
 
   async createObservation(input) {
-    const insertRow = mapCreateObservationInputToInsertRow(input);
+    const uploadedImage = input.imageFile ? await uploadObservationImage(input.imageFile) : undefined;
+    const insertRow = mapCreateObservationInputToInsertRow(input, uploadedImage);
     const { error } = await getSupabaseClient()
       .from(OBSERVATIONS_TABLE)
       .insert(insertRow);
 
     if (error) {
+      // TODO: Define manual cleanup for uploaded orphan images if this insert fails.
       throw createRepositoryError('Failed to create pending observation in Supabase.', error);
     }
 

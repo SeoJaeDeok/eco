@@ -1,12 +1,29 @@
 import type { CreateObservationInput, Observation } from '../../types';
 import type { ObservationDbRow, ObservationInsertRow } from './observationDbTypes';
 
+interface ObservationImageInsertFields {
+  path: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+interface ObservationDisplayFields {
+  imageUrl?: string | null;
+}
+
 const nullableText = (value: string | undefined) => {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
 };
 
-export const mapObservationRowToObservation = (row: ObservationDbRow): Observation => {
+const resolveObservationImageUrl = (row: ObservationDbRow, displayFields?: ObservationDisplayFields) => {
+  return displayFields?.imageUrl ?? row.image_url ?? '';
+};
+
+export const mapObservationRowToObservation = (
+  row: ObservationDbRow,
+  displayFields?: ObservationDisplayFields,
+): Observation => {
   return {
     id: row.id,
     name: row.name,
@@ -19,16 +36,22 @@ export const mapObservationRowToObservation = (row: ObservationDbRow): Observati
       lat: row.latitude,
       lng: row.longitude,
     },
-    imageUrl: row.image_url ?? '',
+    imageUrl: resolveObservationImageUrl(row, displayFields),
     status: row.status,
   };
 };
 
-export const mapObservationRowsToObservations = (rows: ObservationDbRow[]) => {
-  return rows.map(mapObservationRowToObservation);
+export const mapObservationRowsToObservations = (
+  rows: ObservationDbRow[],
+  displayFieldsById?: Map<string, ObservationDisplayFields>,
+) => {
+  return rows.map((row) => mapObservationRowToObservation(row, displayFieldsById?.get(row.id)));
 };
 
-export const mapCreateObservationInputToInsertRow = (input: CreateObservationInput): ObservationInsertRow => {
+export const mapCreateObservationInputToInsertRow = (
+  input: CreateObservationInput,
+  imageFields?: ObservationImageInsertFields,
+): ObservationInsertRow => {
   return {
     name: input.name,
     scientific_name: nullableText(input.scientificName),
@@ -38,5 +61,12 @@ export const mapCreateObservationInputToInsertRow = (input: CreateObservationInp
     description: nullableText(input.description),
     latitude: input.coords.lat,
     longitude: input.coords.lng,
+    ...(imageFields
+      ? {
+        image_path: imageFields.path,
+        image_mime_type: imageFields.mimeType,
+        image_size_bytes: imageFields.sizeBytes,
+      }
+      : {}),
   };
 };

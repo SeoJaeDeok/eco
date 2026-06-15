@@ -2,7 +2,7 @@
 
 Kyungpook National University Daegu Campus biodiversity monitoring and eco-map web app.
 
-This repository started as a design-only starter and now has the first Supabase-backed observation workflow prepared. The public app can still run with mock data, and Supabase can be enabled through local environment variables.
+This repository started as a design-only starter and now has a Supabase-backed observation workflow prepared. The public app can still run with mock data, and Supabase can be enabled through local environment variables.
 
 ## Current Status
 
@@ -14,7 +14,7 @@ This repository started as a design-only starter and now has the first Supabase-
 - Admin access: hidden `/#admin` route
 - Current map: static design-only map
 - Kakao Map: not implemented yet
-- Image upload and Supabase Storage: not implemented yet
+- Supabase Storage image upload: implemented for Supabase mode with private object paths and runtime signed URLs
 
 ## Implemented Features
 
@@ -24,12 +24,15 @@ This repository started as a design-only starter and now has the first Supabase-
 - Observation detail modal
 - Upload screen
 - Supabase pending observation submit
+- Supabase Storage image upload for pending public submissions
 - Public approved observation read
+- Runtime signed image display for approved public observations
 - Hidden admin page at `/#admin`
 - Admin email/password login
 - Admin role check through Supabase Auth + RLS + `public.profiles.role = 'admin'`
 - Pending observation list for admin users
 - Pending observation detail review
+- Runtime signed image display for admin review
 - Approve pending observations
 - Reject pending observations
 - Sign out
@@ -154,7 +157,9 @@ Supabase setup is documented in:
 
 - `docs/architecture/supabase-setup.md`
 - `docs/architecture/supabase-schema-rls.md`
+- `docs/architecture/supabase-storage-setup.md`
 - `supabase/migrations/0001_create_observation_schema.sql`
+- `supabase/migrations/0002_create_observation_storage.sql`
 
 Admin approval flow is documented in:
 
@@ -163,10 +168,9 @@ Admin approval flow is documented in:
 
 ## Not Implemented Yet
 
-- Image upload
-- Supabase Storage bucket and policies
 - Kakao Map real provider
 - Naver Map, Leaflet, or MapLibre provider
+- Automated rejected/orphan image cleanup
 - Reject note
 - Audit log
 - Bulk approval
@@ -179,11 +183,9 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. 16A: Supabase Storage image upload design document
-2. 16B: Storage bucket/policy SQL or setup document
-3. 16C: Connect image upload to upload submit flow
-4. 16D: Verify image display in admin review and public detail views
-5. After Storage: implement the real Kakao Map provider
+1. Complete full manual Supabase upload/admin image smoke verification in the target project.
+2. Keep monitoring rejected/orphan image cleanup needs.
+3. After Storage is stable, implement the real Kakao Map provider.
 
 For a new Codex session, start with:
 

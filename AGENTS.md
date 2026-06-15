@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 15
+## Current State After Phase 16D
 
 Completed and verified:
 
@@ -29,27 +29,26 @@ Completed and verified:
 - Admin pending list and approve/reject UI are implemented.
 - Admin approve/reject smoke test passed in phase 15C.
 - Admin permission/regression verification completed in phase 15D.
+- Supabase Storage image upload helper and create-observation flow are implemented in Supabase mode.
+- Signed URL image display is implemented for approved public observations and admin review.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static map.
 - Kakao Map real provider is not implemented.
-- Supabase Storage image upload is not implemented.
 
 ## Next Starting Point
 
-The next phase starts at:
+The next phase starts after:
 
 ```text
-16A: Supabase Storage image upload design
+16D: Supabase Storage signed URL image display
 ```
 
-Do not start by implementing Storage. Start with a design document and policy decision.
+Complete manual Supabase smoke verification if it has not already been run against the target project.
 
 Recommended sequence:
 
-1. 16A: Write Supabase Storage image upload design.
-2. 16B: Draft Storage bucket/policy SQL or setup guide.
-3. 16C: Add upload helper and connect image upload to create-observation flow.
-4. 16D: Verify image display in admin review and public detail views.
-5. After Storage is stable: implement real Kakao Map provider.
+1. Verify 16D in Supabase mode.
+2. Monitor rejected/orphan image cleanup needs.
+3. After Storage is stable: implement real Kakao Map provider.
 
 ## New Session Entry Checklist
 
@@ -82,7 +81,7 @@ AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.
 - Admin authorization: Supabase RLS + `public.profiles.role = 'admin'`
 - Current map: static provider only
 - Real map provider: not implemented
-- Image upload/Storage: not implemented
+- Image upload/Storage: private `observation-images` bucket flow with object paths and runtime signed URLs in Supabase mode
 
 ## Setup And Verification
 
@@ -141,8 +140,8 @@ Do not do these without explicit user approval:
 1. Add Kakao Map real provider.
 2. Add Naver Map real provider.
 3. Add Leaflet or MapLibre real provider.
-4. Add Supabase Storage implementation.
-5. Add image upload implementation.
+4. Add new Supabase Storage behavior beyond the approved phase 16 scope.
+5. Add new image upload behavior beyond the approved phase 16 scope.
 6. Add new dependencies.
 7. Expose the admin route in `Navbar`.
 8. Weaken RLS policies.
@@ -178,7 +177,7 @@ src/components/ObservationDetail.tsx
   Observation detail modal wrapper and detail composition.
 
 src/components/UploadMockPage.tsx
-  Upload form state and submit flow. Uses repository create flow, but image upload is not implemented.
+  Upload form state and submit flow. Uses repository create flow; Supabase mode uploads selected images through repository/helper code.
 
 src/components/admin/
   Hidden admin login/session/pending review UI.
@@ -247,7 +246,7 @@ docs/adr/
 - Admin approve/reject must rely on the Supabase admin repository and RLS.
 - Do not mutate `sampleObservations` to simulate persistence unless the user asks for that behavior.
 - Do not store preview/blob URLs as DB `image_url`.
-- Future image uploads should store files in object storage and save only safe URLs/paths/metadata in database rows.
+- Supabase image uploads store files in object storage and save only object paths/metadata in database rows.
 
 ## Map Rules
 
@@ -355,6 +354,11 @@ npm.cmd audit --audit-level=high
 - Phase 15C: Admin pending approval UI implemented.
 - Phase 15D: Admin permission/regression verification completed.
 - Phase 15E: Admin documentation updated.
+- Phase 16A: Supabase Storage image upload design completed.
+- Phase 16B: Supabase Storage setup guide completed.
+- Phase 16B.5: Storage migration candidate completed.
+- Phase 16C: Supabase Storage upload helper and create flow implemented.
+- Phase 16D: Signed URL image display connected for admin review and approved public observations.
 
 ## Review Checklist Before Final Response
 

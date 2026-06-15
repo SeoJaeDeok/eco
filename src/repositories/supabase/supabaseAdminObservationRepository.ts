@@ -1,6 +1,7 @@
 import type { AdminObservationRepository } from '../adminObservationRepository';
 import type { ObservationDbRow } from './observationDbTypes';
 import { mapObservationRowToObservation, mapObservationRowsToObservations } from './observationMappers';
+import { resolveObservationImageSignedUrl } from './supabaseObservationImageStorage';
 import { getSupabaseClient } from './supabaseClient';
 
 const OBSERVATIONS_TABLE = 'observations';
@@ -11,12 +12,26 @@ const createAdminRepositoryError = (message: string, cause: unknown) => {
   return error;
 };
 
-const mapRequiredObservationRow = (row: ObservationDbRow | null, message: string) => {
+const createImageDisplayFieldsById = async (rows: ObservationDbRow[]) => {
+  const entries = await Promise.all(rows.map(async (row) => {
+    const signedImageUrl = await resolveObservationImageSignedUrl(row.image_path);
+    return signedImageUrl ? [row.id, { imageUrl: signedImageUrl }] as const : null;
+  }));
+
+  return new Map(entries.filter((entry): entry is [string, { imageUrl: string }] => entry !== null));
+};
+
+const mapObservationRowWithSignedImageUrl = async (row: ObservationDbRow) => {
+  const signedImageUrl = await resolveObservationImageSignedUrl(row.image_path);
+  return mapObservationRowToObservation(row, signedImageUrl ? { imageUrl: signedImageUrl } : undefined);
+};
+
+const mapRequiredObservationRow = async (row: ObservationDbRow | null, message: string) => {
   if (!row) {
     throw new Error(message);
   }
 
-  return mapObservationRowToObservation(row);
+  return mapObservationRowWithSignedImageUrl(row);
 };
 
 export const supabaseAdminObservationRepository: AdminObservationRepository = {
@@ -31,7 +46,10 @@ export const supabaseAdminObservationRepository: AdminObservationRepository = {
       throw createAdminRepositoryError('Failed to list pending observations from Supabase.', error);
     }
 
-    return mapObservationRowsToObservations((data ?? []) as ObservationDbRow[]);
+    const rows = (data ?? []) as ObservationDbRow[];
+    const displayFieldsById = await createImageDisplayFieldsById(rows);
+
+    return mapObservationRowsToObservations(rows, displayFieldsById);
   },
 
   async listAllObservations() {
@@ -44,7 +62,10 @@ export const supabaseAdminObservationRepository: AdminObservationRepository = {
       throw createAdminRepositoryError('Failed to list all observations from Supabase.', error);
     }
 
-    return mapObservationRowsToObservations((data ?? []) as ObservationDbRow[]);
+    const rows = (data ?? []) as ObservationDbRow[];
+    const displayFieldsById = await createImageDisplayFieldsById(rows);
+
+    return mapObservationRowsToObservations(rows, displayFieldsById);
   },
 
   async approveObservation(id) {
