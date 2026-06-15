@@ -80,6 +80,9 @@ Read this together with:
 - 16D.5 full upload/admin UI smoke test was not run because this session has no browser automation dependency and no admin test credentials.
 - A later full-smoke-test attempt rechecked the same constraints: typecheck/build passed, `.env.local` exists without being printed, Supabase client configuration is present, 10 approved rows were readable, 0 pending/rejected rows were visible to the public anon client, and a temporary Vite server returned HTTP 200.
 - The later attempt still did not run the full upload/admin/approve UI path because no browser automation dependency is installed and no admin test credentials are configured.
+- A manual smoke retry found that `UploadMockPage` showed the same mock/design alert for validation failure, create failure, and success; this was fixed.
+- After the alert fix, the user reported that a public upload created a `pending` DB row with `image_path`, `image_mime_type`, and `image_size_bytes`, while `image_url` stayed `NULL`; approve and reject flows were normal.
+- Admin pending image display and approved public detail image display still need explicit manual confirmation.
 - 16E documented orphan cleanup, rejected-image cleanup, anonymous upload abuse risk, signed URL expiration UX risk, and pre-17A Storage TODOs.
 - Phase 16 Storage commits `b80c9ce` and `53e4fe0` were pushed to GitHub; the branch was synced with `origin/main` after push.
 
@@ -366,15 +369,27 @@ Later full-smoke-test attempt result:
 - A temporary Vite dev server returned HTTP 200 at the root page and was stopped.
 - Full upload/admin/approve UI smoke verification was not run in this automated session.
 
+Manual smoke progress after upload alert fix:
+
+- `UploadMockPage` alert handling was corrected so validation failure, repository/create failure, and success no longer show the same mock/design message.
+- User-reported manual upload result after the alert fix:
+  - DB row was created.
+  - New row status was `pending`.
+  - `image_path` was present.
+  - `image_mime_type` was present.
+  - `image_size_bytes` was present.
+  - `image_url` was `NULL`.
+  - Approve flow was normal.
+  - Reject flow was normal.
+- This confirms Storage metadata is persisted without storing signed/public/blob/preview/data URLs in `image_url`.
+- Admin pending image display and approved public detail image display were not explicitly reported and still need manual confirmation.
+
 Still needs manual full smoke verification:
 
 - Submit a JPEG/PNG/WebP through the upload screen in Supabase mode.
-- Confirm the new row is `pending`.
-- Confirm DB stores only `image_path`, `image_mime_type`, and `image_size_bytes` for the uploaded image.
-- Confirm DB `image_url` does not store signed/public/blob/preview/data URLs.
 - Confirm `/#admin` pending review shows the submitted image.
-- Approve the row and confirm approved public detail shows the image.
-- Confirm rejected rows stay hidden from public list/detail.
+- Confirm approved public detail shows the approved image through a runtime signed URL.
+- Confirm pending/rejected rows stay hidden from public list/detail for the manually tested rows.
 - Confirm console/logs do not expose secrets, tokens, Supabase URL, anon key, email, password, or `.env.local` contents.
 
 Hardening TODOs:

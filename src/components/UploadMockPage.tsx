@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 import { createDefaultUploadFormValues, createImagePreviewUrl, createObservationInputFromForm } from '../features/upload/uploadForm';
-import { activeObservationRepository } from '../repositories/observationRepositoryProvider';
+import { activeObservationRepository, getConfiguredObservationRepositoryKind } from '../repositories/observationRepositoryProvider';
 import { validateObservationInput } from '../utils/observationValidation';
 import type { ObservationRepository } from '../repositories/observationRepository';
 import type { Coordinates, CreateObservationInput } from '../types';
@@ -16,10 +16,14 @@ interface UploadMockPageProps {
 }
 
 const MOCK_UPLOAD_ALERT_MESSAGE = '현재 파일은 디자인 시안이라 저장 기능을 연결하지 않았습니다. 다음 단계에서 DB/API를 붙이면 됩니다.';
+const REQUIRED_UPLOAD_ALERT_MESSAGE = '필수 항목을 입력하고 지도에서 관찰 위치를 선택해 주세요.';
+const SUPABASE_UPLOAD_SUCCESS_MESSAGE = '관찰 기록이 접수되었습니다. 관리자 승인 후 공개 목록에 표시됩니다.';
+const UPLOAD_FAILURE_ALERT_MESSAGE = '관찰 기록 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.';
 
 export const UploadMockPage = ({ onCancel, createObservation = activeObservationRepository.createObservation }: UploadMockPageProps) => {
   const [formData, setFormData] = useState(createDefaultUploadFormValues);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSupabaseRepository = getConfiguredObservationRepositoryKind() === 'supabase';
 
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -47,18 +51,19 @@ export const UploadMockPage = ({ onCancel, createObservation = activeObservation
 
     if (!validation.isValid || !input) {
       console.warn('Invalid observation input.', validation.missingFields);
-      alert(MOCK_UPLOAD_ALERT_MESSAGE);
+      alert(REQUIRED_UPLOAD_ALERT_MESSAGE);
       return;
     }
 
     try {
       setIsSubmitting(true);
       await createObservation(input);
+      alert(isSupabaseRepository ? SUPABASE_UPLOAD_SUCCESS_MESSAGE : MOCK_UPLOAD_ALERT_MESSAGE);
     } catch (error) {
-      console.error('Failed to create mock observation.', error);
+      console.error('Failed to create observation.', error);
+      alert(UPLOAD_FAILURE_ALERT_MESSAGE);
     } finally {
       setIsSubmitting(false);
-      alert(MOCK_UPLOAD_ALERT_MESSAGE);
     }
   };
 

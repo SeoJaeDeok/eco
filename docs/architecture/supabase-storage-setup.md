@@ -770,6 +770,21 @@ Manual full smoke checklist:
 11. Reject a separate test observation and confirm it remains hidden publicly.
 12. Confirm logs do not expose secrets, tokens, Supabase URL, anon key, emails, passwords, or `.env.local` contents.
 
+Later manual smoke progress:
+
+- `UploadMockPage` alert handling was fixed after the manual test showed the same mock/design alert for validation failure, create failure, and success.
+- User-reported retest result after the alert fix:
+  - DB row was created.
+  - Row status was `pending`.
+  - `image_path` was present.
+  - `image_mime_type` was present.
+  - `image_size_bytes` was present.
+  - `image_url` was `NULL`.
+  - Approve flow was normal.
+  - Reject flow was normal.
+- This confirms the Storage create path stores object path metadata and does not store signed, public, blob, preview, or data URLs in `image_url`.
+- Admin pending image display and approved public detail image display were not explicitly reported and still need manual confirmation.
+
 Operational risks to keep visible:
 
 - Anonymous upload can consume Storage capacity before moderation.
