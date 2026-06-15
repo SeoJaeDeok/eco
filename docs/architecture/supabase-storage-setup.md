@@ -779,6 +779,170 @@ Operational risks to keep visible:
 - Signed URL generation failures currently fall back to the existing no-image display.
 - `image_url` remains a legacy compatibility field and should not receive new Storage display URLs.
 
+## 16E Storage Hardening And Operations
+
+Phase 16E is documentation-only. It does not change app code, Supabase SQL, Storage policies, package files, or UI behavior.
+
+### Current Protections
+
+The MVP Storage flow currently relies on these controls:
+
+- The `observation-images` bucket is private.
+- Public uploads use an insert-only Storage policy.
+- Upload code uses `upsert: false`.
+- Bucket and client validation limit files to 5 MB.
+- Bucket and client validation allow only `image/jpeg`, `image/png`, and `image/webp`.
+- Object paths are random and constrained to `pending/{client_generated_id}/{random_id}.{ext}`.
+- Public observation reads remain approved-only.
+- Pending and rejected observations remain hidden from public repositories and public UI.
+- Public approved image display is generated from `image_path` only after approved rows are selected.
+- Signed URLs are runtime display values and are not stored in the database.
+- Public URLs, blob URLs, preview URLs, and data URLs are not stored in the database.
+- New Storage uploads store only `image_path`, `image_mime_type`, and `image_size_bytes`.
+
+These controls reduce accidental exposure but do not replace abuse prevention, cleanup automation, or full manual smoke verification.
+
+### Orphan Object Scenarios
+
+Orphan objects can occur when:
+
+- Storage upload succeeds but `public.observations` insert fails.
+- A user closes the browser after upload but before row insert completes.
+- Upload succeeds but the row insert fails a DB constraint.
+- Manual DB cleanup removes an observation row without deleting its Storage object.
+- A future moderation or cleanup workflow partially fails.
+
+### Manual Orphan Cleanup Procedure
+
+For MVP operations, cleanup is manual:
+
+1. In Supabase Dashboard, open Storage bucket `observation-images`.
+2. Export or record object paths under `pending/`, including created time and size where available.
+3. In SQL Editor, list DB image references:
+
+```sql
+select
+  id,
+  status,
+  image_path,
+  image_mime_type,
+  image_size_bytes,
+  created_at,
+  updated_at
+from public.observations
+where image_path is not null
+order by created_at desc;
+```
+
+4. Treat a Storage object as an orphan only if its object path is not referenced by any `public.observations.image_path`.
+5. Do not delete objects referenced by `pending` rows during active moderation.
+6. Do not delete objects referenced by `approved` rows unless intentionally removing the approved image.
+7. For `rejected` rows, follow the rejected-image retention procedure below.
+8. Delete confirmed orphan objects manually in the Storage dashboard after review.
+9. Never use a service role key in frontend code for cleanup.
+
+### Rejected Image Cleanup Procedure
+
+Rejected observations remain private and publicly hidden, but their images still consume Storage until cleanup.
+
+MVP procedure:
+
+1. Choose a retention window before deletion. The recommended first value is manual review first, then delete after a team-approved number of days.
+2. List rejected rows with images:
+
+```sql
+select
+  id,
+  image_path,
+  image_mime_type,
+  image_size_bytes,
+  created_at,
+  updated_at
+from public.observations
+where status = 'rejected'
+  and image_path is not null
+order by updated_at asc;
+```
+
+3. Confirm each rejected row no longer needs review or recovery.
+4. Delete the matching Storage object from `observation-images` manually.
+5. Decide separately whether to keep the DB `image_path` for audit/debug context or clear it in a later approved DB maintenance step.
+
+Do not add automatic deletion until a retention policy and failure handling are approved.
+
+### Anonymous Upload Abuse Risk
+
+The MVP keeps public no-login reports, so anonymous image upload remains a risk:
+
+- Storage capacity can be consumed before moderation.
+- Client-side validation can be bypassed.
+- Anonymous uploads have limited attribution.
+- Upload-before-insert can create orphan objects.
+- Repeated uploads can create review workload even when rows stay pending or rejected.
+
+Current mitigations are the private bucket, insert-only policy, no upsert, constrained path pattern, 5 MB limit, MIME restrictions, approved-only public reads, and signed URLs not being persisted.
+
+Future hardening candidates:
+
+- Add CAPTCHA or rate limiting before upload.
+- Switch image upload to authenticated-only while keeping text-only public reports available.
+- Add an Edge Function that atomically validates upload intent and observation creation.
+- Add scheduled cleanup for stale orphan objects.
+- Add an admin cleanup tool for rejected/orphan images.
+- Monitor Storage object count and total size.
+- Review bucket usage regularly after public launch.
+- Add alerts or manual thresholds for sudden upload spikes.
+
+### Signed URL Expiration UX
+
+Signed URLs currently expire after 10 minutes.
+
+Expected MVP behavior:
+
+- Fresh repository reads generate fresh signed URLs.
+- Long-lived pages may show expired images after the URL expires.
+- Signed URL generation failures fall back to the existing no-image display.
+
+Future UX options:
+
+- Regenerate signed URLs when a detail modal opens.
+- Regenerate signed URLs when an image load fails.
+- Add a repository-level refresh helper without exposing Supabase calls to UI components.
+- Consider a longer expiration only after privacy and revocation behavior are reviewed.
+
+### Manual Full Smoke Test Checklist
+
+Before moving to 17A, run the full Supabase UI smoke test in the target project:
+
+1. Confirm `VITE_OBSERVATION_REPOSITORY=supabase` locally without printing `.env.local`.
+2. Confirm active `0002` SQL, private bucket, anonymous upload policy, and metadata insert grants are applied.
+3. Prepare one small JPEG, PNG, or WebP under 5 MB.
+4. Start the app with `npm.cmd run dev`.
+5. Submit a public report with the test image.
+6. Confirm the new observation row is `pending`.
+7. Confirm the row stores `image_path`, `image_mime_type`, and `image_size_bytes`.
+8. Confirm `image_url` does not contain signed, public, blob, preview, or data URLs.
+9. Confirm public list/detail does not expose the pending row.
+10. Sign in to `/#admin` with an admin account.
+11. Confirm the pending image appears in the admin queue or review panel.
+12. Approve the observation.
+13. Confirm the approved public detail image appears through a temporary signed URL.
+14. Reject a separate test observation with an image, if available.
+15. Confirm rejected rows remain hidden from public list/detail.
+16. Confirm console/log output does not expose Supabase URL, anon key, token, email, password, or `.env.local` contents.
+17. Clean up test data and Storage objects according to the agreed retention policy.
+
+### Storage TODOs Before 17A
+
+Before starting real Kakao Map provider work, keep these Storage items visible:
+
+- Complete the full manual upload/admin/approve smoke test.
+- Decide rejected image retention duration.
+- Decide manual or automated orphan cleanup cadence.
+- Decide whether anonymous upload remains acceptable for public launch.
+- Decide whether signed URL refresh is needed for long-lived list/detail pages.
+- Decide whether Storage monitoring should be manual or automated.
+
 ## Explicit Non-Scope
 
 - Do not implement Kakao Map.

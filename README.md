@@ -190,5 +190,5 @@ Recommended next phase:
 For a new Codex session, start with:
 
 ```text
-AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. 다음 작업은 16A Supabase Storage 이미지 업로드 설계입니다.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/supabase-storage-setup.md. Do not modify code yet. The next step is the full manual Supabase upload/admin/approve smoke test, then 17A Kakao Map provider design after Storage is stable.
 ```

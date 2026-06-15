@@ -43,6 +43,7 @@ Read this together with:
 - 16C Supabase Storage upload helper and create-observation connection
 - 16D signed URL image display connected for admin review and approved public observations
 - 16D.5 Supabase Storage smoke-test preflight and hardening notes
+- 16E Supabase Storage hardening and operations documentation
 
 ## Verified Current State
 
@@ -77,6 +78,8 @@ Read this together with:
 - 16D.5 public rejected-row read check returned 0 visible rows.
 - 16D.5 temporary dev server check returned HTTP 200 at the root page.
 - 16D.5 full upload/admin UI smoke test was not run because this session has no browser automation dependency and no admin test credentials.
+- 16E documented orphan cleanup, rejected-image cleanup, anonymous upload abuse risk, signed URL expiration UX risk, and pre-17A Storage TODOs.
+- Phase 16 Storage work is in local commit `b80c9ce`, which may still be unpushed while the branch is `main...origin/main [ahead 1]`.
 
 ## Core Architecture
 
@@ -220,7 +223,7 @@ docs/architecture/supabase-storage-setup.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-image-upload-design.md, and docs/architecture/supabase-storage-setup.md. Do not modify code yet. The next step is manual Supabase smoke verification for phase 16D if it has not already been completed.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-image-upload-design.md, and docs/architecture/supabase-storage-setup.md. Do not modify code yet. The next step is the full manual Supabase upload/admin/approve smoke test; after Storage is stable, start 17A Kakao Map provider design.
 ```
 
 ## Recommended Phase 16 Direction
@@ -361,6 +364,31 @@ Hardening TODOs:
 - Revisit anonymous upload abuse controls before public launch.
 - Decide whether signed URL refresh is needed for long-lived pages.
 - Consider surfacing a non-sensitive admin/public fallback state if signed URL generation fails.
+
+### 16E: Storage Hardening And Operations
+
+Completed as documentation-only work:
+
+- Added a 16E hardening section to `docs/architecture/supabase-storage-setup.md`.
+- Documented orphan object scenarios and a manual cleanup procedure.
+- Documented rejected-image cleanup operations and retention decision points.
+- Documented anonymous upload abuse risk and current mitigations.
+- Documented future hardening candidates:
+  - CAPTCHA or rate limit
+  - authenticated-only upload
+  - Edge Function cleanup
+  - scheduled cleanup
+  - admin cleanup tool
+  - file count/size monitoring
+  - signed URL refresh UX
+- Expanded the full manual Supabase UI smoke test checklist.
+- No app code, package files, or Supabase migration files were changed in 16E.
+
+Recommended next steps:
+
+1. Run the full manual Supabase upload/admin/approve UI smoke test in the target project.
+2. Record the result in this handoff and `supabase-storage-setup.md`.
+3. If the smoke test passes and Storage is stable, start `17A: Kakao Map provider design`.
 
 ## Missing Features
 

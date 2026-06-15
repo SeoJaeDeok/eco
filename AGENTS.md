@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 16D
+## Current State After Phase 16E
 
 Completed and verified:
 
@@ -31,6 +31,7 @@ Completed and verified:
 - Admin permission/regression verification completed in phase 15D.
 - Supabase Storage image upload helper and create-observation flow are implemented in Supabase mode.
 - Signed URL image display is implemented for approved public observations and admin review.
+- Supabase Storage hardening and operations documentation is complete.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static map.
 - Kakao Map real provider is not implemented.
 
@@ -39,16 +40,16 @@ Completed and verified:
 The next phase starts after:
 
 ```text
-16D: Supabase Storage signed URL image display
+16E: Supabase Storage hardening documentation
 ```
 
-Complete manual Supabase smoke verification if it has not already been run against the target project.
+Complete full manual Supabase upload/admin/approve smoke verification if it has not already been run against the target project.
 
 Recommended sequence:
 
-1. Verify 16D in Supabase mode.
+1. Run the full manual Supabase UI smoke test.
 2. Monitor rejected/orphan image cleanup needs.
-3. After Storage is stable: implement real Kakao Map provider.
+3. After Storage is stable: start 17A Kakao Map provider design.
 
 ## New Session Entry Checklist
 
@@ -65,7 +66,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. 다음 작업은 16A Supabase Storage 이미지 업로드 설계입니다.
+AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. 다음 작업은 full manual Supabase upload/admin/approve smoke test이고, Storage가 안정화되면 17A Kakao Map provider design입니다.
 ```
 
 ## Current Stack
@@ -359,6 +360,8 @@ npm.cmd audit --audit-level=high
 - Phase 16B.5: Storage migration candidate completed.
 - Phase 16C: Supabase Storage upload helper and create flow implemented.
 - Phase 16D: Signed URL image display connected for admin review and approved public observations.
+- Phase 16D.5: Supabase Storage read-only preflight and dev server root check completed.
+- Phase 16E: Supabase Storage hardening and operations documentation completed.
 
 ## Review Checklist Before Final Response
 
