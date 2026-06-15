@@ -31,25 +31,24 @@ Completed and verified:
 - Admin permission/regression verification completed in phase 15D.
 - Supabase Storage image upload helper and create-observation flow are implemented in Supabase mode.
 - Signed URL image display is implemented for approved public observations and admin review.
+- Phase 16 Storage manual upload/admin/approve smoke test passed.
 - Supabase Storage hardening and operations documentation is complete.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static map.
 - Kakao Map real provider is not implemented.
 
 ## Next Starting Point
 
-The next phase starts after:
+The next phase starts at:
 
 ```text
-16E: Supabase Storage hardening documentation
+17A: Kakao Map provider design
 ```
-
-Complete full manual Supabase upload/admin/approve smoke verification if it has not already been run against the target project.
 
 Recommended sequence:
 
-1. Run the full manual Supabase UI smoke test.
-2. Monitor rejected/orphan image cleanup needs.
-3. After Storage is stable: start 17A Kakao Map provider design.
+1. Start 17A Kakao Map provider design.
+2. Keep static map fallback available.
+3. Continue monitoring rejected/orphan image cleanup needs.
 
 ## New Session Entry Checklist
 
@@ -66,7 +65,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. 다음 작업은 full manual Supabase upload/admin/approve smoke test이고, Storage가 안정화되면 17A Kakao Map provider design입니다.
+AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. Phase 16 Storage manual smoke는 통과했고, 다음 작업은 17A Kakao Map provider design입니다.
 ```
 
 ## Current Stack
@@ -362,6 +361,7 @@ npm.cmd audit --audit-level=high
 - Phase 16D: Signed URL image display connected for admin review and approved public observations.
 - Phase 16D.5: Supabase Storage read-only preflight and dev server root check completed.
 - Phase 16E: Supabase Storage hardening and operations documentation completed.
+- Phase 16 final smoke: Supabase Storage upload/admin/approve manual smoke test passed.
 
 ## Review Checklist Before Final Response
 

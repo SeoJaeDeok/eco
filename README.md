@@ -27,6 +27,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Supabase Storage image upload for pending public submissions
 - Public approved observation read
 - Runtime signed image display for approved public observations
+- Supabase Storage upload/admin/approve manual smoke verification
 - Hidden admin page at `/#admin`
 - Admin email/password login
 - Admin role check through Supabase Auth + RLS + `public.profiles.role = 'admin'`
@@ -183,12 +184,12 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Complete full manual Supabase upload/admin image smoke verification in the target project.
+1. Start 17A Kakao Map provider design.
 2. Keep monitoring rejected/orphan image cleanup needs.
-3. After Storage is stable, implement the real Kakao Map provider.
+3. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
 
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/supabase-storage-setup.md. Do not modify code yet. The next step is the full manual Supabase upload/admin/approve smoke test, then 17A Kakao Map provider design after Storage is stable.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/supabase-storage-setup.md. Do not modify code yet. Phase 16 Storage manual smoke passed; the next step is 17A Kakao Map provider design.
 ```

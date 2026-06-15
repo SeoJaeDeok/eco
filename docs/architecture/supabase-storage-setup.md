@@ -749,7 +749,7 @@ Read-only Supabase check result:
 - No query errors were reported.
 - A temporary Vite dev server returned HTTP 200 at the root page and was stopped after the check.
 
-Full upload/admin smoke test status:
+Earlier automated smoke status:
 
 - Not run in this session.
 - Reason: no browser automation dependency is installed, no new dependency should be added, and no admin test credentials are configured for automated login/approval.
@@ -783,7 +783,14 @@ Later manual smoke progress:
   - Approve flow was normal.
   - Reject flow was normal.
 - This confirms the Storage create path stores object path metadata and does not store signed, public, blob, preview, or data URLs in `image_url`.
-- Admin pending image display and approved public detail image display were not explicitly reported and still need manual confirmation.
+- Final manual smoke result: PASS.
+- Final user-reported checks:
+  - Admin pending image display: pass.
+  - Approved public detail image display: pass.
+  - Pending public invisibility: pass.
+  - Rejected public invisibility: pass.
+  - Console/log secret check: pass.
+- Re-run the manual checklist after Storage policy, RLS, upload helper, admin review UI, or public detail UI changes.
 
 Operational risks to keep visible:
 
@@ -815,7 +822,7 @@ The MVP Storage flow currently relies on these controls:
 - Public URLs, blob URLs, preview URLs, and data URLs are not stored in the database.
 - New Storage uploads store only `image_path`, `image_mime_type`, and `image_size_bytes`.
 
-These controls reduce accidental exposure but do not replace abuse prevention, cleanup automation, or full manual smoke verification.
+These controls reduce accidental exposure but do not replace abuse prevention, cleanup automation, or periodic smoke verification after relevant changes.
 
 ### Orphan Object Scenarios
 
@@ -927,7 +934,7 @@ Future UX options:
 
 ### Manual Full Smoke Test Checklist
 
-Before moving to 17A, run the full Supabase UI smoke test in the target project:
+Phase 16 final manual smoke passed for the target project. Re-run this checklist after future Storage, RLS, upload helper, admin review, or public detail changes:
 
 1. Confirm `VITE_OBSERVATION_REPOSITORY=supabase` locally without printing `.env.local`.
 2. Confirm active `0002` SQL, private bucket, anonymous upload policy, and metadata insert grants are applied.
@@ -951,12 +958,12 @@ Before moving to 17A, run the full Supabase UI smoke test in the target project:
 
 Before starting real Kakao Map provider work, keep these Storage items visible:
 
-- Complete the full manual upload/admin/approve smoke test.
 - Decide rejected image retention duration.
 - Decide manual or automated orphan cleanup cadence.
 - Decide whether anonymous upload remains acceptable for public launch.
 - Decide whether signed URL refresh is needed for long-lived list/detail pages.
 - Decide whether Storage monitoring should be manual or automated.
+- Re-run the full manual upload/admin/approve smoke test after any Storage, RLS, upload helper, admin review, or public detail changes.
 
 ## Explicit Non-Scope
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state before continuing phase 16.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 16.
 
 Read this together with:
 
@@ -44,6 +44,7 @@ Read this together with:
 - 16D signed URL image display connected for admin review and approved public observations
 - 16D.5 Supabase Storage smoke-test preflight and hardening notes
 - 16E Supabase Storage hardening and operations documentation
+- Phase 16 Storage manual upload/admin/approve smoke final check
 
 ## Verified Current State
 
@@ -82,9 +83,14 @@ Read this together with:
 - The later attempt still did not run the full upload/admin/approve UI path because no browser automation dependency is installed and no admin test credentials are configured.
 - A manual smoke retry found that `UploadMockPage` showed the same mock/design alert for validation failure, create failure, and success; this was fixed.
 - After the alert fix, the user reported that a public upload created a `pending` DB row with `image_path`, `image_mime_type`, and `image_size_bytes`, while `image_url` stayed `NULL`; approve and reject flows were normal.
-- Admin pending image display and approved public detail image display still need explicit manual confirmation.
+- Final manual smoke check passed:
+  - admin pending image display passed
+  - approved public detail image display passed
+  - pending public invisibility passed
+  - rejected public invisibility passed
+  - console/log secret check passed
 - 16E documented orphan cleanup, rejected-image cleanup, anonymous upload abuse risk, signed URL expiration UX risk, and pre-17A Storage TODOs.
-- Phase 16 Storage commits `b80c9ce` and `53e4fe0` were pushed to GitHub; the branch was synced with `origin/main` after push.
+- Phase 16 Storage, hardening, smoke-status, and alert-fix commits through `5597806` were pushed to GitHub.
 
 ## Core Architecture
 
@@ -228,7 +234,7 @@ docs/architecture/supabase-storage-setup.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-image-upload-design.md, and docs/architecture/supabase-storage-setup.md. Do not modify code yet. The next step is the full manual Supabase upload/admin/approve smoke test; after Storage is stable, start 17A Kakao Map provider design.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-image-upload-design.md, and docs/architecture/supabase-storage-setup.md. Do not modify code yet. Phase 16 Storage manual smoke passed; the next step is 17A Kakao Map provider design.
 ```
 
 ## Recommended Phase 16 Direction
@@ -382,15 +388,18 @@ Manual smoke progress after upload alert fix:
   - Approve flow was normal.
   - Reject flow was normal.
 - This confirms Storage metadata is persisted without storing signed/public/blob/preview/data URLs in `image_url`.
-- Admin pending image display and approved public detail image display were not explicitly reported and still need manual confirmation.
+- Final manual smoke result: PASS.
+- Final user-reported checks:
+  - Admin pending image display: pass.
+  - Approved public detail image display: pass.
+  - Pending public invisibility: pass.
+  - Rejected public invisibility: pass.
+  - Console/log secret check: pass.
 
-Still needs manual full smoke verification:
+Manual smoke status:
 
-- Submit a JPEG/PNG/WebP through the upload screen in Supabase mode.
-- Confirm `/#admin` pending review shows the submitted image.
-- Confirm approved public detail shows the approved image through a runtime signed URL.
-- Confirm pending/rejected rows stay hidden from public list/detail for the manually tested rows.
-- Confirm console/logs do not expose secrets, tokens, Supabase URL, anon key, email, password, or `.env.local` contents.
+- Phase 16 Storage upload/admin/approve smoke verification is complete for the manually tested flow.
+- Re-run the same checklist after Storage policy, RLS, upload helper, admin review UI, or public detail UI changes.
 
 Hardening TODOs:
 
@@ -421,9 +430,9 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Run the full manual Supabase upload/admin/approve UI smoke test in the target project.
-2. Record the result in this handoff and `supabase-storage-setup.md`.
-3. If the smoke test passes and Storage is stable, start `17A: Kakao Map provider design`.
+1. Start `17A: Kakao Map provider design`.
+2. Keep monitoring rejected/orphan image cleanup needs.
+3. Re-run the Storage smoke checklist after any future Storage, RLS, admin review, or public detail changes.
 
 ## Missing Features
 
