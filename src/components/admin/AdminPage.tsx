@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AdminLoginForm } from './AdminLoginForm';
+import { AdminObservationReviewPanel } from './AdminObservationReviewPanel';
+import { AdminPendingList } from './AdminPendingList';
 import { AdminSessionPanel } from './AdminSessionPanel';
+import { supabaseAdminObservationRepository } from '../../repositories/supabase/supabaseAdminObservationRepository';
 import { supabaseAuthRepository } from '../../repositories/supabase/supabaseAuthRepository';
 import type { AuthSessionState } from '../../repositories/authRepository';
+import type { Observation } from '../../types';
 
 const createEmptySessionState = (): AuthSessionState => ({
   user: null,
@@ -16,6 +20,45 @@ export const AdminPage = () => {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [pendingObservations, setPendingObservations] = useState<Observation[]>([]);
+  const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
+  const [isLoadingPending, setIsLoadingPending] = useState(false);
+  const [pendingError, setPendingError] = useState<string | null>(null);
+  const [actionInProgressId, setActionInProgressId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const resetPendingState = () => {
+    setPendingObservations([]);
+    setSelectedObservation(null);
+    setPendingError(null);
+    setActionError(null);
+    setActionInProgressId(null);
+  };
+
+  const loadPendingObservations = useCallback(async () => {
+    try {
+      setIsLoadingPending(true);
+      setPendingError(null);
+      const nextPendingObservations = await supabaseAdminObservationRepository.listPendingObservations();
+
+      setPendingObservations(nextPendingObservations);
+      setSelectedObservation((currentSelection) => {
+        if (!currentSelection) {
+          return nextPendingObservations[0] ?? null;
+        }
+
+        return nextPendingObservations.find((observation) => observation.id === currentSelection.id)
+          ?? nextPendingObservations[0]
+          ?? null;
+      });
+    } catch {
+      setPendingObservations([]);
+      setSelectedObservation(null);
+      setPendingError('Pending 기록을 불러오지 못했습니다. 관리자 권한 또는 RLS 정책을 확인해 주세요.');
+    } finally {
+      setIsLoadingPending(false);
+    }
+  }, []);
 
   useEffect(() => {
     let isCurrent = true;
@@ -46,10 +89,20 @@ export const AdminPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!sessionState.isAdmin) {
+      resetPendingState();
+      return;
+    }
+
+    void loadPendingObservations();
+  }, [loadPendingObservations, sessionState.isAdmin]);
+
   const handleSignIn = async (email: string, password: string) => {
     try {
       setIsSigningIn(true);
       setAuthError(null);
+      setActionError(null);
       const nextSessionState = await supabaseAuthRepository.signInWithPassword(email, password);
       setSessionState(nextSessionState);
 
@@ -58,6 +111,7 @@ export const AdminPage = () => {
       }
     } catch {
       setSessionState(createEmptySessionState());
+      resetPendingState();
       setAuthError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해 주세요.');
     } finally {
       setIsSigningIn(false);
@@ -70,10 +124,37 @@ export const AdminPage = () => {
       setAuthError(null);
       await supabaseAuthRepository.signOut();
       setSessionState(createEmptySessionState());
+      resetPendingState();
     } catch {
       setAuthError('로그아웃에 실패했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setIsSigningOut(false);
+    }
+  };
+
+  const handleApproveObservation = async (observation: Observation) => {
+    try {
+      setActionInProgressId(observation.id);
+      setActionError(null);
+      await supabaseAdminObservationRepository.approveObservation(observation.id);
+      await loadPendingObservations();
+    } catch {
+      setActionError('승인 처리에 실패했습니다. 관리자 권한과 RLS 정책을 확인해 주세요.');
+    } finally {
+      setActionInProgressId(null);
+    }
+  };
+
+  const handleRejectObservation = async (observation: Observation) => {
+    try {
+      setActionInProgressId(observation.id);
+      setActionError(null);
+      await supabaseAdminObservationRepository.rejectObservation(observation.id);
+      await loadPendingObservations();
+    } catch {
+      setActionError('거절 처리에 실패했습니다. 관리자 권한과 RLS 정책을 확인해 주세요.');
+    } finally {
+      setActionInProgressId(null);
     }
   };
 
@@ -82,7 +163,7 @@ export const AdminPage = () => {
 
   return (
     <section className="min-h-screen bg-zinc-50 px-6 pb-20 pt-32 md:px-10" id="admin-page">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8 border-b border-zinc-200 pb-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-500">Hidden admin route</p>
           <h1 className="mt-4 text-4xl font-serif text-zinc-950 md:text-5xl">관리자 접근</h1>
@@ -102,7 +183,26 @@ export const AdminPage = () => {
         )}
 
         {!isCheckingSession && sessionState.isAdmin && (
-          <AdminSessionPanel email={sessionState.user?.email} isSigningOut={isSigningOut} onSignOut={handleSignOut} />
+          <div className="space-y-6">
+            <AdminSessionPanel email={sessionState.user?.email} isSigningOut={isSigningOut} onSignOut={handleSignOut} />
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)]">
+              <AdminPendingList
+                observations={pendingObservations}
+                selectedObservationId={selectedObservation?.id}
+                isLoading={isLoadingPending}
+                errorMessage={pendingError}
+                onRefresh={loadPendingObservations}
+                onSelectObservation={setSelectedObservation}
+              />
+              <AdminObservationReviewPanel
+                observation={selectedObservation}
+                actionInProgressId={actionInProgressId}
+                actionError={actionError}
+                onApprove={handleApproveObservation}
+                onReject={handleRejectObservation}
+              />
+            </div>
+          </div>
         )}
 
         {!isCheckingSession && isUnauthorized && (

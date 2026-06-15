@@ -14,7 +14,7 @@ export const AdminSessionPanel = ({ email, isSigningOut, onSignOut }: AdminSessi
             관리자 로그인됨
           </h2>
           <p className="mt-3 text-sm leading-6 text-zinc-600">
-            현재 계정은 관리자 권한으로 확인되었습니다. Pending 승인 기능은 다음 단계에서 추가됩니다.
+            현재 계정은 관리자 권한으로 확인되었습니다. 아래 승인 대기 목록에서 제출된 관찰 기록을 검토할 수 있습니다.
           </p>
         </div>
 
