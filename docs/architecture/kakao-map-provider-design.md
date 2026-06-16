@@ -427,7 +427,11 @@ docs/architecture/next-session-handoff.md
 - Did not add package dependencies.
 - Did not call Kakao SDK APIs directly from general UI components.
 
-Manual Kakao UI verification remains for 17C.
+17C and 17D verification results:
+
+- 17C passed with a corrected local Kakao JavaScript key at `http://127.0.0.1:3003/`.
+- 17D passed normal-key, no-key fallback, invalid-key fallback, mock repository, Supabase repository, responsive layout, and secret/logging regression checks.
+- Static fallback remains available for missing keys and SDK load failures.
 
 ## Env And Config Policy
 
@@ -518,6 +522,5 @@ For 17A:
 
 ## Next Steps
 
-1. 17C: Run Kakao UI connection and manual verification.
-2. 17D: Verify static fallback and public/admin/storage regressions.
-3. 17E, if needed: Harden map UX, signed fallback states, and map operational checks.
+1. 17E, if needed: Harden map UX, signed fallback states, and map operational checks.
+2. Re-run 17D fallback/regression checks after map provider, layout, Kakao app/domain, repository visibility, Storage, or admin/public detail changes.

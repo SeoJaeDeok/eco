@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 17B.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 17D.
 
 Read this together with:
 
@@ -48,6 +48,8 @@ Read this together with:
 - Phase 16 Storage manual upload/admin/approve smoke final check
 - 17A Kakao Map provider design
 - 17B Kakao SDK loader and provider implementation
+- 17C Kakao Map manual verification
+- 17D Kakao Map fallback and regression verification
 
 ## Verified Current State
 
@@ -116,6 +118,18 @@ Read this together with:
   - mobile-width verification found the map surface and no horizontal overflow.
   - no secret-like console/log pattern was detected by the headless check.
 - 17C Kakao Map provider manual verification is complete for the headless-tested local dev origin. Re-run it after map provider, layout, Kakao app/domain, or repository visibility changes.
+- 17D fallback and regression verification passed at `http://127.0.0.1:3003/` without printing env values:
+  - `.env.local` existed and Kakao/Supabase local config was present, without printing values.
+  - `npm.cmd run typecheck` passed.
+  - `npm.cmd run build` passed.
+  - Direct Kakao SDK check returned HTTP 200 for the configured key and HTTP 401 for an intentionally invalid test key.
+  - Normal-key mock mode rendered the Kakao map, 6 marker labels, marker click detail flow, Kakao detail preview, Kakao upload picker coordinate selection, mobile map surface, and no horizontal overflow.
+  - No-key mock mode did not inject the Kakao script and rendered static fallback map/picker surfaces without crashing.
+  - Invalid-key mock mode fell back to static map/picker surfaces without crashing.
+  - Normal-key Supabase mode rendered the Kakao map, 11 approved-observation marker labels, marker click detail flow, Kakao detail preview, Kakao upload picker coordinate selection, mobile map surface, and no horizontal overflow.
+  - Read-only Supabase public check saw 11 approved rows, 1 approved row with `image_path`, 0 URL-like `image_url` values, 0 pending rows visible, and 0 rejected rows visible.
+  - Headless browser logs had 0 console errors and no secret-like key/token/email/password patterns.
+  - No app code, package files, Supabase migration files, or dependencies were changed for 17D.
 
 ## Core Architecture
 
@@ -283,7 +297,7 @@ docs/architecture/kakao-map-provider-design.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17B Kakao SDK loader and provider implementation is complete; the next step is 17C Kakao Map UI connection and manual verification.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17D Kakao Map fallback and regression verification is complete; the next step is user-approved 17E map UX hardening or the next phase.
 ```
 
 ## Recommended Phase 16 Direction
@@ -479,13 +493,13 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Start `17D: Kakao Map fallback and regression verification`.
-2. Re-check static fallback, invalid/no-key fallback, public observation visibility, upload flow, and Storage/Admin regressions after map changes.
+1. Start `17E: Map UX hardening` only if additional map UX work is needed.
+2. Otherwise continue with the next user-approved phase.
 3. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ## Missing Features
 
-- Kakao Map manual UI verification and fallback regression pass
+- Optional Kakao Map UX hardening after real-provider verification
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
 - Reject note
