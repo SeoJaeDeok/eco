@@ -33,6 +33,7 @@ Completed and verified:
 - Signed URL image display is implemented for approved public observations and admin review.
 - Phase 16 Storage manual upload/admin/approve smoke test passed.
 - Supabase Storage hardening and operations documentation is complete.
+- 17A Kakao Map provider design is complete.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static map.
 - Kakao Map real provider is not implemented.
 
@@ -41,12 +42,12 @@ Completed and verified:
 The next phase starts at:
 
 ```text
-17A: Kakao Map provider design
+17B: Kakao SDK loader and provider implementation
 ```
 
 Recommended sequence:
 
-1. Start 17A Kakao Map provider design.
+1. Start 17B Kakao SDK loader and provider implementation.
 2. Keep static map fallback available.
 3. Continue monitoring rejected/orphan image cleanup needs.
 
@@ -65,7 +66,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. Phase 16 Storage manual smoke는 통과했고, 다음 작업은 17A Kakao Map provider design입니다.
+AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/kakao-map-provider-design.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. Phase 17A Kakao Map provider design은 완료됐고, 다음 작업은 17B Kakao SDK loader and provider implementation입니다.
 ```
 
 ## Current Stack
@@ -362,6 +363,7 @@ npm.cmd audit --audit-level=high
 - Phase 16D.5: Supabase Storage read-only preflight and dev server root check completed.
 - Phase 16E: Supabase Storage hardening and operations documentation completed.
 - Phase 16 final smoke: Supabase Storage upload/admin/approve manual smoke test passed.
+- Phase 17A: Kakao Map provider design completed.
 
 ## Review Checklist Before Final Response
 

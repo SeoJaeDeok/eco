@@ -14,6 +14,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Admin access: hidden `/#admin` route
 - Current map: static design-only map
 - Kakao Map: not implemented yet
+- Kakao Map provider design: completed in `docs/architecture/kakao-map-provider-design.md`
 - Supabase Storage image upload: implemented for Supabase mode with private object paths and runtime signed URLs
 
 ## Implemented Features
@@ -159,6 +160,7 @@ Supabase setup is documented in:
 - `docs/architecture/supabase-setup.md`
 - `docs/architecture/supabase-schema-rls.md`
 - `docs/architecture/supabase-storage-setup.md`
+- `docs/architecture/kakao-map-provider-design.md`
 - `supabase/migrations/0001_create_observation_schema.sql`
 - `supabase/migrations/0002_create_observation_storage.sql`
 
@@ -184,12 +186,12 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Start 17A Kakao Map provider design.
-2. Keep monitoring rejected/orphan image cleanup needs.
+1. Start 17B Kakao SDK loader and provider implementation.
+2. Keep the static map fallback available for missing env or SDK load failure.
 3. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
 
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/supabase-storage-setup.md. Do not modify code yet. Phase 16 Storage manual smoke passed; the next step is 17A Kakao Map provider design.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17A Kakao Map provider design is complete; the next step is 17B Kakao SDK loader and provider implementation.
 ```

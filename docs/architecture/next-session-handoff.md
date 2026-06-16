@@ -12,6 +12,7 @@ Read this together with:
 - `docs/architecture/admin-approval-flow.md`
 - `docs/architecture/supabase-storage-image-upload-design.md`
 - `docs/architecture/supabase-storage-setup.md`
+- `docs/architecture/kakao-map-provider-design.md`
 
 ## Current Completed Phases
 
@@ -45,6 +46,7 @@ Read this together with:
 - 16D.5 Supabase Storage smoke-test preflight and hardening notes
 - 16E Supabase Storage hardening and operations documentation
 - Phase 16 Storage manual upload/admin/approve smoke final check
+- 17A Kakao Map provider design
 
 ## Verified Current State
 
@@ -89,8 +91,10 @@ Read this together with:
   - pending public invisibility passed
   - rejected public invisibility passed
   - console/log secret check passed
-- 16E documented orphan cleanup, rejected-image cleanup, anonymous upload abuse risk, signed URL expiration UX risk, and pre-17A Storage TODOs.
+- 16E documented orphan cleanup, rejected-image cleanup, anonymous upload abuse risk, signed URL expiration UX risk, and Storage hardening TODOs.
 - Phase 16 Storage, hardening, smoke-status, and alert-fix commits through `5597806` were pushed to GitHub.
+- 17A documented the Kakao Map provider design, recommending a dedicated Kakao provider module plus SDK loader helper behind the provider-neutral map interface.
+- Kakao Map is still not implemented; the current app still uses the static map fallback.
 
 ## Core Architecture
 
@@ -196,6 +200,19 @@ src/features/map/mapProvider.ts
 
 Kakao Map is not implemented yet. The static map provider remains the default map experience.
 
+17A design is documented in:
+
+```text
+docs/architecture/kakao-map-provider-design.md
+```
+
+Recommended 17B direction:
+
+- Add a dedicated Kakao SDK loader helper.
+- Add a Kakao provider module behind provider-neutral map props.
+- Keep static fallback for missing env, invalid key, SDK load failure, and API-key-free demos.
+- Do not call Kakao SDK APIs directly from general UI components.
+
 ## Important Files
 
 ```text
@@ -216,6 +233,7 @@ docs/architecture/admin-approval-flow.md
 docs/architecture/admin-ui-routing-plan.md
 docs/architecture/supabase-storage-image-upload-design.md
 docs/architecture/supabase-storage-setup.md
+docs/architecture/kakao-map-provider-design.md
 ```
 
 ## Security Rules For The Next Session
@@ -234,7 +252,7 @@ docs/architecture/supabase-storage-setup.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-image-upload-design.md, and docs/architecture/supabase-storage-setup.md. Do not modify code yet. Phase 16 Storage manual smoke passed; the next step is 17A Kakao Map provider design.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17A Kakao Map provider design is complete; the next step is 17B Kakao SDK loader and provider implementation.
 ```
 
 ## Recommended Phase 16 Direction
@@ -430,9 +448,9 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Start `17A: Kakao Map provider design`.
-2. Keep monitoring rejected/orphan image cleanup needs.
-3. Re-run the Storage smoke checklist after any future Storage, RLS, admin review, or public detail changes.
+1. Start `17B: Kakao SDK loader and provider implementation`.
+2. Keep static map fallback available for missing env or SDK load failure.
+3. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ## Missing Features
 
