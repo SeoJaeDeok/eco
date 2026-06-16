@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20D.5 partial smoke verification.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20E-prep migration promotion.
 
 Read this together with:
 
@@ -71,6 +71,7 @@ Read this together with:
 - 20C public user contribution DB/RLS migration draft
 - 20C.5 public user contribution SQL draft application-readiness review
 - 20D public login UI/auth state and signed-out upload gate
+- 20E-prep public user contribution SQL draft promoted to an apply-ready migration candidate
 
 ## Verified Current State
 
@@ -403,7 +404,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20D public login UI/auth state and signed-out upload gate are complete, and 20D.5 signed-out/headless smoke is recorded as PARTIAL because no login test credentials were available. The next recommended step is to run a manual Supabase login/logout smoke with a configured test account before starting 20E authenticated direct create planning. Direct approved contribution, observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20D public login UI/auth state and signed-out upload gate are complete, 20D.5 signed-out/headless smoke is recorded as PARTIAL because no login test credentials were available, and 20E-prep promoted the reviewed public contribution SQL into supabase/migrations/0003_public_user_contribution.sql as an apply-ready candidate. The SQL has not been applied to Supabase. The next recommended step is a manual 20D.5 login/logout smoke retry with a configured test account, then a user-approved 20E DB/RLS apply/test window plus authenticated direct create implementation. Direct approved contribution, observer display UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -718,7 +719,7 @@ Completed as documentation-only work:
 Recommended next steps:
 
 1. Start 20E authenticated direct create planning only with an approved DB/RLS apply/test window.
-2. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until that approved 20E window.
+2. Use `supabase/migrations/0003_public_user_contribution.sql` only during that approved 20E window; it exists as a candidate and has not been applied.
 3. Keep observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
 4. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
 5. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
@@ -856,9 +857,9 @@ Completed as documentation/placement review work:
 
 Recommended next phase:
 
-1. Start 20D public login UI/auth state implementation planning using the existing `AuthRepository`.
-2. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until the 20E authenticated create implementation and an approved apply/test window are ready.
-3. Promote the draft into `supabase/migrations/` only after explicit approval.
+1. Continue with 20D public login UI/auth state implementation and smoke verification.
+2. Keep the reviewed draft in `docs/architecture/sql-drafts/` for history.
+3. Use the 20E-prep migration candidate in `supabase/migrations/0003_public_user_contribution.sql` only during an approved apply/test window.
 
 ### 20D: Public Login UI, Auth State, And Upload Gate
 
@@ -870,13 +871,13 @@ Implemented as a scoped app-code phase:
 - Added a signed-out upload gate that shows login guidance instead of the upload form.
 - Signed-in users can reach the existing upload form.
 - Existing submit behavior is unchanged: 20D does not implement direct approved create.
-- No Supabase SQL was applied and the 0003 draft remains in `docs/architecture/sql-drafts/`.
+- No Supabase SQL was applied during 20D, and the 0003 draft remained in `docs/architecture/sql-drafts/` until 20E-prep created the migration candidate.
 - No observer display, owner edit, admin edit, signup, display-name setup, package change, or Kakao Map change was made.
 
 Recommended next phase:
 
 1. Start 20E authenticated direct create planning only after explicitly approving a DB/RLS apply/test window.
-2. Promote the `0003` SQL draft into `supabase/migrations/` only as part of that approved window.
+2. Apply `supabase/migrations/0003_public_user_contribution.sql` only as part of that approved window.
 3. Keep observer display for 20F and owner/admin edit for later approved phases.
 
 ### 20D.5: Public Login UI/Auth State/Upload Gate Smoke Verification
@@ -911,6 +912,31 @@ Recommended next phase:
 
 1. Run a manual 20D.5 retry with a configured non-admin test account to verify login success, logout success, and logged-in upload form access without printing credentials.
 2. Start 20E only after 20D.5 login/logout smoke is accepted and the DB/RLS apply/test window is explicitly approved.
+
+### 20E-prep: Public User Contribution SQL Migration Candidate
+
+Completed as documentation/SQL-prep work:
+
+- Promoted the reviewed 20C/20C.5 SQL draft into `supabase/migrations/0003_public_user_contribution.sql`.
+- Kept the historical draft at `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql`.
+- Marked the migration as an apply-ready candidate for a future approved 20E DB/RLS apply/test window.
+- Updated `docs/architecture/public-user-contribution-rls-plan.md` with the manual apply checklist, rollout sequence, and remaining decisions before 20E.
+- Did not apply SQL to Supabase.
+- Did not change app code, package files, live RLS/policies, Storage objects, Kakao Map code, direct approved create, observer display, owner edit, or admin edit.
+
+Required before applying `0003`:
+
+1. Finish the real 20D.5 login/logout smoke retry with a configured non-admin test account.
+2. Confirm contributor account provisioning for the target environment.
+3. Confirm the `observer_display_name` snapshot policy.
+4. Decide whether authenticated Storage uploads switch to `observations/{auth.uid()}/...` with the migration.
+5. Prepare 20E repository create changes to set `observer_id`, optional `observer_display_name`, and `status = 'approved'`.
+6. Apply the migration only in an explicitly approved DB/RLS apply/test window and immediately run the 20E authenticated create smoke.
+
+Recommended next phase:
+
+1. Run the remaining 20D.5 real login/logout smoke.
+2. Start 20E authenticated direct create only with explicit DB/RLS apply/test approval.
 
 ## Missing Features
 

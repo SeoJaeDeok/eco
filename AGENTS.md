@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20D.5 Partial Smoke
+## Current State After Phase 20E-prep
 
 Completed and verified:
 
@@ -55,6 +55,7 @@ Completed and verified:
 - 20C.5 public user contribution SQL draft application-readiness review is complete. The `0003` SQL draft now lives in `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql` instead of `supabase/migrations/` to avoid accidental migration-tool application before approval.
 - 20D public login/logout UI, public auth state, and signed-out upload gate are implemented through `AuthRepository`.
 - 20D.5 signed-out/headless smoke is partially verified: home/list/map/upload routes load, signed-out upload gate appears, upload form is hidden while signed out, Navbar does not expose admin, and direct `/#admin` still loads. Real Supabase login/logout was not verified because no test account credentials were available in-session.
+- 20E-prep promoted the reviewed public user contribution SQL into `supabase/migrations/0003_public_user_contribution.sql` as an apply-ready migration candidate. Codex did not apply it to Supabase.
 - The 0003 draft has not been applied to Supabase and 20D does not implement direct approved contribution, observer display, owner edit, or admin edit.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
@@ -63,14 +64,14 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-20D.5 retry: Public login/logout manual smoke with a configured test account
+20D.5 retry, then 20E: Public login/logout smoke and approved DB/RLS apply/test window
 ```
 
 Recommended sequence:
 
 1. Complete a 20D.5 login/logout retry with a configured non-admin test account before 20E.
 2. Start 20E only after explicit approval for the DB/RLS apply/test window and authenticated create implementation.
-3. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until that approved 20E window.
+3. Apply `supabase/migrations/0003_public_user_contribution.sql` only during that approved 20E window; it is present as a migration candidate but has not been applied.
 4. Keep observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
 5. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
 6. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
@@ -91,7 +92,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20D public login UI/auth state and signed-out upload gate are complete, and 20D.5 signed-out/headless smoke is recorded as PARTIAL because no login test credentials were available. The next recommended step is a 20D.5 login/logout retry with a configured non-admin test account before 20E. Direct approved contribution, observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20D public login UI/auth state and signed-out upload gate are complete, 20D.5 signed-out/headless smoke is recorded as PARTIAL because no login test credentials were available, and 20E-prep promoted the reviewed public contribution SQL into supabase/migrations/0003_public_user_contribution.sql as an apply-ready candidate. The SQL has not been applied to Supabase. Direct approved contribution, observer display UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Current Stack
@@ -253,6 +254,9 @@ src/types.ts
 supabase/migrations/
   SQL migration draft for observations, profiles, RLS, and admin policies.
 
+docs/architecture/sql-drafts/
+  Reviewed SQL drafts that should not be auto-applied by migration tooling.
+
 docs/architecture/
   Architecture notes, setup guides, admin flow docs, and session handoff docs.
 
@@ -409,6 +413,7 @@ npm.cmd audit --audit-level=high
 - Phase 20C: Public user contribution DB/RLS migration draft completed.
 - Phase 20C.5: Public user contribution SQL draft application-readiness review completed.
 - Phase 20D: Public login UI/auth state and signed-out upload gate completed.
+- Phase 20E-prep: Public user contribution SQL draft promoted to an apply-ready migration candidate; SQL was not applied.
 
 ## Review Checklist Before Final Response
 

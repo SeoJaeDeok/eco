@@ -28,7 +28,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Public observation list regression: mock and Supabase filter/search/sort verification passed in phase 19C
 - Public Navbar alignment: fixed route-to-route horizontal shift in phase 20A by reserving stable scrollbar gutter space
 - Public user auth/contribution design: completed in phase 20B in `docs/architecture/public-user-auth-contribution-design.md`
-- Public user contribution DB/RLS draft: completed in phase 20C in `docs/architecture/public-user-contribution-rls-plan.md`; 20C.5 reviewed apply readiness and keeps the `0003` SQL draft under `docs/architecture/sql-drafts/` until approval
+- Public user contribution DB/RLS draft: completed in phase 20C in `docs/architecture/public-user-contribution-rls-plan.md`; 20C.5 kept the reviewed draft under `docs/architecture/sql-drafts/`, and 20E-prep promoted an apply-ready candidate to `supabase/migrations/0003_public_user_contribution.sql` without applying it
 - Public login UI: login/logout state and signed-out upload gate completed in phase 20D through `AuthRepository`; direct approved create is still not implemented
 - Public login UI smoke: 20D.5 signed-out/headless smoke is PARTIAL; real Supabase login/logout still needs a configured test account
 
@@ -201,6 +201,7 @@ Supabase setup is documented in:
 - `docs/architecture/phase-19-product-feature-prioritization.md`
 - `docs/architecture/public-user-auth-contribution-design.md`
 - `docs/architecture/public-user-contribution-rls-plan.md`
+- `supabase/migrations/0003_public_user_contribution.sql`
 - `supabase/migrations/0001_create_observation_schema.sql`
 - `supabase/migrations/0002_create_observation_storage.sql`
 - `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql`
@@ -231,8 +232,8 @@ Admin approval flow is documented in:
 Recommended next phase:
 
 1. Complete a 20D.5 login/logout smoke retry with a configured non-admin test account.
-2. Start 20E authenticated direct create planning only with an approved DB/RLS apply/test window.
-3. Keep the `0003` SQL draft in `docs/architecture/sql-drafts/` until that approved 20E window.
+2. Start 20E authenticated direct create only with an approved DB/RLS apply/test window.
+3. Apply `supabase/migrations/0003_public_user_contribution.sql` only during that approved 20E window; Codex has not applied it.
 4. Keep observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
 5. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
 6. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
@@ -242,5 +243,5 @@ Recommended next phase:
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20D public login UI/auth state and signed-out upload gate are complete, and 20D.5 signed-out/headless smoke is recorded as PARTIAL because no login test credentials were available. The next recommended step is a 20D.5 login/logout retry with a configured non-admin test account before 20E. Direct approved contribution, observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20D public login UI/auth state and signed-out upload gate are complete, 20D.5 signed-out/headless smoke is recorded as PARTIAL because no login test credentials were available, and 20E-prep promoted the reviewed public contribution SQL into supabase/migrations/0003_public_user_contribution.sql as an apply-ready candidate. The SQL has not been applied to Supabase. Direct approved contribution, observer display UI, owner edit, and admin edit are not implemented yet.
 ```

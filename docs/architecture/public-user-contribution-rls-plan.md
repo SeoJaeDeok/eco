@@ -13,20 +13,31 @@ This document records the phase 20C DB/RLS migration draft for public user login
 - no Storage object was deleted
 - no Kakao Map, Auth UI, admin UI, or repository behavior was changed
 
-The companion SQL file is a candidate only:
+The reviewed draft SQL file is:
 
 ```text
 docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql
 ```
 
-It must be reviewed and explicitly approved before any Supabase project applies it.
+The 20E-prep apply-ready migration candidate is:
+
+```text
+supabase/migrations/0003_public_user_contribution.sql
+```
+
+Neither file has been applied to Supabase by Codex. The migration candidate must be explicitly approved for a manual apply/test window before any Supabase project applies it.
 
 20C.5 review update:
 
 - The SQL draft was moved out of `supabase/migrations/` and into `docs/architecture/sql-drafts/`.
 - Reason: Supabase migration tooling can apply `.sql` files in `supabase/migrations/` regardless of draft warning comments.
-- The draft is not promoted to an apply-ready migration yet.
-- To apply later, copy/promote the reviewed SQL into `supabase/migrations/` with an approved migration name and run the manual apply checklist below.
+- The draft was not promoted during 20C.5.
+
+20E-prep update:
+
+- The reviewed draft was promoted to `supabase/migrations/0003_public_user_contribution.sql` as an apply-ready migration candidate.
+- The migration has not been applied to Supabase.
+- Do not run migration tooling or paste this SQL into Supabase SQL Editor until the manual checklist below is approved and the 20E repository create changes are ready to test in the same window.
 
 ## 20B Design Conclusion Summary
 
@@ -352,7 +363,7 @@ It intentionally does not:
 
 ## 20C.5 Application Readiness Review
 
-Status: not apply-ready as an automatic migration.
+Status after 20C.5: not apply-ready as an automatic migration.
 
 The SQL draft is close to an apply candidate, but it should not be applied while the app still uses the anonymous upload/create UI and existing Supabase create flow.
 
@@ -376,9 +387,38 @@ docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql
 
 Promotion rule:
 
-- Keep the SQL in `docs/architecture/sql-drafts/` until 20D/20E are ready and the user explicitly approves applying DB/RLS changes.
-- When approved, copy or move it into `supabase/migrations/` with an apply-ready migration name.
+- Keep the historical draft in `docs/architecture/sql-drafts/` for review history.
+- Use `supabase/migrations/0003_public_user_contribution.sql` as the apply-ready migration candidate created during 20E-prep.
+- Do not apply that migration until 20E repository create changes are ready and the user explicitly approves applying DB/RLS changes.
 - Re-run the safety checklist before applying.
+
+## 20E-prep Apply-Ready Migration Candidate
+
+20E-prep created:
+
+```text
+supabase/migrations/0003_public_user_contribution.sql
+```
+
+The file is an apply-ready candidate, not an applied change. Codex did not apply it to Supabase.
+
+Promotion rationale:
+
+- 20D login UI and signed-out upload gate are implemented.
+- 20E needs the DB columns and RLS policies before authenticated direct approved create can pass.
+- Keeping an apply-ready migration in `supabase/migrations/` gives the next implementation session a concrete reviewed SQL target.
+
+Apply timing:
+
+- Apply only in an explicitly approved DB/RLS apply/test window.
+- Apply together with 20E repository create changes, not as a standalone production change.
+- Do not apply before the real login/logout smoke from 20D.5 is accepted.
+- Do not apply if contributor account provisioning and `observer_display_name` snapshot policy are still unresolved for the target environment.
+
+Important consequence:
+
+- This migration removes the anonymous pending insert policy and replaces it with authenticated own approved insert.
+- If applied before 20E code is ready, signed-in upload submit can fail because the current repository create path still uses the older pending-create behavior.
 
 ### Confirmed DB/RLS Decisions
 
@@ -410,14 +450,15 @@ Promotion rule:
 
 Recommended sequence:
 
-1. Keep the current live DB/RLS unchanged.
-2. Implement 20D public login UI/auth state using the existing `AuthRepository`; this can be done before applying the SQL draft.
-3. Keep anonymous submit behavior unchanged until a signed-out upload gate exists.
+1. Keep the current live DB/RLS unchanged until a user-approved apply/test window.
+2. Finish the 20D.5 login/logout smoke retry with a configured non-admin test account.
+3. Confirm contributor account provisioning and display-name fallback policy for the target environment.
 4. Prepare 20E repository create changes to set `observer_id`, optional `observer_display_name`, and `status = 'approved'`.
-5. Promote and apply the reviewed SQL only when 20D and 20E are ready to test together.
-6. Disable anonymous pending insert as part of that coordinated apply/test window.
-7. Implement observer display after the data columns are available.
-8. Defer owner/admin edit until the create/display flow has passed regression verification.
+5. Apply `supabase/migrations/0003_public_user_contribution.sql` in dev/local Supabase first.
+6. Immediately smoke the 20E create path after the migration applies.
+7. Disable anonymous pending insert as part of that coordinated apply/test window.
+8. Implement observer display after the data columns are available.
+9. Defer owner/admin edit until the create/display flow has passed regression verification.
 
 ### Manual Apply Checklist
 
@@ -428,19 +469,23 @@ Before applying:
 - Export or snapshot current `public.profiles` and `public.observations` metadata as appropriate for the environment.
 - Record current observation status counts.
 - Record current pending/rejected public visibility checks.
-- Confirm 20D login UI and 20E repository create changes are ready for immediate smoke testing.
+- Confirm 20D.5 real login/logout smoke has passed with a configured non-admin test account.
+- Confirm 20E repository create changes are ready for immediate smoke testing.
 - Confirm contributor account provisioning policy.
+- Confirm `observer_display_name` snapshot policy.
+- Confirm whether authenticated Storage uploads switch to `observations/{auth.uid()}/...` at the same time.
 - Confirm rollback owner.
 
 Manual SQL Editor apply:
 
-1. Promote the reviewed draft from `docs/architecture/sql-drafts/` to an approved migration or paste the reviewed SQL into Supabase SQL Editor.
+1. Use `supabase/migrations/0003_public_user_contribution.sql` as the reviewed migration source, or paste that exact reviewed SQL into Supabase SQL Editor.
 2. Apply first in a local/dev Supabase project.
 3. Verify new columns on `public.profiles` and `public.observations`.
 4. Verify RLS is still enabled on both tables.
 5. Verify policy list includes approved-only public select, authenticated own approved insert, owner update, and admin read/update.
 6. Verify Storage upload policy changes only if the app upload path has also changed.
-7. Repeat in production only after dev checks pass.
+7. Run the 20E authenticated create smoke immediately after dev apply.
+8. Repeat in production only after dev checks pass.
 
 Post-apply verification:
 
@@ -478,7 +523,7 @@ Status: implemented in phase 20D.
 
 ### 20E: Authenticated Direct Create
 
-- Apply reviewed DB/RLS migration only after approval.
+- Apply `supabase/migrations/0003_public_user_contribution.sql` only after approval and after 20D.5 login/logout smoke is accepted.
 - Update Supabase create mapping to set `observer_id`, `observer_display_name`, and `status = 'approved'`.
 - Update Storage upload path/policy if using `observations/{auth.uid()}/...`.
 - Verify anonymous insert denial and authenticated direct approved insert.
@@ -516,11 +561,11 @@ Status: implemented in phase 20D.
 - add dependencies
 - change Kakao Map code
 
-## Remaining Decisions Before 20D
+## Remaining Decisions Before 20E
 
 - Confirm whether contributor accounts are invite/admin-created for the MVP.
 - Decide if `observer_display_name` snapshot is accepted for public display.
-- Decide whether the 20D login UI should include a display-name setup flow or use fallback copy.
-- Decide whether 20E applies the 0003 draft before or together with repository create changes.
+- Complete the 20D.5 real login/logout smoke retry with a configured non-admin test account.
+- Decide whether 20E applies the 0003 migration before or together with repository create changes in the approved apply/test window.
 - Decide whether authenticated Storage uploads should use `observations/{auth.uid()}/...` paths or keep the existing pending path during transition.
 - Decide whether a "my observations" view is needed before owner edit.

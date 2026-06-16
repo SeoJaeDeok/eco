@@ -333,7 +333,8 @@ MVP recommendation: owner/admin edit should start with text, taxon, date, locati
 
 - `docs/architecture/public-user-contribution-rls-plan.md` records the DB/RLS plan.
 - `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql` records a draft SQL candidate.
-- The SQL draft is not applied automatically and requires separate approval before use.
+- `supabase/migrations/0003_public_user_contribution.sql` records the 20E-prep apply-ready migration candidate.
+- Neither SQL file has been applied to Supabase by Codex; applying the migration still requires separate approval and a 20E apply/test window.
 - The draft keeps public reads approved-only, keeps email out of public display, and treats anonymous pending insert removal as a transition that must wait for login UI and repository changes.
 - 20C.5 moved the draft out of `supabase/migrations/` to prevent accidental migration-tool application before approval.
 
