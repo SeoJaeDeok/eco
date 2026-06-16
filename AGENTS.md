@@ -245,6 +245,9 @@ supabase/migrations/
 docs/architecture/
   Architecture notes, setup guides, admin flow docs, and session handoff docs.
 
+docs/eco/phase-history/
+  Concise completed-phase history archive and template for future phase records.
+
 docs/adr/
   Architecture decision records.
 ```

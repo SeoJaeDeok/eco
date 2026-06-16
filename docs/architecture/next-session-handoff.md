@@ -18,6 +18,7 @@ Read this together with:
 - `docs/architecture/supabase-storage-cleanup-automation-design.md`
 - `docs/architecture/kakao-map-provider-design.md`
 - `docs/architecture/phase-19-product-feature-prioritization.md`
+- `docs/eco/phase-history/index.md`
 
 ## Current Completed Phases
 
@@ -63,6 +64,7 @@ Read this together with:
 - 18E Storage cleanup automation design
 - 19A next product feature prioritization
 - 19B public observation list filter/search UX improvement
+- Phase history archive for phases 1 through 18, plus a reusable phase template
 
 ## Verified Current State
 
@@ -357,6 +359,7 @@ docs/architecture/anonymous-upload-abuse-mitigation-decision.md
 docs/architecture/supabase-storage-cleanup-automation-design.md
 docs/architecture/kakao-map-provider-design.md
 docs/architecture/phase-19-product-feature-prioritization.md
+docs/eco/phase-history/index.md
 ```
 
 ## Security Rules For The Next Session
