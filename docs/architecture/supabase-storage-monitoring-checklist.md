@@ -26,12 +26,18 @@ Follow-up phases remain separate:
 
 - 18C: signed URL refresh UX MVP implementation
 - 18D: anonymous upload abuse mitigation decision
-- 18E: optional cleanup automation design
+- 18E: Storage cleanup automation design
 
 18D connects this checklist to abuse mitigation escalation thresholds in:
 
 ```text
 docs/architecture/anonymous-upload-abuse-mitigation-decision.md
+```
+
+18E connects cleanup candidate monitoring to a semi-manual export/review process in:
+
+```text
+docs/architecture/supabase-storage-cleanup-automation-design.md
 ```
 
 ## Pre-Run Safety Checklist
@@ -120,6 +126,7 @@ Deletion review principles:
 
 - Monitoring does not authorize deletion.
 - Export candidate lists before requesting cleanup approval.
+- 18E recommends semi-manual candidate export/review as the MVP cleanup process.
 - Never infer cleanup eligibility from the `pending/` prefix alone.
 - Never remove objects referenced by approved rows unless approved as media removal.
 - Do not remove objects referenced by pending rows during active moderation.
@@ -729,7 +736,8 @@ Escalation path:
 
 - 18C: signed URL refresh UX MVP implementation completed.
 - 18D: anonymous upload abuse mitigation decision completed.
-- 18E: optional cleanup automation design, if cleanup workload justifies automation.
+- 18E: Storage cleanup automation design completed.
 - 18F: CAPTCHA/rate-limit implementation design, only if abuse thresholds are exceeded or launch risk changes.
+- Cleanup implementation requires separate approval, phase-label confirmation, and the 18E safety preconditions.
 - Actual cleanup or deletion requires separate approval.
 - Any RLS, Storage policy, Edge Function, CAPTCHA, rate-limit, or admin cleanup UI work must be planned as its own approved phase.

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18D.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18E.
 
 Read this together with:
 
@@ -15,6 +15,7 @@ Read this together with:
 - `docs/architecture/supabase-storage-operations-hardening.md`
 - `docs/architecture/supabase-storage-monitoring-checklist.md`
 - `docs/architecture/anonymous-upload-abuse-mitigation-decision.md`
+- `docs/architecture/supabase-storage-cleanup-automation-design.md`
 - `docs/architecture/kakao-map-provider-design.md`
 
 ## Current Completed Phases
@@ -58,6 +59,7 @@ Read this together with:
 - 18B Supabase Storage read-only monitoring checklist
 - 18C signed URL refresh UX MVP implementation
 - 18D anonymous upload abuse mitigation decision
+- 18E Storage cleanup automation design
 
 ## Verified Current State
 
@@ -177,6 +179,14 @@ Read this together with:
   - Linked escalation to 18B thresholds and read-only monitoring.
   - Deferred CAPTCHA, rate-limit, Edge Function, and authenticated contributor mode to later approved phases.
   - Did not change app code, package files, Supabase migrations, Storage policies, RLS, Kakao Map code, or public visibility behavior.
+- 18E Storage cleanup automation was documented as a design-only phase:
+  - Added `docs/architecture/supabase-storage-cleanup-automation-design.md`.
+  - Compared manual-only, semi-manual export/review, scheduled dry-run Edge Function, scheduled delete Edge Function, and admin cleanup UI options.
+  - Recommended Option B for the MVP: semi-manual candidate export/review with manual deletion approval.
+  - Kept Option C scheduled dry-run reporting as a later candidate if manual reporting becomes repetitive.
+  - Deferred automatic delete, Edge Function implementation, service-role handling, and admin cleanup UI to later approved phases.
+  - Documented safety guards including retention age, status, DB match, path prefix, dry-run first, max delete per run, manual approval, export before delete, audit report, and rollback limitations.
+  - Did not delete Storage objects, implement Edge Functions, change app code, change package files, change Supabase migrations, change policies/RLS, change secrets, or change public visibility behavior.
 
 ## Core Architecture
 
@@ -328,6 +338,7 @@ docs/architecture/supabase-storage-setup.md
 docs/architecture/supabase-storage-operations-hardening.md
 docs/architecture/supabase-storage-monitoring-checklist.md
 docs/architecture/anonymous-upload-abuse-mitigation-decision.md
+docs/architecture/supabase-storage-cleanup-automation-design.md
 docs/architecture/kakao-map-provider-design.md
 ```
 
@@ -347,7 +358,7 @@ docs/architecture/kakao-map-provider-design.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, docs/architecture/supabase-storage-monitoring-checklist.md, and docs/architecture/anonymous-upload-abuse-mitigation-decision.md. Do not modify code yet. Phase 18D anonymous upload abuse mitigation decision is complete; the next recommended phase is 18E optional cleanup automation design, 18F CAPTCHA/rate-limit design only if thresholds are exceeded, or another user-approved phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, docs/architecture/supabase-storage-monitoring-checklist.md, docs/architecture/anonymous-upload-abuse-mitigation-decision.md, and docs/architecture/supabase-storage-cleanup-automation-design.md. Do not modify code yet. Phase 18E Storage cleanup automation design is complete; the next recommended phase is either 19A next product feature, 18F CAPTCHA/rate-limit design only if abuse thresholds are exceeded, or a separately approved cleanup implementation phase after phase-label confirmation.
 ```
 
 ## Recommended Phase 16 Direction
@@ -639,11 +650,31 @@ Completed as documentation-only work:
 - Added an escalation workflow that preserves approved-only public reads, pending public creates, and no signed URL DB persistence.
 - Did not implement CAPTCHA, rate limit, Edge Functions, authenticated upload, app code changes, package changes, SQL/policy/RLS changes, Storage deletion, or Kakao Map changes.
 
+### 18E: Storage Cleanup Automation Design
+
+Completed as documentation-only work:
+
+- Added `docs/architecture/supabase-storage-cleanup-automation-design.md`.
+- Compared:
+  - Option A: manual-only
+  - Option B: semi-manual export/review
+  - Option C: scheduled Edge Function dry-run only
+  - Option D: scheduled Edge Function delete with guards
+  - Option E: admin cleanup UI
+- Recommended Option B for the MVP:
+  - keep manual cleanup operations while volume is low
+  - use read-only candidate exports and human review before any deletion
+  - keep actual deletion as a separately approved manual maintenance step
+  - reconsider scheduled dry-run reporting only after manual reports become repetitive or thresholds are exceeded
+- Documented cleanup target definitions for rejected retention candidates, orphan object candidates, failed upload leftovers, smoke/test objects, unexpected path prefix objects, and near-5 MB suspicious objects.
+- Documented safety guards: retention age, status, DB match, path prefix, dry-run first, max delete per run, manual approval, export before delete, audit report, and rollback limitations.
+- Did not implement delete, Edge Functions, admin cleanup UI, app code changes, package changes, SQL/policy/RLS changes, service-role additions, Storage object deletion, or Kakao Map changes.
+
 Recommended next steps:
 
-1. 18E: Optional cleanup automation design, if Storage cleanup workload needs automation.
+1. 19A: Next product feature if no cleanup or abuse thresholds are currently exceeded.
 2. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
-3. 19A: Next product feature if no abuse is observed and cleanup remains manageable.
+3. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
 4. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
 5. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 

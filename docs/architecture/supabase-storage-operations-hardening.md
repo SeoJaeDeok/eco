@@ -34,7 +34,13 @@ The phase 18D anonymous upload abuse mitigation decision is documented in:
 docs/architecture/anonymous-upload-abuse-mitigation-decision.md
 ```
 
-Actual cleanup automation starts no earlier than 18E or a later approved phase. Any policy, RLS, Edge Function, CAPTCHA, rate-limit, or admin cleanup UI change requires separate approval.
+The phase 18E cleanup automation design is documented in:
+
+```text
+docs/architecture/supabase-storage-cleanup-automation-design.md
+```
+
+Actual cleanup implementation starts no earlier than a later approved phase after 18E. Any policy, RLS, Edge Function, CAPTCHA, rate-limit, or admin cleanup UI change requires separate approval.
 
 ## Current Storage Structure
 
@@ -872,12 +878,20 @@ Decision:
 
 ### 18E: Optional Automated Cleanup Design
 
-Expected scope:
+Completed as:
 
-- design scheduled cleanup or admin cleanup tooling
-- include dry-run mode, audit logs, and rollback expectations
-- keep service-role credentials out of frontend code
-- do not implement without separate approval
+```text
+docs/architecture/supabase-storage-cleanup-automation-design.md
+```
+
+Decision:
+
+- keep manual cleanup operations while volume is low
+- use semi-manual candidate export/review as the MVP cleanup process
+- keep scheduled dry-run reporting as a later candidate if manual reporting becomes repetitive or thresholds are exceeded
+- defer automatic delete, Edge Function implementation, admin cleanup UI, and service-role handling to later approved phases
+- require retention, status, DB match, path prefix, dry-run, max delete, manual approval, export, audit report, and rollback-limitation guards before any cleanup implementation
+- do not implement delete without separate approval
 
 ## Explicit Non-Scope
 

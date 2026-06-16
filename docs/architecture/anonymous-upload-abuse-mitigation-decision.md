@@ -448,6 +448,13 @@ Expected scope:
 - audit trail expectations
 - rollback and recovery notes
 
+18E result:
+
+- documented in `docs/architecture/supabase-storage-cleanup-automation-design.md`
+- recommends semi-manual candidate export/review for the MVP
+- keeps automatic delete deferred
+- connects orphan and cleanup thresholds to manual review before any destructive action
+
 ### 18F: CAPTCHA Or Rate-Limit Implementation Design
 
 Use only if monitoring thresholds are exceeded or public launch requires preventive controls.

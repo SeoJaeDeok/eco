@@ -966,6 +966,7 @@ Phase 16 final manual smoke passed for the target project. Re-run this checklist
 Phase 18A converted the remaining Storage operations risks into a dedicated design/runbook. Keep these items visible:
 
 - Use `docs/architecture/supabase-storage-operations-hardening.md` as the source for rejected/orphan cleanup procedures.
+- Use `docs/architecture/supabase-storage-cleanup-automation-design.md` as the 18E design for cleanup automation options and safety guards.
 - 18A recommends rejected images remain private and be retained for 30 days before manual cleanup, pending project-owner approval before any destructive action.
 - 18A recommends monthly orphan candidate checks and weekly pending/bucket usage monitoring while volume is low.
 - Anonymous upload remains a known abuse risk; start with monitoring, then revisit CAPTCHA, rate limit, or authenticated-only image upload if usage spikes.
