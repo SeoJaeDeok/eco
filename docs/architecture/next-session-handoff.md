@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 16.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 17B.
 
 Read this together with:
 
@@ -47,6 +47,7 @@ Read this together with:
 - 16E Supabase Storage hardening and operations documentation
 - Phase 16 Storage manual upload/admin/approve smoke final check
 - 17A Kakao Map provider design
+- 17B Kakao SDK loader and provider implementation
 
 ## Verified Current State
 
@@ -94,7 +95,11 @@ Read this together with:
 - 16E documented orphan cleanup, rejected-image cleanup, anonymous upload abuse risk, signed URL expiration UX risk, and Storage hardening TODOs.
 - Phase 16 Storage, hardening, smoke-status, and alert-fix commits through `5597806` were pushed to GitHub.
 - 17A documented the Kakao Map provider design, recommending a dedicated Kakao provider module plus SDK loader helper behind the provider-neutral map interface.
-- Kakao Map is still not implemented; the current app still uses the static map fallback.
+- 17B added a Kakao SDK loader helper and provider module behind the map provider boundary.
+- `VITE_KAKAO_MAP_JAVASCRIPT_KEY` enables the Kakao provider; missing env keeps the static provider active.
+- SDK load failure falls back to the static map surfaces without exposing keys in errors.
+- UI components still use `DesignMap`, `StaticDesignMap`, and `DesignMarkerPicker`; they do not call Kakao SDK APIs directly.
+- Kakao Map manual UI verification is still pending.
 
 ## Core Architecture
 
@@ -188,9 +193,9 @@ The route is intentionally hidden from `Navbar`.
 
 This hidden route is not a security boundary. Supabase Auth, RLS, and `profiles.role = 'admin'` are the actual protection.
 
-### Static Map Provider
+### Map Provider
 
-The current map is still static and design-only.
+The current map supports a static fallback and an optional Kakao provider.
 
 Key file:
 
@@ -198,7 +203,14 @@ Key file:
 src/features/map/mapProvider.ts
 ```
 
-Kakao Map is not implemented yet. The static map provider remains the default map experience.
+Kakao provider files:
+
+```text
+src/features/map/kakaoMapLoader.ts
+src/features/map/kakaoMapProvider.tsx
+```
+
+Static map fallback remains the default when the Kakao JavaScript key is missing. If SDK loading fails at runtime, the Kakao provider renders the static fallback components.
 
 17A design is documented in:
 
@@ -206,12 +218,13 @@ Kakao Map is not implemented yet. The static map provider remains the default ma
 docs/architecture/kakao-map-provider-design.md
 ```
 
-Recommended 17B direction:
+17B implementation summary:
 
-- Add a dedicated Kakao SDK loader helper.
-- Add a Kakao provider module behind provider-neutral map props.
-- Keep static fallback for missing env, invalid key, SDK load failure, and API-key-free demos.
-- Do not call Kakao SDK APIs directly from general UI components.
+- Dedicated Kakao SDK loader with duplicate-script protection.
+- Dedicated Kakao provider module behind provider-neutral map props.
+- Static fallback for missing env, invalid key, SDK load failure, and API-key-free demos.
+- No direct Kakao SDK calls from general UI components.
+- No package dependency added.
 
 ## Important Files
 
@@ -225,6 +238,8 @@ src/repositories/supabase/observationMappers.ts
 src/components/admin/AdminPage.tsx
 src/components/admin/AdminPendingList.tsx
 src/components/admin/AdminObservationReviewPanel.tsx
+src/features/map/kakaoMapLoader.ts
+src/features/map/kakaoMapProvider.tsx
 src/features/map/mapProvider.ts
 supabase/migrations/0001_create_observation_schema.sql
 supabase/migrations/0002_create_observation_storage.sql
@@ -252,7 +267,7 @@ docs/architecture/kakao-map-provider-design.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17A Kakao Map provider design is complete; the next step is 17B Kakao SDK loader and provider implementation.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17B Kakao SDK loader and provider implementation is complete; the next step is 17C Kakao Map UI connection and manual verification.
 ```
 
 ## Recommended Phase 16 Direction
@@ -448,13 +463,13 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Start `17B: Kakao SDK loader and provider implementation`.
-2. Keep static map fallback available for missing env or SDK load failure.
+1. Start `17C: Kakao Map UI connection and manual verification`.
+2. Verify static map fallback for missing env or SDK load failure.
 3. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ## Missing Features
 
-- Kakao Map real provider
+- Kakao Map manual UI verification and fallback regression pass
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
 - Reject note

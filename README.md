@@ -12,8 +12,8 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Default repository: `mock` when no local env value is set
 - Real repository option: Supabase public approved read and pending insert
 - Admin access: hidden `/#admin` route
-- Current map: static design-only map
-- Kakao Map: not implemented yet
+- Current map: static fallback plus optional Kakao Map provider
+- Kakao Map: SDK loader and provider implemented; a local JavaScript key is required to enable it
 - Kakao Map provider design: completed in `docs/architecture/kakao-map-provider-design.md`
 - Supabase Storage image upload: implemented for Supabase mode with private object paths and runtime signed URLs
 
@@ -38,6 +38,8 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Approve pending observations
 - Reject pending observations
 - Sign out
+- Kakao Map SDK loader and provider behind the map provider boundary
+- Static map fallback when the Kakao key is missing or SDK loading fails
 
 Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
@@ -102,6 +104,8 @@ Use `VITE_OBSERVATION_REPOSITORY=mock` for the default mock repository.
 
 Use `VITE_OBSERVATION_REPOSITORY=supabase` only when Supabase is configured and you want to test the real repository.
 
+`VITE_KAKAO_MAP_JAVASCRIPT_KEY` is browser-exposed like all `VITE_*` values. Domain-restrict it in Kakao Developers and keep real values out of source control.
+
 Do not commit `.env.local`, `.env`, API keys, tokens, or secrets. Never put a Supabase service role key in frontend environment variables.
 
 ## Important Folders
@@ -126,10 +130,10 @@ src/components/admin/
   Hidden admin login and pending review UI.
 
 src/components/map/
-  Static map UI components.
+  Static map UI components and fallback surfaces.
 
 src/features/map/
-  Provider-neutral map types, static provider selection, and projection helpers.
+  Provider-neutral map types, static/Kakao provider selection, SDK loader, and projection helpers.
 
 src/features/upload/
   Upload form helpers.
@@ -171,7 +175,7 @@ Admin approval flow is documented in:
 
 ## Not Implemented Yet
 
-- Kakao Map real provider
+- Kakao Map manual UI verification and fallback regression pass
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
 - Reject note
@@ -186,12 +190,12 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Start 17B Kakao SDK loader and provider implementation.
-2. Keep the static map fallback available for missing env or SDK load failure.
+1. Start 17C Kakao Map UI connection and manual verification.
+2. Verify static fallback for missing env or SDK load failure.
 3. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
 
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17A Kakao Map provider design is complete; the next step is 17B Kakao SDK loader and provider implementation.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17B Kakao SDK loader and provider implementation is complete; the next step is 17C Kakao Map UI connection and manual verification.
 ```

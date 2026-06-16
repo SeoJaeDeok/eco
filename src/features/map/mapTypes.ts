@@ -55,4 +55,5 @@ export interface MapProviderAdapter {
   kind: MapProviderKind;
   EcoMap: ComponentType<EcoMapProps>;
   LocationPicker: ComponentType<EcoLocationPickerProps>;
+  PositionPreview: ComponentType<StaticPositionPreviewProps>;
 }

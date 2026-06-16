@@ -366,7 +366,7 @@ src/features/map/kakaoMapLoader.ts
 - Hides script URL/key from logs and errors.
 
 ```text
-src/features/map/kakaoMapProvider.ts
+src/features/map/kakaoMapProvider.tsx
 ```
 
 - Exports Kakao map components or an adapter matching `MapProviderAdapter`.
@@ -414,6 +414,20 @@ docs/architecture/next-session-handoff.md
 ```
 
 - Document setup and next-session status after implementation.
+
+## 17B Implementation Result
+
+17B followed the Option B recommendation:
+
+- Added `src/features/map/kakaoMapLoader.ts`.
+- Added `src/features/map/kakaoMapProvider.tsx`.
+- Connected provider selection in `src/features/map/mapProvider.ts`.
+- Kept existing `DesignMap`, `StaticDesignMap`, and `DesignMarkerPicker` exports stable.
+- Kept static fallback for missing `VITE_KAKAO_MAP_JAVASCRIPT_KEY` and SDK load failure.
+- Did not add package dependencies.
+- Did not call Kakao SDK APIs directly from general UI components.
+
+Manual Kakao UI verification remains for 17C.
 
 ## Env And Config Policy
 
@@ -504,7 +518,6 @@ For 17A:
 
 ## Next Steps
 
-1. 17B: Implement Kakao SDK loader and provider.
-2. 17C: Connect UI surfaces and run manual verification.
-3. 17D: Verify static fallback and public/admin/storage regressions.
-4. 17E, if needed: Harden map UX, signed fallback states, and map operational checks.
+1. 17C: Run Kakao UI connection and manual verification.
+2. 17D: Verify static fallback and public/admin/storage regressions.
+3. 17E, if needed: Harden map UX, signed fallback states, and map operational checks.

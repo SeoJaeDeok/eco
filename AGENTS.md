@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 16E
+## Current State After Phase 17B
 
 Completed and verified:
 
@@ -34,21 +34,24 @@ Completed and verified:
 - Phase 16 Storage manual upload/admin/approve smoke test passed.
 - Supabase Storage hardening and operations documentation is complete.
 - 17A Kakao Map provider design is complete.
+- 17B Kakao SDK loader and provider implementation is complete.
+- Kakao Map can be enabled with a browser-exposed `VITE_KAKAO_MAP_JAVASCRIPT_KEY`.
+- Static map fallback remains available when the Kakao key is missing or SDK loading fails.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static map.
-- Kakao Map real provider is not implemented.
+- Kakao Map manual UI verification is still pending.
 
 ## Next Starting Point
 
 The next phase starts at:
 
 ```text
-17B: Kakao SDK loader and provider implementation
+17C: Kakao Map UI connection and manual verification
 ```
 
 Recommended sequence:
 
-1. Start 17B Kakao SDK loader and provider implementation.
-2. Keep static map fallback available.
+1. Start 17C Kakao Map UI connection and manual verification.
+2. Verify static map fallback for missing env and SDK load failure.
 3. Continue monitoring rejected/orphan image cleanup needs.
 
 ## New Session Entry Checklist
@@ -66,7 +69,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/kakao-map-provider-design.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. Phase 17A Kakao Map provider design은 완료됐고, 다음 작업은 17B Kakao SDK loader and provider implementation입니다.
+AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/kakao-map-provider-design.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. Phase 17B Kakao SDK loader and provider implementation은 완료됐고, 다음 작업은 17C Kakao Map UI connection and manual verification입니다.
 ```
 
 ## Current Stack
@@ -80,8 +83,8 @@ AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.
 - Real database option: Supabase
 - Admin auth: Supabase Auth
 - Admin authorization: Supabase RLS + `public.profiles.role = 'admin'`
-- Current map: static provider only
-- Real map provider: not implemented
+- Current map: static fallback plus optional Kakao provider
+- Real map provider: Kakao SDK loader/provider implemented; manual verification pending
 - Image upload/Storage: private `observation-images` bucket flow with object paths and runtime signed URLs in Supabase mode
 
 ## Setup And Verification
@@ -138,7 +141,7 @@ npm.cmd audit --audit-level=high
 
 Do not do these without explicit user approval:
 
-1. Add Kakao Map real provider.
+1. Expand Kakao Map beyond the approved phase 17B provider scope.
 2. Add Naver Map real provider.
 3. Add Leaflet or MapLibre real provider.
 4. Add new Supabase Storage behavior beyond the approved phase 16 scope.
@@ -252,7 +255,7 @@ docs/adr/
 ## Map Rules
 
 - Static map components are intentional placeholders.
-- Keep `No Map API` / design-only messaging until a real provider is implemented.
+- Keep `No Map API` / design-only messaging for static fallback states.
 - Keep static fallback available after a real provider is added.
 - Do not add SDK loaders, script tags, map env reads, or provider implementation files before the user approves that phase.
 - Marker colors must remain taxon-based.
@@ -364,6 +367,7 @@ npm.cmd audit --audit-level=high
 - Phase 16E: Supabase Storage hardening and operations documentation completed.
 - Phase 16 final smoke: Supabase Storage upload/admin/approve manual smoke test passed.
 - Phase 17A: Kakao Map provider design completed.
+- Phase 17B: Kakao SDK loader and provider implementation completed.
 
 ## Review Checklist Before Final Response
 
