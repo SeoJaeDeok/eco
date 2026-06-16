@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20A
+## Current State After Phase 20B
 
 Completed and verified:
 
@@ -50,6 +50,7 @@ Completed and verified:
 - 19C public observation list filter/search regression verification is complete. Mock/no-key and Supabase/no-key browser checks passed for filtering, sorting, empty state, detail modal, static fallback map, mobile layout, and secret/logging checks; Supabase read-only checks confirmed approved-only visibility with 0 pending/rejected rows visible.
 - Phase 19 history archive is complete in `docs/eco/phase-history/phase-19.md`.
 - 20A Navbar alignment fix is complete. Public pages now reserve stable scrollbar gutter space so the fixed Navbar horizontal alignment does not shift between short and scrolling public routes.
+- 20B public user auth/contribution design is complete in `docs/architecture/public-user-auth-contribution-design.md`. It defines the recommended auth, DB/RLS, repository, UI, privacy, and phased implementation direction without implementing public login, direct approved contribution, observer display, owner edit, or admin edit.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -57,13 +58,13 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-20B: Public user auth/contribution design
+20C: Public user auth DB/RLS migration design and draft
 ```
 
 Recommended sequence:
 
-1. Start 20B as a design-only phase for public user auth/contribution flow.
-2. Keep public user login, direct approved contribution, owner edit, and admin edit unimplemented until a later approved implementation phase.
+1. Start 20C as a design/draft-only phase for public user auth/contribution DB and RLS changes.
+2. Keep public user login UI, direct approved contribution, observer display, owner edit, and admin edit unimplemented until their later approved implementation phases.
 3. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
 4. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 5. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
@@ -83,7 +84,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20A Navbar alignment fix is complete; the next recommended step is 20B public user auth/contribution design. Public user login, direct approved contribution, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20B public user auth/contribution design is complete; the next recommended step is 20C DB/RLS migration design and draft. Public user login, direct approved contribution, observer display, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Current Stack
@@ -396,6 +397,8 @@ npm.cmd audit --audit-level=high
 - Phase 19A: Next product feature prioritization completed.
 - Phase 19B: Public observation list filter/search UX improvement completed.
 - Phase 19C: Public observation list filter/search regression verification completed.
+- Phase 20A: Public Navbar alignment fix completed.
+- Phase 20B: Public user auth/contribution design completed.
 
 ## Review Checklist Before Final Response
 

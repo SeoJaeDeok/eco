@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20A.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20B.
 
 Read this together with:
 
@@ -67,6 +67,7 @@ Read this together with:
 - 19C public observation list filter/search regression verification
 - Phase history archive for phases 1 through 19, plus a reusable bilingual phase template
 - 20A public Navbar alignment fix
+- 20B public user auth/contribution design
 
 ## Verified Current State
 
@@ -399,7 +400,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20A Navbar alignment fix is complete; the next recommended step is 20B public user auth/contribution design. Public user login, direct approved contribution, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20B public user auth/contribution design is complete; the next recommended step is 20C DB/RLS migration design and draft. Public user login, direct approved contribution, observer display, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -713,8 +714,8 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Start 20B public user auth/contribution design.
-2. Keep public user login, direct approved contribution, owner edit, and admin edit unimplemented until a later approved implementation phase.
+1. Start 20C DB/RLS migration design and draft for public user auth/contribution.
+2. Keep public user login UI, direct approved contribution, observer display, owner edit, and admin edit unimplemented until their later approved implementation phases.
 3. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
 4. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
 5. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
@@ -770,6 +771,38 @@ Completed:
 - `src/repositories/supabase/supabaseObservationRepository.ts` still filters public reads to `status = 'approved'`.
 - No app code was changed during 19C.
 - `docs/eco/phase-history/phase-19.md` was intentionally not created during 19C, then added after Phase 19 was declared complete.
+
+### 20B: Public User Auth/Contribution Design
+
+Completed as documentation-only work:
+
+- Added `docs/architecture/public-user-auth-contribution-design.md`.
+- Designed the relationship between existing admin auth and future public user auth.
+- Recommended a conservative MVP:
+  - public users are Supabase Auth users with `profiles.role = 'user'`
+  - initial contributor account creation is handled outside the public frontend
+  - login uses the existing Supabase email/password auth path behind `AuthRepository`
+  - anonymous users can browse public approved records but cannot submit
+  - authenticated contributors may create approved observations directly only after reviewed DB/RLS work
+  - `profiles.display_name` is used for observer display; email is never shown publicly
+  - `observations.observer_id` is the owner authorization field
+  - owner/admin edit starts with text and metadata fields only
+- Proposed 20C DB/RLS draft topics:
+  - nullable `observer_id`
+  - optional observer display-name snapshot
+  - `profiles.display_name`
+  - anon approved-only read
+  - authenticated owner insert/update checks
+  - admin all-read/all-update preservation
+  - anonymous pending insert transition decision
+- Did not implement app code, package changes, Supabase migrations, RLS/policies, Storage changes, Kakao changes, or admin Navbar exposure.
+
+Recommended next phase:
+
+1. Start 20C DB/RLS migration design and draft.
+2. Decide whether public self-sign-up is allowed or contributor accounts are invite/admin-created.
+3. Decide whether direct approved insert is allowed for every authenticated user or only a contributor role.
+4. Keep implementation deferred until the DB/RLS draft is reviewed.
 
 ## Missing Features
 

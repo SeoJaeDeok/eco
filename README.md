@@ -27,6 +27,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Public observation list UX: client-side search, taxon filtering, image-present filtering, newest/oldest/name sorting, result counts, and empty state completed in phase 19B
 - Public observation list regression: mock and Supabase filter/search/sort verification passed in phase 19C
 - Public Navbar alignment: fixed route-to-route horizontal shift in phase 20A by reserving stable scrollbar gutter space
+- Public user auth/contribution design: completed in phase 20B in `docs/architecture/public-user-auth-contribution-design.md`
 
 ## Implemented Features
 
@@ -58,6 +59,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 19B public observation list filter/search UX improvement
 - Phase 19C public observation list filter/search regression verification
 - Phase 20A public Navbar alignment fix
+- Phase 20B public user auth/contribution design
 
 Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
@@ -218,8 +220,8 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Start 20B public user auth/contribution design.
-2. Keep public user login, direct approved contribution, owner edit, and admin edit unimplemented until a later approved implementation phase.
+1. Start 20C DB/RLS migration design and draft for public user auth/contribution.
+2. Keep public user login UI, direct approved contribution, observer display, owner edit, and admin edit unimplemented until their later approved implementation phases.
 3. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
 4. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 5. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
@@ -228,5 +230,5 @@ Recommended next phase:
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20A Navbar alignment fix is complete; the next recommended step is 20B public user auth/contribution design. Public user login, direct approved contribution, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20B public user auth/contribution design is complete; the next recommended step is 20C DB/RLS migration design and draft. Public user login, direct approved contribution, observer display, owner edit, and admin edit are not implemented yet.
 ```
