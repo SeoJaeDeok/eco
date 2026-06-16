@@ -433,6 +433,13 @@ docs/architecture/next-session-handoff.md
 - 17D passed normal-key, no-key fallback, invalid-key fallback, mock repository, Supabase repository, responsive layout, and secret/logging regression checks.
 - Static fallback remains available for missing keys and SDK load failures.
 
+17E UX hardening result:
+
+- Added non-sensitive loading notices for Kakao map, location picker, and position preview surfaces.
+- Increased Kakao marker hit area and improved marker aria labels without changing marker color semantics or detail selection flow.
+- Updated static fallback copy so no-key and SDK-failure states describe fallback behavior accurately.
+- Kept clustering, geocoding, route search, quota hardening, and large map UI redesign out of scope.
+
 ## Env And Config Policy
 
 - Do not print `.env.local`.
@@ -522,5 +529,6 @@ For 17A:
 
 ## Next Steps
 
-1. 17E, if needed: Harden map UX, signed fallback states, and map operational checks.
+1. Continue with the next user-approved phase.
 2. Re-run 17D fallback/regression checks after map provider, layout, Kakao app/domain, repository visibility, Storage, or admin/public detail changes.
+3. Consider clustering only if approved-observation marker count grows beyond the 10-20 marker MVP range.

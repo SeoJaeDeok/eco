@@ -17,6 +17,9 @@ import {
 } from './kakaoMapLoader';
 
 const DEFAULT_KAKAO_LEVEL = 4;
+const KAKAO_MAP_LOADING_MESSAGE = '카카오 지도를 불러오는 중입니다.';
+const KAKAO_PICKER_LOADING_MESSAGE = '카카오 위치 선택 지도를 불러오는 중입니다.';
+const KAKAO_PREVIEW_LOADING_MESSAGE = '관찰 위치 지도를 불러오는 중입니다.';
 
 type KakaoLoadStatus = 'loading' | 'ready' | 'fallback';
 
@@ -37,6 +40,16 @@ const getLocationPickerClassName = (className?: string) => {
   return className
     ? `w-full h-full border border-zinc-200 relative overflow-hidden bg-zinc-50 cursor-crosshair ${className}`
     : 'w-full h-full border border-zinc-200 relative overflow-hidden bg-zinc-50 cursor-crosshair';
+};
+
+const KakaoLoadingNotice = ({ message }: { message: string }) => {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-zinc-50/90">
+      <div className="border border-zinc-200 bg-white/90 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-zinc-400 shadow-sm">
+        {message}
+      </div>
+    </div>
+  );
 };
 
 const createLatLng = (maps: KakaoMapsNamespace, coords: Coordinates) => {
@@ -68,20 +81,24 @@ const createObservationMarkerContent = (
   const button = document.createElement('button');
   button.type = 'button';
   button.title = observation.name;
-  button.setAttribute('aria-label', `${observation.name} observation marker`);
+  button.setAttribute('aria-label', `${observation.name} 관찰 지점 선택`);
   button.style.position = 'relative';
   button.style.display = 'flex';
   button.style.alignItems = 'center';
   button.style.gap = '6px';
-  button.style.padding = '0';
+  button.style.minWidth = '36px';
+  button.style.minHeight = '36px';
+  button.style.margin = '-8px';
+  button.style.padding = '8px';
   button.style.border = '0';
   button.style.background = 'transparent';
   button.style.cursor = onSelectObservation ? 'pointer' : 'default';
+  button.style.touchAction = 'manipulation';
 
   const dot = document.createElement('span');
   dot.style.display = 'block';
-  dot.style.width = isSelected ? '20px' : '16px';
-  dot.style.height = isSelected ? '20px' : '16px';
+  dot.style.width = isSelected ? '22px' : '18px';
+  dot.style.height = isSelected ? '22px' : '18px';
   dot.style.borderRadius = '9999px';
   dot.style.border = isSelected ? '2px solid #18181b' : '2px solid #ffffff';
   dot.style.backgroundColor = getTaxonColor(observation.taxon);
@@ -90,6 +107,7 @@ const createObservationMarkerContent = (
 
   const label = document.createElement('span');
   label.textContent = observation.name;
+  label.setAttribute('aria-hidden', 'true');
   label.style.whiteSpace = 'nowrap';
   label.style.background = 'rgba(255, 255, 255, 0.92)';
   label.style.border = '1px solid rgba(244, 244, 245, 1)';
@@ -276,8 +294,9 @@ const KakaoEcoMap = ({
   }
 
   return (
-    <div className={getRootClassName(className)} aria-label="Kakao map">
+    <div className={getRootClassName(className)} aria-label="Kakao map" role={status === 'loading' ? 'status' : undefined}>
       <div ref={containerRef} className="absolute inset-0" />
+      {status === 'loading' && <KakaoLoadingNotice message={KAKAO_MAP_LOADING_MESSAGE} />}
     </div>
   );
 };
@@ -383,8 +402,9 @@ const KakaoLocationPicker = ({ value, center = DEFAULT_MAP_CENTER, onChange, cla
   }
 
   return (
-    <div className={getLocationPickerClassName(className)} aria-label="Kakao location picker">
+    <div className={getLocationPickerClassName(className)} aria-label="Kakao location picker" role={status === 'loading' ? 'status' : undefined}>
       <div ref={containerRef} className="absolute inset-0" />
+      {status === 'loading' && <KakaoLoadingNotice message={KAKAO_PICKER_LOADING_MESSAGE} />}
       {coords && (
         <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-2 py-1 border border-zinc-200 text-[8px] opacity-60 z-10 pointer-events-none">
           {coords.lat.toFixed(6)}, {coords.lng.toFixed(6)}
@@ -465,8 +485,9 @@ const KakaoPositionPreview = ({ coordinates, taxon }: StaticPositionPreviewProps
   }
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-zinc-100" aria-label="Kakao position preview">
+    <div className="relative w-full h-full overflow-hidden bg-zinc-100" aria-label="Kakao position preview" role={status === 'loading' ? 'status' : undefined}>
       <div ref={containerRef} className="absolute inset-0" />
+      {status === 'loading' && <KakaoLoadingNotice message={KAKAO_PREVIEW_LOADING_MESSAGE} />}
     </div>
   );
 };

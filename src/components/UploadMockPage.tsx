@@ -77,7 +77,7 @@ export const UploadMockPage = ({ onCancel, createObservation = activeObservation
         title={<h2 className="font-serif text-2xl mb-3 text-center opacity-80 underline underline-offset-8 decoration-1 decoration-zinc-200">관찰 기록하기</h2>}
         description={(
           <p className="text-center text-[10px] text-zinc-400 tracking-wider mb-8">
-            현재는 API 없는 디자인 시안입니다. 저장, 업로드, 지도 SDK는 연결하지 않았습니다.
+            환경 설정에 따라 Supabase 저장과 Kakao 지도를 사용하며, 기본 mock 모드에서는 화면 흐름을 확인합니다.
           </p>
         )}
       />

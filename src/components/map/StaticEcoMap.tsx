@@ -21,7 +21,7 @@ export const StaticEcoMap = ({ observations = [], onSelect, onSelectObservation,
 
       <MapNoticePanel
         title="Design Map"
-        description="지도 SDK를 연결하지 않은 정적 시안입니다. 마커 배치와 상세 패널 디자인만 확인합니다."
+        description="실제 지도를 사용할 수 없을 때 표시하는 정적 생태지도입니다. 마커 선택과 위치 흐름은 그대로 확인할 수 있습니다."
         icon={<MapIcon size={14} className="text-zinc-500" />}
         className="absolute top-6 left-6 z-10 bg-white/85 backdrop-blur-sm border border-zinc-100 px-4 py-3 shadow-sm max-w-xs"
         titleClassName="text-[10px] tracking-[0.24em] uppercase text-zinc-500"

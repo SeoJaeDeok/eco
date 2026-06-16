@@ -36,7 +36,7 @@ export const StaticLocationPicker = ({ value, center = DEFAULT_MAP_CENTER, onCha
       <CampusLabels />
       <div className="absolute inset-4 border border-zinc-200/60" />
       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-2 border border-zinc-200 text-[10px] tracking-wider uppercase opacity-80 z-10 pointer-events-none">
-        클릭하여 위치 시안을 선택하세요
+        지도를 클릭해 관찰 위치를 선택하세요
       </div>
       <span className="absolute z-20 block w-5 h-5 rounded-full bg-blue-500 border-2 border-white shadow-lg -translate-x-1/2 -translate-y-1/2 transition-all" style={marker} />
       {coords && (

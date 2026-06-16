@@ -15,6 +15,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Current map: static fallback plus optional Kakao Map provider
 - Kakao Map: SDK loader and provider implemented; a local JavaScript key is required to enable it
 - Kakao Map verification: normal key render, no-key fallback, invalid-key fallback, mock mode, and Supabase mode passed through phase 17D
+- Kakao Map UX hardening: minimal loading, fallback copy, and marker accessibility improvements completed in phase 17E
 - Kakao Map provider design: completed in `docs/architecture/kakao-map-provider-design.md`
 - Supabase Storage image upload: implemented for Supabase mode with private object paths and runtime signed URLs
 
@@ -42,6 +43,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Kakao Map SDK loader and provider behind the map provider boundary
 - Static map fallback when the Kakao key is missing or SDK loading fails
 - Kakao Map manual render and fallback/regression verification
+- Kakao Map minimal UX hardening
 
 Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
@@ -177,7 +179,6 @@ Admin approval flow is documented in:
 
 ## Not Implemented Yet
 
-- Optional Kakao Map UX hardening after real-provider verification
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
 - Reject note
@@ -192,12 +193,12 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Start 17E map UX hardening only if additional map UX work is needed.
-2. Otherwise continue with the next user-approved phase.
+1. Continue with the next user-approved phase.
+2. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
 3. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
 
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17D Kakao Map fallback and regression verification is complete; the next step is user-approved 17E map UX hardening or the next phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17E Kakao Map UX hardening is complete; the next step is the next user-approved phase.
 ```
