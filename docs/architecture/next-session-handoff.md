@@ -65,7 +65,7 @@ Read this together with:
 - 19A next product feature prioritization
 - 19B public observation list filter/search UX improvement
 - 19C public observation list filter/search regression verification
-- Phase history archive for phases 1 through 18, plus a reusable bilingual phase template
+- Phase history archive for phases 1 through 19, plus a reusable bilingual phase template
 
 ## Verified Current State
 
@@ -218,6 +218,9 @@ Read this together with:
   - Added Korean companion summaries under the English phase-history sections for Phase 1 through Phase 18.
   - Updated the phase-history index and reusable template with the same bilingual convention.
   - `docs/eco/phase-history/phase-19.md` was not created in this update.
+- Phase 19 history archive update:
+  - Added `docs/eco/phase-history/phase-19.md` after 19C verification passed.
+  - Updated the phase-history index with the Phase 19 row.
 
 ## Core Architecture
 
@@ -391,7 +394,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19C public list filter/search regression verification passed; the next recommended documentation task is creating docs/eco/phase-history/phase-19.md, followed by the next user-approved product feature unless cleanup or abuse thresholds justify a separate approved hardening phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/eco/phase-history/index.md. Do not modify code yet. Phase 19 public list filter/search UX is complete and archived; the next recommended step is the next user-approved product feature, with upload UX and admin review UX as leading candidates unless cleanup or abuse thresholds justify a separate approved hardening phase.
 ```
 
 ## Recommended Phase 16 Direction
@@ -705,12 +708,11 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Add `docs/eco/phase-history/phase-19.md` now that 19C passed and Phase 19 can be archived.
-2. Continue to the next user-approved product feature, with upload UX and admin review UX as leading follow-up candidates.
-3. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
-4. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
-5. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
-6. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
+1. Continue to the next user-approved product feature, with upload UX and admin review UX as leading follow-up candidates.
+2. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
+3. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
+4. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
+5. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ### 19A: Product Feature Prioritization
 
@@ -761,7 +763,7 @@ Completed:
 - Public filtering remains client-side and operates only on observations already returned by the active public repository.
 - `src/repositories/supabase/supabaseObservationRepository.ts` still filters public reads to `status = 'approved'`.
 - No app code was changed during 19C.
-- `docs/eco/phase-history/phase-19.md` was intentionally not created in 19C; it is the next recommended documentation task.
+- `docs/eco/phase-history/phase-19.md` was intentionally not created during 19C, then added after Phase 19 was declared complete.
 
 ## Missing Features
 

@@ -12,9 +12,9 @@ The active handoff document remains the source of truth for the latest current s
 
 - `docs/architecture/next-session-handoff.md`
 
-This archive is intentionally split into one Markdown file per phase. That structure keeps each phase reviewable, prevents a single long history file from becoming hard to maintain, and makes it easy to add Phase 19, Phase 20, and later records after those phases are complete.
+This archive is intentionally split into one Markdown file per phase. That structure keeps each phase reviewable, prevents a single long history file from becoming hard to maintain, and makes it easy to add Phase 20 and later records after those phases are complete.
 
-**한국어:** phase별 독립 Markdown 구조는 Git diff 검토가 쉽고, 긴 단일 문서가 비대해지는 문제를 줄이며, Phase 19 이후 기록을 완료 시점마다 추가하기 좋습니다.
+**한국어:** phase별 독립 Markdown 구조는 Git diff 검토가 쉽고, 긴 단일 문서가 비대해지는 문제를 줄이며, Phase 20 이후 기록을 완료 시점마다 추가하기 좋습니다.
 
 ## How To Use This Archive
 
@@ -47,8 +47,9 @@ This archive is intentionally split into one Markdown file per phase. That struc
 | 16 | Supabase Storage Image Flow | Verified | Designed, implemented, and manually verified private Storage upload plus runtime signed image display. | [phase-16.md](phase-16.md) |
 | 17 | Kakao Map Provider | Verified | Designed, implemented, verified, and UX-hardened the Kakao Map provider while preserving static fallback. | [phase-17.md](phase-17.md) |
 | 18 | Storage Operations Hardening | Completed | Documented operations runbooks, monitoring, signed URL refresh MVP, abuse mitigation, and cleanup automation design. | [phase-18.md](phase-18.md) |
+| 19 | Public Observation List Filter/Search UX | Verified | Prioritized, implemented, and regression-verified client-side public list search, taxon/image filters, sorting, result counts, and empty state while preserving approved-only reads. | [phase-19.md](phase-19.md) |
 
-**한국어:** 위 표는 완료된 Phase 1~18의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 19 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
+**한국어:** 위 표는 완료된 Phase 1~19의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 20 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
 
 ## Adding A New Completed Phase
 
