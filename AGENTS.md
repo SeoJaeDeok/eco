@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20B
+## Current State After Phase 20C
 
 Completed and verified:
 
@@ -51,6 +51,7 @@ Completed and verified:
 - Phase 19 history archive is complete in `docs/eco/phase-history/phase-19.md`.
 - 20A Navbar alignment fix is complete. Public pages now reserve stable scrollbar gutter space so the fixed Navbar horizontal alignment does not shift between short and scrolling public routes.
 - 20B public user auth/contribution design is complete in `docs/architecture/public-user-auth-contribution-design.md`. It defines the recommended auth, DB/RLS, repository, UI, privacy, and phased implementation direction without implementing public login, direct approved contribution, observer display, owner edit, or admin edit.
+- 20C public user contribution DB/RLS draft is complete in `docs/architecture/public-user-contribution-rls-plan.md`, with `supabase/migrations/0003_public_user_contribution_draft.sql` added as a draft candidate only. The draft has not been applied to Supabase and does not implement public login, direct approved contribution, observer display, owner edit, or admin edit.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -58,16 +59,17 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-20C: Public user auth DB/RLS migration design and draft
+20D: Public login UI/auth state implementation planning
 ```
 
 Recommended sequence:
 
-1. Start 20C as a design/draft-only phase for public user auth/contribution DB and RLS changes.
-2. Keep public user login UI, direct approved contribution, observer display, owner edit, and admin edit unimplemented until their later approved implementation phases.
-3. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
-4. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
-5. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
+1. Review the 20C DB/RLS draft before any Supabase apply.
+2. Start 20D for public login UI/auth state planning and implementation.
+3. Keep direct approved contribution implementation, observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
+4. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
+5. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
+6. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
 
 ## New Session Entry Checklist
 
@@ -84,7 +86,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20B public user auth/contribution design is complete; the next recommended step is 20C DB/RLS migration design and draft. Public user login, direct approved contribution, observer display, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20C public user contribution DB/RLS draft is complete; the next recommended step is 20D public login UI/auth state implementation planning. Public user login UI, direct approved contribution implementation, observer display UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Current Stack
@@ -399,6 +401,7 @@ npm.cmd audit --audit-level=high
 - Phase 19C: Public observation list filter/search regression verification completed.
 - Phase 20A: Public Navbar alignment fix completed.
 - Phase 20B: Public user auth/contribution design completed.
+- Phase 20C: Public user contribution DB/RLS migration draft completed.
 
 ## Review Checklist Before Final Response
 

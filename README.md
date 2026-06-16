@@ -28,6 +28,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Public observation list regression: mock and Supabase filter/search/sort verification passed in phase 19C
 - Public Navbar alignment: fixed route-to-route horizontal shift in phase 20A by reserving stable scrollbar gutter space
 - Public user auth/contribution design: completed in phase 20B in `docs/architecture/public-user-auth-contribution-design.md`
+- Public user contribution DB/RLS draft: completed in phase 20C in `docs/architecture/public-user-contribution-rls-plan.md`; the `0003` SQL draft is not applied
 
 ## Implemented Features
 
@@ -60,6 +61,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 19C public observation list filter/search regression verification
 - Phase 20A public Navbar alignment fix
 - Phase 20B public user auth/contribution design
+- Phase 20C public user contribution DB/RLS migration draft
 
 Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
@@ -193,8 +195,11 @@ Supabase setup is documented in:
 - `docs/architecture/supabase-storage-cleanup-automation-design.md`
 - `docs/architecture/kakao-map-provider-design.md`
 - `docs/architecture/phase-19-product-feature-prioritization.md`
+- `docs/architecture/public-user-auth-contribution-design.md`
+- `docs/architecture/public-user-contribution-rls-plan.md`
 - `supabase/migrations/0001_create_observation_schema.sql`
 - `supabase/migrations/0002_create_observation_storage.sql`
+- `supabase/migrations/0003_public_user_contribution_draft.sql`
 
 Admin approval flow is documented in:
 
@@ -220,15 +225,16 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Start 20C DB/RLS migration design and draft for public user auth/contribution.
-2. Keep public user login UI, direct approved contribution, observer display, owner edit, and admin edit unimplemented until their later approved implementation phases.
-3. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
-4. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
-5. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
-6. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
+1. Review the 20C DB/RLS draft before any Supabase apply.
+2. Start 20D public login UI/auth state implementation planning.
+3. Keep direct approved contribution implementation, observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
+4. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
+5. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
+6. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
+7. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
 
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20B public user auth/contribution design is complete; the next recommended step is 20C DB/RLS migration design and draft. Public user login, direct approved contribution, observer display, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20C public user contribution DB/RLS draft is complete; the next recommended step is 20D public login UI/auth state implementation planning. Public user login UI, direct approved contribution implementation, observer display UI, owner edit, and admin edit are not implemented yet.
 ```

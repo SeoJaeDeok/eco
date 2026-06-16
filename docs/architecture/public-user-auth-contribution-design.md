@@ -329,6 +329,13 @@ MVP recommendation: owner/admin edit should start with text, taxon, date, locati
 
 20C should create a reviewed migration draft before anything is applied.
 
+20C follow-up:
+
+- `docs/architecture/public-user-contribution-rls-plan.md` records the DB/RLS plan.
+- `supabase/migrations/0003_public_user_contribution_draft.sql` records a draft SQL candidate.
+- The SQL draft is not applied automatically and requires separate approval before use.
+- The draft keeps public reads approved-only, keeps email out of public display, and treats anonymous pending insert removal as a transition that must wait for login UI and repository changes.
+
 Candidate columns:
 
 ```text
@@ -622,11 +629,11 @@ Use a conservative MVP:
 - Owner/admin edit starts with text and metadata fields only.
 - Existing admin approve/reject flow and hidden route remain intact.
 
-## Remaining Decisions Before 20C
+## Remaining Decisions After 20C
 
-- Is public self-sign-up allowed, or are contributor accounts invite/admin-created?
-- Should direct approved insert be allowed for every authenticated user or only a contributor role?
-- Should `observer_display_name` be stored as a snapshot on observations?
+- Confirm whether public self-sign-up stays out of scope for the MVP and contributor accounts remain invite/admin-created.
+- Confirm whether direct approved insert is acceptable for all authenticated MVP contributor accounts, or whether a contributor role is needed before launch.
+- Confirm whether the `observer_display_name` snapshot from the 20C draft is accepted for public display.
 - Should owners be able to read their own non-approved rows if any workflow still creates pending rows?
 - Should anonymous pending insert be disabled immediately when logged-in create is enabled, or kept during a transition period?
 - Which exact fields are owner-editable in the first edit implementation?
