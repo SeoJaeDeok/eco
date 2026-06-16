@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18A.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18B.
 
 Read this together with:
 
@@ -13,6 +13,7 @@ Read this together with:
 - `docs/architecture/supabase-storage-image-upload-design.md`
 - `docs/architecture/supabase-storage-setup.md`
 - `docs/architecture/supabase-storage-operations-hardening.md`
+- `docs/architecture/supabase-storage-monitoring-checklist.md`
 - `docs/architecture/kakao-map-provider-design.md`
 
 ## Current Completed Phases
@@ -53,6 +54,7 @@ Read this together with:
 - 17D Kakao Map fallback and regression verification
 - 17E Kakao Map UX hardening
 - 18A Supabase Storage operations hardening design and runbook
+- 18B Supabase Storage read-only monitoring checklist
 
 ## Verified Current State
 
@@ -148,6 +150,13 @@ Read this together with:
   - Compared anonymous upload abuse mitigations including CAPTCHA, rate limit, authenticated-only upload, abuse monitoring, quotas, and review queue monitoring.
   - Documented 10-minute signed URL expiration UX options and left refresh implementation for a later phase.
   - Added read-only SQL drafts only; no destructive cleanup SQL, Storage delete, policy change, app code change, package change, or migration change was made.
+- 18B Storage monitoring checklist was documented as a read-only operations phase:
+  - Added `docs/architecture/supabase-storage-monitoring-checklist.md`.
+  - Converted the 18A runbook into weekly and monthly operator checklists.
+  - Added read-only SQL drafts for public visibility invariants, status counts, pending queue age, rejected retention candidates, metadata completeness, suspicious `image_url` values, image counts by status, path pattern checks, upload volume, near-limit image sizes, bucket counts, object metadata mismatch candidates, orphan candidates, test row candidates, and approved-image missing-object candidates.
+  - Added draft thresholds for pending count, old pending age, rejected retention, anonymous upload spikes, near-limit images, and bucket usage.
+  - Added a result recording template and escalation rules.
+  - Did not include active destructive SQL, apply SQL, delete Storage objects, change app code, change package files, change Supabase migrations, change policies/RLS, or change Kakao Map code.
 
 ## Core Architecture
 
@@ -297,6 +306,7 @@ docs/architecture/admin-ui-routing-plan.md
 docs/architecture/supabase-storage-image-upload-design.md
 docs/architecture/supabase-storage-setup.md
 docs/architecture/supabase-storage-operations-hardening.md
+docs/architecture/supabase-storage-monitoring-checklist.md
 docs/architecture/kakao-map-provider-design.md
 ```
 
@@ -316,7 +326,7 @@ docs/architecture/kakao-map-provider-design.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, and docs/architecture/supabase-storage-operations-hardening.md. Do not modify code yet. Phase 18A Supabase Storage operations hardening design/runbook is complete; the next recommended phase is 18B readonly cleanup/monitoring SQL and checklist, unless the user chooses another phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, and docs/architecture/supabase-storage-monitoring-checklist.md. Do not modify code yet. Phase 18B Supabase Storage read-only monitoring checklist is complete; the next recommended phase is 18C signed URL refresh UX, unless the user chooses another phase.
 ```
 
 ## Recommended Phase 16 Direction
@@ -541,9 +551,30 @@ Completed as documentation-only work:
 - Did not include active destructive delete SQL.
 - Did not change app code, package files, Supabase migrations, Storage policies, RLS, Kakao Map code, or public visibility behavior.
 
+### 18B: Storage Read-Only Monitoring Checklist
+
+Completed as documentation-only work:
+
+- Added `docs/architecture/supabase-storage-monitoring-checklist.md`.
+- Documented pre-run safety checks for project/environment confirmation, read-only query use, destructive query avoidance, export hygiene, and secret non-exposure.
+- Re-stated Storage/Observation invariants:
+  - approved-only public reads
+  - pending public creates
+  - pending/rejected public non-exposure
+  - `image_path`, `image_mime_type`, and `image_size_bytes` as DB Storage metadata
+  - no signed/public/blob/data URL storage
+  - private `observation-images` bucket
+  - runtime-only signed URLs
+- Added weekly monitoring checklist items for pending count, rejected count, old pending age, metadata completeness, suspicious `image_url` values, public visibility invariants, approved/pending/rejected image counts, and admin queue age.
+- Added monthly review checklist items for rejected retention candidates, orphan candidate review, bucket object count/size, anonymous upload spikes, manual test objects, and delete-candidate approval workflow.
+- Added read-only SQL drafts only.
+- Documented orphan candidate limitations and the `storage.objects.name = public.observations.image_path` matching rule.
+- Added draft thresholds and escalation rules.
+- Did not change app code, package files, Supabase migrations, Storage policies, RLS, Kakao Map code, or public visibility behavior.
+
 Recommended next steps:
 
-1. 18B: Turn the read-only Storage cleanup and monitoring SQL into an operator checklist with thresholds.
+1. 18C: Signed URL refresh UX design or implementation candidate.
 2. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
 3. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 

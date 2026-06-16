@@ -22,7 +22,13 @@ This document defines the phase 18A Storage operations hardening design and runb
 - change package files
 - change Kakao Map code
 
-Actual cleanup automation starts no earlier than 18B or a later approved phase. Any policy, RLS, Edge Function, CAPTCHA, rate-limit, or admin cleanup UI change requires separate approval.
+The phase 18B read-only monitoring checklist is documented in:
+
+```text
+docs/architecture/supabase-storage-monitoring-checklist.md
+```
+
+Actual cleanup automation starts no earlier than 18E or a later approved phase. Any policy, RLS, Edge Function, CAPTCHA, rate-limit, or admin cleanup UI change requires separate approval.
 
 ## Current Storage Structure
 
@@ -409,7 +415,7 @@ Implementation difficulty:
 MVP recommendation:
 
 - Continue anonymous upload for the current public-report UX.
-- Add manual monitoring thresholds in 18B.
+- Use the 18B monitoring checklist for draft weekly/monthly thresholds.
 - Revisit CAPTCHA or rate limit if upload count, total size, or pending queue age spikes.
 - Consider authenticated-only image upload before public launch if abuse becomes likely.
 
@@ -796,7 +802,13 @@ MVP operations recommendation:
 
 ### 18B: Read-Only Cleanup And Monitoring SQL
 
-Expected scope:
+Completed as:
+
+```text
+docs/architecture/supabase-storage-monitoring-checklist.md
+```
+
+Scope:
 
 - refine read-only SQL into an operator checklist
 - define weekly/monthly thresholds
