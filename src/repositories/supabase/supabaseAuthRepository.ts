@@ -12,6 +12,7 @@ const PROFILES_TABLE = 'profiles';
 interface SupabaseProfileRow {
   id: string;
   role: UserRole;
+  display_name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -56,6 +57,7 @@ const mapProfileRow = (row: SupabaseProfileRow): UserProfile => {
   return {
     id: row.id,
     role: row.role,
+    ...(row.display_name?.trim() ? { displayName: row.display_name.trim() } : {}),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -93,7 +95,7 @@ export const supabaseAuthRepository: AuthRepository = {
 
     const { data, error } = await getSupabaseClient()
       .from(PROFILES_TABLE)
-      .select('id, role, created_at, updated_at')
+      .select('id, role, display_name, created_at, updated_at')
       .eq('id', user.id)
       .maybeSingle();
 

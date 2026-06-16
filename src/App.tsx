@@ -5,6 +5,7 @@ import { AppRoutes } from './components/AppRoutes';
 import { ObservationDetail } from './components/ObservationDetail';
 import { activeAuthRepository, getConfiguredAuthRepositoryKind } from './repositories/authRepositoryProvider';
 import { activeObservationRepository } from './repositories/observationRepositoryProvider';
+import { countUniqueSpecies } from './utils/observationStats';
 import type { AuthSessionState } from './repositories/authRepository';
 import type { Observation, PageId } from './types';
 
@@ -149,6 +150,21 @@ export default function App() {
       });
   }, []);
 
+  const handleObservationCreated = useCallback((observation: Observation) => {
+    if (observation.status !== 'approved') {
+      return;
+    }
+
+    setObservations((currentObservations) => {
+      const nextObservations = [
+        observation,
+        ...currentObservations.filter((currentObservation) => currentObservation.id !== observation.id),
+      ];
+      setUniqueSpeciesCount(countUniqueSpecies(nextObservations));
+      return nextObservations;
+    });
+  }, []);
+
   const handlePublicSignIn = useCallback(async (email: string, password: string) => {
     if (!PUBLIC_AUTH_CONFIGURED) {
       setPublicAuthError('현재 환경에는 공개 로그인 설정이 없습니다.');
@@ -232,6 +248,7 @@ export default function App() {
           isSigningInPublic={isSigningInPublic}
           onNavigate={navigate}
           onSelectObservation={handleSelectObservation}
+          onObservationCreated={handleObservationCreated}
           onPublicSignIn={handlePublicSignIn}
         />
       </main>

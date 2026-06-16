@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20E-prep migration promotion.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20E authenticated direct create implementation.
 
 Read this together with:
 
@@ -72,6 +72,7 @@ Read this together with:
 - 20C.5 public user contribution SQL draft application-readiness review
 - 20D public login UI/auth state and signed-out upload gate
 - 20E-prep public user contribution SQL draft promoted to an apply-ready migration candidate
+- 20E authenticated direct approved observation create
 
 ## Verified Current State
 
@@ -259,8 +260,11 @@ src/repositories/supabase/supabaseObservationRepository.ts
 Public Supabase behavior:
 
 - Reads only `approved` observations.
-- Inserts public submissions as `pending`.
-- Uploads selected images to private Supabase Storage before pending row insert.
+- Blocks anonymous submit in the UI through the signed-out upload gate.
+- Inserts signed-in public submissions as `approved` observations.
+- Stores `observer_id = auth.uid()` for signed-in Supabase submissions.
+- Stores `observer_display_name` only when a non-email profile display name is available.
+- Uploads selected images to private Supabase Storage before approved row insert.
 - Stores only `image_path`, `image_mime_type`, and `image_size_bytes` for submitted images.
 - Resolves `image_path` to runtime signed URLs only after approved rows are selected.
 - Does not expose pending/rejected rows in public lists.
@@ -404,7 +408,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20D public login UI/auth state and signed-out upload gate are complete, 20D.5 signed-out/headless smoke is recorded as PARTIAL because no login test credentials were available, and 20E-prep promoted the reviewed public contribution SQL into supabase/migrations/0003_public_user_contribution.sql as an apply-ready candidate. The SQL has not been applied to Supabase. The next recommended step is a manual 20D.5 login/logout smoke retry with a configured test account, then a user-approved 20E DB/RLS apply/test window plus authenticated direct create implementation. Direct approved contribution, observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20E authenticated direct approved create is implemented in the Supabase repository path. Codex did not apply SQL/RLS. The next recommended step is 20E Supabase smoke verification with a configured non-admin test account before 20F observer display. Observer display UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -938,12 +942,56 @@ Recommended next phase:
 1. Run the remaining 20D.5 real login/logout smoke.
 2. Start 20E authenticated direct create only with explicit DB/RLS apply/test approval.
 
+### 20E: Authenticated Direct Approved Observation Create
+
+Implemented as a scoped repository/app-state phase:
+
+- Updated the Supabase public observation repository create path to require the current authenticated Supabase user.
+- New Supabase submissions are inserted with `status = 'approved'` and `observer_id = auth.uid()`.
+- `observer_display_name` is stored only when the current profile has a non-empty, non-email `display_name`; email is not stored as a display snapshot.
+- Storage image upload now uses the authenticated owner path `observations/{auth.uid()}/...`, matching the 0003 Storage insert policy.
+- DB rows still store only `image_path`, `image_mime_type`, and `image_size_bytes` for images.
+- Signed/public/blob/data URLs are not stored in DB rows.
+- The returned approved row is added to the in-memory public observation list when the upload succeeds.
+- Anonymous users still hit `UploadLoginGate` and cannot reach the submit path.
+- Mock mode keeps its existing mock create behavior and does not add pending mock rows to the public list.
+- Observer display UI, owner edit, admin edit, public sign-up, display-name setup, package changes, and new dependencies remain out of scope.
+- Codex did not apply SQL/RLS; this implementation assumes the user-applied 0003 migration is active in the target Supabase environment.
+- Implementation-session verification: `npm.cmd run typecheck`, `npm.cmd run build`, and `git diff --check` passed.
+- Live Supabase create smoke was not run in-session because no test account credentials were provided; run it before starting 20F.
+
+### 20E.5: Authenticated Direct Create Smoke Verification
+
+Status: PARTIAL.
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed.
+- `git diff --check` passed.
+- `.env.local` exists but was not printed.
+- Supabase client configuration is present, but the current local repository mode is not set to Supabase.
+- Kakao key configuration is present, without printing the value.
+- Test account credentials were not available in-session.
+- Read-only anon Supabase probes confirmed the approved-read endpoint works and the `observations` ownership columns are readable through the public approved read shape.
+- `profiles.display_name` could not be confirmed through the anon probe because profile reads are not public; this does not prove the column is absent.
+- Authenticated insert policy, anonymous insert transition, and owner Storage upload policy could not be fully confirmed without a logged-in test account.
+- Static boundary checks found no direct Supabase client usage in UI components.
+- Static boundary checks confirmed public repository reads still filter `status = 'approved'`.
+- Static boundary checks confirmed Supabase create still sets `status = 'approved'`, `observer_id`, and authenticated owner Storage paths.
+- Observer display UI, owner edit, admin edit, and extra SQL/RLS application remain unimplemented.
+- 20E full authenticated submit smoke pending: requires 0003 applied + test credentials.
+
+Recommended next phase:
+
+1. Run 20E Supabase smoke with a configured non-admin test account.
+2. Confirm the inserted row has `status = approved`, `observer_id = auth.uid()`, owner Storage path metadata when an image is uploaded, and no URL-like `image_url`.
+3. Confirm anonymous submit remains gated and pending/rejected public visibility remains blocked.
+4. Start 20F observer display only after 20E smoke is accepted.
+
 ## Missing Features
 
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
 - Public self-sign-up and display-name setup UI
-- Direct approved public contribution
 - Observer display on public cards/details
 - Owner edit or admin edit workflow for submitted observations
 - Reject note

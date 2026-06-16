@@ -11,6 +11,12 @@ interface ObservationDisplayFields {
   imageUrl?: string | null;
 }
 
+interface CreateObservationInsertOptions {
+  status?: ObservationInsertRow['status'];
+  observerId?: string;
+  observerDisplayName?: string;
+}
+
 const nullableText = (value: string | undefined) => {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
@@ -51,6 +57,7 @@ export const mapObservationRowsToObservations = (
 export const mapCreateObservationInputToInsertRow = (
   input: CreateObservationInput,
   imageFields?: ObservationImageInsertFields,
+  options: CreateObservationInsertOptions = {},
 ): ObservationInsertRow => {
   return {
     name: input.name,
@@ -61,6 +68,9 @@ export const mapCreateObservationInputToInsertRow = (
     description: nullableText(input.description),
     latitude: input.coords.lat,
     longitude: input.coords.lng,
+    ...(options.status ? { status: options.status } : {}),
+    ...(options.observerId ? { observer_id: options.observerId } : {}),
+    ...(options.observerDisplayName ? { observer_display_name: options.observerDisplayName } : {}),
     ...(imageFields
       ? {
         image_path: imageFields.path,

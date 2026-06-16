@@ -17,6 +17,8 @@ export interface ObservationDbRow {
   image_mime_type: string | null;
   image_size_bytes: number | null;
   status: ObservationDbStatus;
+  observer_id: string | null;
+  observer_display_name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +35,9 @@ export interface ObservationInsertRow {
   image_path?: string;
   image_mime_type?: string;
   image_size_bytes?: number;
+  status?: ObservationDbStatus;
+  observer_id?: string;
+  observer_display_name?: string;
 }
 
 export type ObservationUpdateRow = Partial<

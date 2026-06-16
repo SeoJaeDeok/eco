@@ -21,6 +21,7 @@ interface AppRoutesProps {
   isSigningInPublic: boolean;
   onNavigate: (page: PageId) => void;
   onSelectObservation: (obs: Observation) => void;
+  onObservationCreated: (observation: Observation) => void;
   onPublicSignIn: (email: string, password: string) => Promise<boolean>;
 }
 
@@ -34,6 +35,7 @@ export const AppRoutes = ({
   isSigningInPublic,
   onNavigate,
   onSelectObservation,
+  onObservationCreated,
   onPublicSignIn,
 }: AppRoutesProps) => {
   const isPublicUserSignedIn = Boolean(publicAuthState.user);
@@ -63,7 +65,7 @@ export const AppRoutes = ({
       {currentPage === 'upload' && (
         <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           {isPublicUserSignedIn ? (
-            <UploadMockPage onCancel={() => onNavigate('observations')} />
+            <UploadMockPage onCancel={() => onNavigate('observations')} onObservationCreated={onObservationCreated} />
           ) : (
             <UploadLoginGate
               errorMessage={publicAuthError}

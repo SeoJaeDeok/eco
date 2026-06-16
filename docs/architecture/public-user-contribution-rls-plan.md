@@ -523,10 +523,13 @@ Status: implemented in phase 20D.
 
 ### 20E: Authenticated Direct Create
 
-- Apply `supabase/migrations/0003_public_user_contribution.sql` only after approval and after 20D.5 login/logout smoke is accepted.
-- Update Supabase create mapping to set `observer_id`, `observer_display_name`, and `status = 'approved'`.
-- Update Storage upload path/policy if using `observations/{auth.uid()}/...`.
-- Verify anonymous insert denial and authenticated direct approved insert.
+Status: implemented in app/repository code.
+
+- Supabase create mapping sets `observer_id`, optional safe `observer_display_name`, and `status = 'approved'`.
+- Storage upload uses the owner path `observations/{auth.uid()}/...`, matching the 0003 Storage policy candidate.
+- Anonymous users remain blocked before submit by the 20D upload gate.
+- Codex did not apply SQL/RLS during 20E; the implementation assumes the operator-applied 0003 migration is active in the target Supabase environment.
+- Remaining verification: run Supabase login/create smoke and confirm anonymous insert denial plus authenticated direct approved insert.
 
 ### 20F: Observer Display
 
@@ -561,11 +564,9 @@ Status: implemented in phase 20D.
 - add dependencies
 - change Kakao Map code
 
-## Remaining Decisions Before 20E
+## Remaining Decisions Before 20F
 
-- Confirm whether contributor accounts are invite/admin-created for the MVP.
 - Decide if `observer_display_name` snapshot is accepted for public display.
-- Complete the 20D.5 real login/logout smoke retry with a configured non-admin test account.
-- Decide whether 20E applies the 0003 migration before or together with repository create changes in the approved apply/test window.
-- Decide whether authenticated Storage uploads should use `observations/{auth.uid()}/...` paths or keep the existing pending path during transition.
+- Complete the 20E real Supabase create smoke with a configured non-admin test account.
+- Decide how `observer_display_name` maps into public card/detail UI in 20F.
 - Decide whether a "my observations" view is needed before owner edit.

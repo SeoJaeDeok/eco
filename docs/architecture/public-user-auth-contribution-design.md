@@ -418,7 +418,8 @@ Recommended 20D approach:
 - `Navbar` shows public login/logout state without showing email addresses or exposing the hidden admin route.
 - Signed-out users who open the upload page see login guidance instead of the upload form.
 - Signed-in users can open the existing upload form.
-- Direct approved create, observer display, owner edit, admin edit, signup, display-name setup, and live DB/RLS changes remain out of scope.
+- Direct approved create remained out of scope for 20D and was implemented later in 20E.
+- Observer display, owner edit, admin edit, signup, display-name setup, and further live DB/RLS changes remain out of scope.
 
 ### ObservationRepository
 
@@ -574,9 +575,13 @@ Status: implemented in phase 20D.
 
 ### 20E: Authenticated Direct Create
 
-- Change Supabase create flow so authenticated users create approved rows with `observer_id`.
-- Disable anonymous submit path in UI.
-- Apply and verify RLS only after approval.
+Status: implemented in phase 20E.
+
+- Supabase create flow now requires the current authenticated user and creates approved rows with `observer_id = auth.uid()`.
+- Supabase create stores `observer_display_name` only when a safe non-email profile display name is available.
+- Anonymous users remain blocked by the signed-out upload gate.
+- Codex did not apply SQL/RLS during 20E; the implementation assumes the reviewed 0003 migration was already applied by the operator.
+- Observer display UI remains a 20F scope item.
 
 ### 20F: Observer Display
 

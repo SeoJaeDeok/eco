@@ -23,6 +23,10 @@ export interface UploadedObservationImage {
   sizeBytes: number;
 }
 
+interface UploadObservationImageOptions {
+  ownerId?: string;
+}
+
 const createStorageError = (message: string, cause?: unknown) => {
   const error = new Error(message) as Error & { cause?: unknown };
   error.cause = cause;
@@ -68,19 +72,29 @@ const validateObservationImageSize = (file: File) => {
   }
 };
 
-const createObservationImagePath = (mimeType: AllowedObservationImageMimeType) => {
-  const clientGeneratedId = createUuid();
+const createObservationImagePath = (
+  mimeType: AllowedObservationImageMimeType,
+  ownerId?: string,
+) => {
   const randomId = createUuid();
   const extension = ALLOWED_IMAGE_EXTENSIONS_BY_MIME_TYPE[mimeType];
 
+  if (ownerId) {
+    return `observations/${ownerId}/${randomId}.${extension}`;
+  }
+
+  const clientGeneratedId = createUuid();
   return `pending/${clientGeneratedId}/${randomId}.${extension}`;
 };
 
-export const uploadObservationImage = async (file: File): Promise<UploadedObservationImage> => {
+export const uploadObservationImage = async (
+  file: File,
+  options: UploadObservationImageOptions = {},
+): Promise<UploadedObservationImage> => {
   const mimeType = getValidatedObservationImageMimeType(file);
   validateObservationImageSize(file);
 
-  const path = createObservationImagePath(mimeType);
+  const path = createObservationImagePath(mimeType, options.ownerId);
   const { error } = await getSupabaseClient()
     .storage
     .from(getObservationImageBucket())

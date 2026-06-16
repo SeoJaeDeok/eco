@@ -14,34 +14,16 @@ import {
 import { getSupabaseClient } from './supabaseClient';
 
 const OBSERVATIONS_TABLE = 'observations';
+const PROFILES_TABLE = 'profiles';
+
+interface SupabaseContributionProfileRow {
+  display_name: string | null;
+}
 
 const createRepositoryError = (message: string, cause: unknown) => {
   const error = new Error(message) as Error & { cause?: unknown };
   error.cause = cause;
   return error;
-};
-
-const createPendingObservationId = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return `pending-${crypto.randomUUID()}`;
-  }
-
-  return `pending-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-};
-
-const createPendingObservationFromInput = (input: CreateObservationInput): Observation => {
-  return {
-    id: createPendingObservationId(),
-    name: input.name,
-    scientificName: input.scientificName ?? '',
-    taxon: input.taxon,
-    location: input.location,
-    date: input.date,
-    description: input.description ?? '',
-    coords: input.coords,
-    imageUrl: '',
-    status: 'pending',
-  };
 };
 
 const createImageDisplayFieldsById = async (rows: ObservationDbRow[]) => {
@@ -56,6 +38,44 @@ const createImageDisplayFieldsById = async (rows: ObservationDbRow[]) => {
 const mapObservationRowWithSignedImageUrl = async (row: ObservationDbRow) => {
   const signedImageUrl = await resolveObservationImageSignedUrl(row.image_path);
   return mapObservationRowToObservation(row, signedImageUrl ? { imageUrl: signedImageUrl } : undefined);
+};
+
+const isEmailLikeDisplayName = (value: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+};
+
+const normalizeObserverDisplayName = (value: string | null | undefined) => {
+  const trimmedValue = value?.trim();
+
+  if (!trimmedValue || isEmailLikeDisplayName(trimmedValue)) {
+    return undefined;
+  }
+
+  return trimmedValue;
+};
+
+const getCurrentContributor = async () => {
+  const client = getSupabaseClient();
+  const { data: userData, error: userError } = await client.auth.getUser();
+
+  if (userError || !userData.user) {
+    throw createRepositoryError('Authenticated observation creation requires a signed-in user.', userError);
+  }
+
+  const { data: profileData, error: profileError } = await client
+    .from(PROFILES_TABLE)
+    .select('display_name')
+    .eq('id', userData.user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    throw createRepositoryError('Failed to load contributor profile from Supabase.', profileError);
+  }
+
+  return {
+    userId: userData.user.id,
+    displayName: normalizeObserverDisplayName((profileData as SupabaseContributionProfileRow | null)?.display_name),
+  };
 };
 
 export const supabaseObservationRepository: ObservationRepository = {
@@ -97,17 +117,26 @@ export const supabaseObservationRepository: ObservationRepository = {
   },
 
   async createObservation(input) {
-    const uploadedImage = input.imageFile ? await uploadObservationImage(input.imageFile) : undefined;
-    const insertRow = mapCreateObservationInputToInsertRow(input, uploadedImage);
-    const { error } = await getSupabaseClient()
+    const contributor = await getCurrentContributor();
+    const uploadedImage = input.imageFile
+      ? await uploadObservationImage(input.imageFile, { ownerId: contributor.userId })
+      : undefined;
+    const insertRow = mapCreateObservationInputToInsertRow(input, uploadedImage, {
+      status: 'approved',
+      observerId: contributor.userId,
+      observerDisplayName: contributor.displayName,
+    });
+    const { data, error } = await getSupabaseClient()
       .from(OBSERVATIONS_TABLE)
-      .insert(insertRow);
+      .insert(insertRow)
+      .select('*')
+      .single();
 
     if (error) {
       // TODO: Define manual cleanup for uploaded orphan images if this insert fails.
-      throw createRepositoryError('Failed to create pending observation in Supabase.', error);
+      throw createRepositoryError('Failed to create approved observation in Supabase.', error);
     }
 
-    return createPendingObservationFromInput(input);
+    return mapObservationRowWithSignedImageUrl(data as ObservationDbRow);
   },
 };
