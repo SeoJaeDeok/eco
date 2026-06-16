@@ -24,9 +24,15 @@ This document is the phase 18B read-only monitoring checklist for Supabase Stora
 
 Follow-up phases remain separate:
 
-- 18C: signed URL refresh UX design or implementation candidate
+- 18C: signed URL refresh UX MVP implementation
 - 18D: anonymous upload abuse mitigation decision
 - 18E: optional cleanup automation design
+
+18D connects this checklist to abuse mitigation escalation thresholds in:
+
+```text
+docs/architecture/anonymous-upload-abuse-mitigation-decision.md
+```
 
 ## Pre-Run Safety Checklist
 
@@ -604,6 +610,8 @@ Candidate review workflow:
 
 These are draft operating thresholds. They need project-owner approval before they become policy.
 
+Phase 18D uses these thresholds as the basis for the monitoring-first hybrid abuse mitigation decision. Exceeding a threshold does not automatically authorize CAPTCHA, rate limits, policy changes, or cleanup. It starts a separate escalation and approval workflow.
+
 ### Weekly Pending Count
 
 - Watch: more than 20 pending rows.
@@ -719,8 +727,9 @@ Escalation path:
 
 ## Next Steps
 
-- 18C: signed URL refresh UX design or implementation candidate.
-- 18D: anonymous upload abuse mitigation decision.
-- 18E: optional cleanup automation design.
+- 18C: signed URL refresh UX MVP implementation completed.
+- 18D: anonymous upload abuse mitigation decision completed.
+- 18E: optional cleanup automation design, if cleanup workload justifies automation.
+- 18F: CAPTCHA/rate-limit implementation design, only if abuse thresholds are exceeded or launch risk changes.
 - Actual cleanup or deletion requires separate approval.
 - Any RLS, Storage policy, Edge Function, CAPTCHA, rate-limit, or admin cleanup UI work must be planned as its own approved phase.

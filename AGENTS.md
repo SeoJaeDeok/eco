@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 18C
+## Current State After Phase 18D
 
 Completed and verified:
 
@@ -43,6 +43,7 @@ Completed and verified:
 - 18A Supabase Storage operations hardening design/runbook is complete. It documents rejected/orphan cleanup options, anonymous upload abuse mitigations, signed URL refresh UX options, monitoring cadence, and read-only SQL drafts without changing app code, package files, Supabase migrations, RLS, or Storage policies.
 - 18B Supabase Storage read-only monitoring checklist is complete. It documents weekly/monthly checks, read-only SQL drafts, draft thresholds, result recording, and escalation rules without changing app code, package files, Supabase migrations, RLS, or Storage policies.
 - 18C signed URL refresh UX MVP is complete. Public detail modal selection refreshes the selected observation through the active repository, giving Supabase mode a fresh runtime signed URL while keeping UI components Supabase-free and keeping signed/public/blob/data URLs out of the database.
+- 18D anonymous upload abuse mitigation decision is complete. It chooses a monitoring-first hybrid MVP direction, keeps anonymous upload enabled while volume is low, and defers CAPTCHA, rate-limit, Edge Function gates, and authenticated contributor mode to later approved phases.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -50,14 +51,15 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-18D: Anonymous upload abuse mitigation decision, if approved
+18E: Optional cleanup automation design, if approved
 ```
 
 Recommended sequence:
 
-1. Start 18D only if the user approves anonymous upload abuse mitigation decision work.
-2. Otherwise continue with the next user-approved phase.
-3. Continue monitoring rejected/orphan image cleanup needs.
+1. Start 18E only if the user approves cleanup automation design work.
+2. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
+3. Otherwise continue with the next user-approved phase.
+4. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
 
 ## New Session Entry Checklist
 
@@ -74,7 +76,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, docs/architecture/supabase-storage-monitoring-checklist.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. Phase 18C signed URL refresh UX MVP implementation은 완료됐고, 다음 추천 작업은 사용자 승인 시 18D anonymous upload abuse mitigation decision입니다.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, docs/architecture/supabase-storage-monitoring-checklist.md, and docs/architecture/anonymous-upload-abuse-mitigation-decision.md. Do not modify code yet. Phase 18D anonymous upload abuse mitigation decision is complete; the next recommended phase is 18E optional cleanup automation design, 18F CAPTCHA/rate-limit design only if thresholds are exceeded, or another user-approved phase.
 ```
 
 ## Current Stack
@@ -379,6 +381,7 @@ npm.cmd audit --audit-level=high
 - Phase 18A: Supabase Storage operations hardening design/runbook completed.
 - Phase 18B: Supabase Storage read-only monitoring checklist completed.
 - Phase 18C: Signed URL refresh UX MVP implementation completed.
+- Phase 18D: Anonymous upload abuse mitigation decision completed.
 
 ## Review Checklist Before Final Response
 

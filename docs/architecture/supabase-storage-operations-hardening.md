@@ -28,6 +28,12 @@ The phase 18B read-only monitoring checklist is documented in:
 docs/architecture/supabase-storage-monitoring-checklist.md
 ```
 
+The phase 18D anonymous upload abuse mitigation decision is documented in:
+
+```text
+docs/architecture/anonymous-upload-abuse-mitigation-decision.md
+```
+
 Actual cleanup automation starts no earlier than 18E or a later approved phase. Any policy, RLS, Edge Function, CAPTCHA, rate-limit, or admin cleanup UI change requires separate approval.
 
 ## Current Storage Structure
@@ -418,6 +424,14 @@ MVP recommendation:
 - Use the 18B monitoring checklist for draft weekly/monthly thresholds.
 - Revisit CAPTCHA or rate limit if upload count, total size, or pending queue age spikes.
 - Consider authenticated-only image upload before public launch if abuse becomes likely.
+
+Phase 18D refined this into a monitoring-first hybrid decision:
+
+- Keep anonymous upload enabled while volume is low.
+- Use explicit 18B/18D thresholds as escalation triggers.
+- Start CAPTCHA or rate-limit design only after observed abuse or a public-launch risk decision.
+- Treat authenticated contributor mode as a separate product decision.
+- Do not change Storage policies, RLS, app code, or package files as part of the 18D decision.
 
 ## Signed URL Refresh UX Options
 
@@ -842,11 +856,19 @@ Scope:
 
 ### 18D: Abuse Mitigation Decision
 
-Expected scope:
+Completed as:
 
-- decide whether anonymous upload remains acceptable
-- compare CAPTCHA, rate limit, authenticated-only upload, and monitoring thresholds
-- document product/UX impact before implementation
+```text
+docs/architecture/anonymous-upload-abuse-mitigation-decision.md
+```
+
+Decision:
+
+- keep anonymous upload for now
+- use a monitoring-first hybrid strategy
+- connect action triggers to explicit daily upload, pending queue, near-limit image, orphan candidate, and bucket growth thresholds
+- defer CAPTCHA, rate limit, Edge Function gates, and authenticated contributor mode to later approved phases
+- keep public approved-only reads, pending public creates, private Storage, insert-only/no-upsert upload, and no signed URL DB persistence unchanged
 
 ### 18E: Optional Automated Cleanup Design
 

@@ -21,6 +21,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Supabase Storage signed URL refresh: public detail modal refreshes selected observations through the repository in phase 18C
 - Supabase Storage operations hardening: design/runbook completed in `docs/architecture/supabase-storage-operations-hardening.md`
 - Supabase Storage monitoring checklist: read-only SQL/checklist completed in `docs/architecture/supabase-storage-monitoring-checklist.md`
+- Anonymous upload abuse mitigation: monitoring-first decision completed in `docs/architecture/anonymous-upload-abuse-mitigation-decision.md`
 
 ## Implemented Features
 
@@ -173,6 +174,7 @@ Supabase setup is documented in:
 - `docs/architecture/supabase-storage-setup.md`
 - `docs/architecture/supabase-storage-operations-hardening.md`
 - `docs/architecture/supabase-storage-monitoring-checklist.md`
+- `docs/architecture/anonymous-upload-abuse-mitigation-decision.md`
 - `docs/architecture/kakao-map-provider-design.md`
 - `supabase/migrations/0001_create_observation_schema.sql`
 - `supabase/migrations/0002_create_observation_storage.sql`
@@ -198,12 +200,14 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. 18D: Anonymous upload abuse mitigation decision, if approved.
-2. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
-3. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
+1. 18E: Optional cleanup automation design, if Storage cleanup workload needs automation.
+2. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
+3. 19A: Next product feature if no abuse is observed and cleanup remains manageable.
+4. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
+5. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
 
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, and docs/architecture/supabase-storage-monitoring-checklist.md. Do not modify code yet. Phase 18C signed URL refresh UX MVP implementation is complete; the next recommended phase is 18D anonymous upload abuse mitigation decision, unless the user chooses another phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, docs/architecture/supabase-storage-monitoring-checklist.md, and docs/architecture/anonymous-upload-abuse-mitigation-decision.md. Do not modify code yet. Phase 18D anonymous upload abuse mitigation decision is complete; the next recommended phase is 18E optional cleanup automation design, 18F CAPTCHA/rate-limit design only if thresholds are exceeded, or another user-approved phase.
 ```

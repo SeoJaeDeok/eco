@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18C.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18D.
 
 Read this together with:
 
@@ -14,6 +14,7 @@ Read this together with:
 - `docs/architecture/supabase-storage-setup.md`
 - `docs/architecture/supabase-storage-operations-hardening.md`
 - `docs/architecture/supabase-storage-monitoring-checklist.md`
+- `docs/architecture/anonymous-upload-abuse-mitigation-decision.md`
 - `docs/architecture/kakao-map-provider-design.md`
 
 ## Current Completed Phases
@@ -56,6 +57,7 @@ Read this together with:
 - 18A Supabase Storage operations hardening design and runbook
 - 18B Supabase Storage read-only monitoring checklist
 - 18C signed URL refresh UX MVP implementation
+- 18D anonymous upload abuse mitigation decision
 
 ## Verified Current State
 
@@ -167,6 +169,14 @@ Read this together with:
   - `image_url` is not updated with signed, public, blob, preview, or data URLs.
   - Admin review automatic retry was not added; the existing pending-list `Refresh` action remains the manual signed URL refresh path for admin review.
   - Image-load-error retry was deferred because it requires a UI-to-repository refresh callback and retry-loop safeguards.
+- 18D anonymous upload abuse mitigation was documented as a decision-only phase:
+  - Added `docs/architecture/anonymous-upload-abuse-mitigation-decision.md`.
+  - Compared monitoring-only, CAPTCHA, rate limit, authenticated-only upload, and hybrid approaches.
+  - Chose a monitoring-first hybrid MVP direction.
+  - Kept anonymous image upload enabled for now.
+  - Linked escalation to 18B thresholds and read-only monitoring.
+  - Deferred CAPTCHA, rate-limit, Edge Function, and authenticated contributor mode to later approved phases.
+  - Did not change app code, package files, Supabase migrations, Storage policies, RLS, Kakao Map code, or public visibility behavior.
 
 ## Core Architecture
 
@@ -317,6 +327,7 @@ docs/architecture/supabase-storage-image-upload-design.md
 docs/architecture/supabase-storage-setup.md
 docs/architecture/supabase-storage-operations-hardening.md
 docs/architecture/supabase-storage-monitoring-checklist.md
+docs/architecture/anonymous-upload-abuse-mitigation-decision.md
 docs/architecture/kakao-map-provider-design.md
 ```
 
@@ -336,7 +347,7 @@ docs/architecture/kakao-map-provider-design.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, and docs/architecture/supabase-storage-monitoring-checklist.md. Do not modify code yet. Phase 18C signed URL refresh UX MVP implementation is complete; the next recommended phase is 18D anonymous upload abuse mitigation decision, unless the user chooses another phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, docs/architecture/supabase-storage-monitoring-checklist.md, and docs/architecture/anonymous-upload-abuse-mitigation-decision.md. Do not modify code yet. Phase 18D anonymous upload abuse mitigation decision is complete; the next recommended phase is 18E optional cleanup automation design, 18F CAPTCHA/rate-limit design only if thresholds are exceeded, or another user-approved phase.
 ```
 
 ## Recommended Phase 16 Direction
@@ -608,11 +619,33 @@ Implemented as a minimal code change:
   - no signed, public, blob, preview, or data URLs are stored
   - no Storage schema, policy, RLS, or migration changes
 
+### 18D: Anonymous Upload Abuse Mitigation Decision
+
+Completed as documentation-only work:
+
+- Added `docs/architecture/anonymous-upload-abuse-mitigation-decision.md`.
+- Compared:
+  - Option A: monitoring-only
+  - Option B: CAPTCHA
+  - Option C: rate limit
+  - Option D: authenticated-only upload
+  - Option E: hybrid approach
+- Recommended Option E for the MVP:
+  - keep anonymous image upload enabled while volume is low
+  - use 18B monitoring thresholds as action triggers
+  - start CAPTCHA/rate-limit design only if abuse appears or launch risk changes
+  - treat authenticated contributor mode as a product decision, not a Storage-only tweak
+- Added draft thresholds for daily upload count, daily pending count, near-limit images, orphan candidates, old pending queue age, repeated smoke/test rows, and bucket size growth.
+- Added an escalation workflow that preserves approved-only public reads, pending public creates, and no signed URL DB persistence.
+- Did not implement CAPTCHA, rate limit, Edge Functions, authenticated upload, app code changes, package changes, SQL/policy/RLS changes, Storage deletion, or Kakao Map changes.
+
 Recommended next steps:
 
-1. 18D: Anonymous upload abuse mitigation decision.
-2. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
-3. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
+1. 18E: Optional cleanup automation design, if Storage cleanup workload needs automation.
+2. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
+3. 19A: Next product feature if no abuse is observed and cleanup remains manageable.
+4. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
+5. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ## Missing Features
 
