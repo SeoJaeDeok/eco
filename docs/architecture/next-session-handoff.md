@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18B.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18C.
 
 Read this together with:
 
@@ -55,6 +55,7 @@ Read this together with:
 - 17E Kakao Map UX hardening
 - 18A Supabase Storage operations hardening design and runbook
 - 18B Supabase Storage read-only monitoring checklist
+- 18C signed URL refresh UX MVP implementation
 
 ## Verified Current State
 
@@ -157,6 +158,15 @@ Read this together with:
   - Added draft thresholds for pending count, old pending age, rejected retention, anonymous upload spikes, near-limit images, and bucket usage.
   - Added a result recording template and escalation rules.
   - Did not include active destructive SQL, apply SQL, delete Storage objects, change app code, change package files, change Supabase migrations, change policies/RLS, or change Kakao Map code.
+- 18C signed URL refresh UX was implemented with an MVP Option B approach:
+  - Public detail opens immediately with the selected observation and then refreshes that observation through `activeObservationRepository.getObservationById(id)`.
+  - Supabase mode continues to read only approved rows and creates a fresh runtime signed URL from `image_path` through repository/helper code.
+  - Mock mode keeps existing sample `imageUrl` behavior through the mock repository.
+  - UI components still do not call Supabase directly.
+  - Signed URLs remain runtime-only display values and are not stored in DB rows.
+  - `image_url` is not updated with signed, public, blob, preview, or data URLs.
+  - Admin review automatic retry was not added; the existing pending-list `Refresh` action remains the manual signed URL refresh path for admin review.
+  - Image-load-error retry was deferred because it requires a UI-to-repository refresh callback and retry-loop safeguards.
 
 ## Core Architecture
 
@@ -326,7 +336,7 @@ docs/architecture/kakao-map-provider-design.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, and docs/architecture/supabase-storage-monitoring-checklist.md. Do not modify code yet. Phase 18B Supabase Storage read-only monitoring checklist is complete; the next recommended phase is 18C signed URL refresh UX, unless the user chooses another phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, and docs/architecture/supabase-storage-monitoring-checklist.md. Do not modify code yet. Phase 18C signed URL refresh UX MVP implementation is complete; the next recommended phase is 18D anonymous upload abuse mitigation decision, unless the user chooses another phase.
 ```
 
 ## Recommended Phase 16 Direction
@@ -572,9 +582,35 @@ Completed as documentation-only work:
 - Added draft thresholds and escalation rules.
 - Did not change app code, package files, Supabase migrations, Storage policies, RLS, Kakao Map code, or public visibility behavior.
 
+### 18C: Signed URL Refresh UX MVP
+
+Implemented as a minimal code change:
+
+- Compared refresh options and chose Option B for the MVP:
+  - A: no automatic refresh, refresh guidance only
+  - B: refresh observation data when public detail modal opens
+  - C: retry signed URL on image load error
+  - D: combine B and C
+- Updated `src/App.tsx` so selecting an observation:
+  - opens the detail modal immediately using the selected row
+  - calls `activeObservationRepository.getObservationById(id)` in the background
+  - replaces the selected observation only if the same modal is still open
+- Supabase mode behavior:
+  - `getObservationById()` still filters to `status = 'approved'`
+  - repository/helper code generates a fresh 10-minute signed URL from `image_path`
+  - pending/rejected rows remain hidden publicly
+- Mock mode behavior:
+  - mock `getObservationById()` keeps existing sample image behavior
+- Admin behavior:
+  - existing pending-list `Refresh` action remains the manual refresh path for admin signed URLs
+  - automatic image-load retry is deferred
+- DB behavior:
+  - no signed, public, blob, preview, or data URLs are stored
+  - no Storage schema, policy, RLS, or migration changes
+
 Recommended next steps:
 
-1. 18C: Signed URL refresh UX design or implementation candidate.
+1. 18D: Anonymous upload abuse mitigation decision.
 2. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
 3. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 

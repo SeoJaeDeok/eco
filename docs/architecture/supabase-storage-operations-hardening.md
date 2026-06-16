@@ -818,7 +818,22 @@ Scope:
 
 ### 18C: Signed URL Refresh UX Improvement
 
-Expected scope:
+Completed direction:
+
+- Chose Option B for the MVP: refresh the selected public observation through the active repository when the detail modal opens.
+- `App.tsx` now opens the detail immediately with the selected observation and then calls `activeObservationRepository.getObservationById(id)` to receive a freshly mapped display observation.
+- In Supabase mode, `getObservationById()` still reads only approved rows and resolves `image_path` to a new runtime signed URL through repository/helper code.
+- In mock mode, `getObservationById()` returns the existing sample observation and preserves the current display behavior.
+- UI components still do not call Supabase directly.
+- Signed URLs remain display-only values and are not written to `public.observations`.
+- `image_path`, `image_mime_type`, and `image_size_bytes` remain the only new Storage fields stored by create flow.
+
+Deferred:
+
+- Image load error retry remains a later candidate because it needs a UI-to-repository refresh callback and retry-loop safeguards.
+- Admin review still supports signed URL refresh through the existing pending-list `Refresh` action; automatic image-load retry for admin review remains a later candidate.
+
+Scope:
 
 - choose a refresh strategy for long-lived pages
 - keep Supabase calls behind repository/helper code

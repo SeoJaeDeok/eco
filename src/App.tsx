@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { AppRoutes } from './components/AppRoutes';
@@ -87,6 +87,22 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleSelectObservation = useCallback((observation: Observation) => {
+    setSelectedObservation(observation);
+
+    void activeObservationRepository.getObservationById(observation.id)
+      .then((refreshedObservation) => {
+        if (!refreshedObservation) return;
+
+        setSelectedObservation((currentObservation) => {
+          return currentObservation?.id === observation.id ? refreshedObservation : currentObservation;
+        });
+      })
+      .catch(() => {
+        // Keep the already selected row if refresh fails; the repository hides provider details.
+      });
+  }, []);
+
   return (
     <div className="relative min-h-screen bg-white" id="app-root">
       {currentPage === 'home' && (
@@ -109,7 +125,7 @@ export default function App() {
           currentPage={currentPage}
           observations={observations}
           onNavigate={navigate}
-          onSelectObservation={setSelectedObservation}
+          onSelectObservation={handleSelectObservation}
         />
       </main>
 

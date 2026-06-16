@@ -930,10 +930,11 @@ Expected MVP behavior:
 - Fresh repository reads generate fresh signed URLs.
 - Long-lived pages may show expired images after the URL expires.
 - Signed URL generation failures fall back to the existing no-image display.
+- As of phase 18C, public detail modal open refreshes the selected observation through the active repository, which gives Supabase mode a fresh runtime signed URL without storing it in the database.
+- Admin review still refreshes signed URLs through the existing pending-list `Refresh` action.
 
 Future UX options:
 
-- Regenerate signed URLs when a detail modal opens.
 - Regenerate signed URLs when an image load fails.
 - Add a repository-level refresh helper without exposing Supabase calls to UI components.
 - Consider a longer expiration only after privacy and revocation behavior are reviewed.
@@ -968,7 +969,7 @@ Phase 18A converted the remaining Storage operations risks into a dedicated desi
 - 18A recommends rejected images remain private and be retained for 30 days before manual cleanup, pending project-owner approval before any destructive action.
 - 18A recommends monthly orphan candidate checks and weekly pending/bucket usage monitoring while volume is low.
 - Anonymous upload remains a known abuse risk; start with monitoring, then revisit CAPTCHA, rate limit, or authenticated-only image upload if usage spikes.
-- Signed URL refresh UX remains a 18C candidate for long-lived list/detail/admin pages.
+- 18C implemented public detail modal open refresh for signed URLs. Image-load-error retry and automatic admin image retry remain later candidates.
 - Re-run the full manual upload/admin/approve smoke test after any Storage, RLS, upload helper, admin review, or public detail changes.
 
 ## Explicit Non-Scope
