@@ -23,6 +23,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Supabase Storage monitoring checklist: read-only SQL/checklist completed in `docs/architecture/supabase-storage-monitoring-checklist.md`
 - Anonymous upload abuse mitigation: monitoring-first decision completed in `docs/architecture/anonymous-upload-abuse-mitigation-decision.md`
 - Supabase Storage cleanup automation: design completed in `docs/architecture/supabase-storage-cleanup-automation-design.md`
+- Phase 19 product prioritization: completed in `docs/architecture/phase-19-product-feature-prioritization.md`
 
 ## Implemented Features
 
@@ -49,6 +50,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Static map fallback when the Kakao key is missing or SDK loading fails
 - Kakao Map manual render and fallback/regression verification
 - Kakao Map minimal UX hardening
+- Phase 19A next product feature prioritization
 
 Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
@@ -178,6 +180,7 @@ Supabase setup is documented in:
 - `docs/architecture/anonymous-upload-abuse-mitigation-decision.md`
 - `docs/architecture/supabase-storage-cleanup-automation-design.md`
 - `docs/architecture/kakao-map-provider-design.md`
+- `docs/architecture/phase-19-product-feature-prioritization.md`
 - `supabase/migrations/0001_create_observation_schema.sql`
 - `supabase/migrations/0002_create_observation_storage.sql`
 
@@ -202,7 +205,7 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. 19A: Next product feature if no cleanup or abuse thresholds are currently exceeded.
+1. 19B: Public observation list filter/search UX improvement if no cleanup or abuse thresholds are currently exceeded.
 2. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
 3. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 4. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
@@ -211,5 +214,5 @@ Recommended next phase:
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, docs/architecture/supabase-storage-monitoring-checklist.md, docs/architecture/anonymous-upload-abuse-mitigation-decision.md, and docs/architecture/supabase-storage-cleanup-automation-design.md. Do not modify code yet. Phase 18E Storage cleanup automation design is complete; the next recommended phase is 19A next product feature unless cleanup or abuse thresholds justify a separate approved hardening phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19A product feature prioritization is complete; the next recommended phase is 19B public observation list filter/search UX improvement unless cleanup or abuse thresholds justify a separate approved hardening phase.
 ```

@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 18E
+## Current State After Phase 19A
 
 Completed and verified:
 
@@ -45,6 +45,7 @@ Completed and verified:
 - 18C signed URL refresh UX MVP is complete. Public detail modal selection refreshes the selected observation through the active repository, giving Supabase mode a fresh runtime signed URL while keeping UI components Supabase-free and keeping signed/public/blob/data URLs out of the database.
 - 18D anonymous upload abuse mitigation decision is complete. It chooses a monitoring-first hybrid MVP direction, keeps anonymous upload enabled while volume is low, and defers CAPTCHA, rate-limit, Edge Function gates, and authenticated contributor mode to later approved phases.
 - 18E Storage cleanup automation design is complete. It recommends semi-manual candidate export/review for MVP cleanup, keeps automatic delete deferred, and documents safety guards before any future cleanup implementation.
+- 19A next product feature prioritization is complete. It recommends public observation list filter/search UX improvement as the 19B implementation target, with upload UX and admin review UX as follow-up candidates.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -52,15 +53,15 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-19A: Next product feature, unless cleanup or abuse thresholds justify more hardening
+19B: Public observation list filter/search UX improvement
 ```
 
 Recommended sequence:
 
-1. Start 19A if no cleanup or abuse thresholds are currently exceeded.
-2. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
-3. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
-4. Otherwise continue with the next user-approved phase.
+1. Start 19B with a narrow public observation list filter/search UX improvement if no cleanup or abuse thresholds are currently exceeded.
+2. Keep the 19B scope client-side and approved-observation-only.
+3. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
+4. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 5. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
 
 ## New Session Entry Checklist
@@ -78,7 +79,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, docs/architecture/supabase-storage-monitoring-checklist.md, docs/architecture/anonymous-upload-abuse-mitigation-decision.md, and docs/architecture/supabase-storage-cleanup-automation-design.md. Do not modify code yet. Phase 18E Storage cleanup automation design is complete; the next recommended phase is 19A next product feature unless cleanup or abuse thresholds justify a separate approved hardening phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19A product feature prioritization is complete; the next recommended phase is 19B public observation list filter/search UX improvement unless cleanup or abuse thresholds justify a separate approved hardening phase.
 ```
 
 ## Current Stack
@@ -385,6 +386,7 @@ npm.cmd audit --audit-level=high
 - Phase 18C: Signed URL refresh UX MVP implementation completed.
 - Phase 18D: Anonymous upload abuse mitigation decision completed.
 - Phase 18E: Storage cleanup automation design completed.
+- Phase 19A: Next product feature prioritization completed.
 
 ## Review Checklist Before Final Response
 

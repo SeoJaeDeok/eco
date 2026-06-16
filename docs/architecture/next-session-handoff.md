@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18E.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 19A.
 
 Read this together with:
 
@@ -17,6 +17,7 @@ Read this together with:
 - `docs/architecture/anonymous-upload-abuse-mitigation-decision.md`
 - `docs/architecture/supabase-storage-cleanup-automation-design.md`
 - `docs/architecture/kakao-map-provider-design.md`
+- `docs/architecture/phase-19-product-feature-prioritization.md`
 
 ## Current Completed Phases
 
@@ -60,6 +61,7 @@ Read this together with:
 - 18C signed URL refresh UX MVP implementation
 - 18D anonymous upload abuse mitigation decision
 - 18E Storage cleanup automation design
+- 19A next product feature prioritization
 
 ## Verified Current State
 
@@ -187,6 +189,12 @@ Read this together with:
   - Deferred automatic delete, Edge Function implementation, service-role handling, and admin cleanup UI to later approved phases.
   - Documented safety guards including retention age, status, DB match, path prefix, dry-run first, max delete per run, manual approval, export before delete, audit report, and rollback limitations.
   - Did not delete Storage objects, implement Edge Functions, change app code, change package files, change Supabase migrations, change policies/RLS, change secrets, or change public visibility behavior.
+- 19A next product feature prioritization was documented as a planning-only phase:
+  - Added `docs/architecture/phase-19-product-feature-prioritization.md`.
+  - Compared public list filters/search, map/list coordination, upload UX, admin review UX, reject note/audit log design, biodiversity guide content, and Storage operations next steps.
+  - Recommended public observation list filter/search UX improvement as the 19B implementation target.
+  - Ranked upload UX and admin review UX as useful follow-up candidates.
+  - Kept 19A documentation-only with no app code, package, Supabase migration, policy, RLS, Storage, Kakao Map, Auth, admin, or public visibility changes.
 
 ## Core Architecture
 
@@ -340,6 +348,7 @@ docs/architecture/supabase-storage-monitoring-checklist.md
 docs/architecture/anonymous-upload-abuse-mitigation-decision.md
 docs/architecture/supabase-storage-cleanup-automation-design.md
 docs/architecture/kakao-map-provider-design.md
+docs/architecture/phase-19-product-feature-prioritization.md
 ```
 
 ## Security Rules For The Next Session
@@ -358,7 +367,7 @@ docs/architecture/kakao-map-provider-design.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md, docs/architecture/supabase-storage-monitoring-checklist.md, docs/architecture/anonymous-upload-abuse-mitigation-decision.md, and docs/architecture/supabase-storage-cleanup-automation-design.md. Do not modify code yet. Phase 18E Storage cleanup automation design is complete; the next recommended phase is either 19A next product feature, 18F CAPTCHA/rate-limit design only if abuse thresholds are exceeded, or a separately approved cleanup implementation phase after phase-label confirmation.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19A product feature prioritization is complete; the next recommended phase is 19B public observation list filter/search UX improvement unless cleanup or abuse thresholds justify a separate approved hardening phase.
 ```
 
 ## Recommended Phase 16 Direction
@@ -672,11 +681,27 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. 19A: Next product feature if no cleanup or abuse thresholds are currently exceeded.
+1. 19B: Public observation list filter/search UX improvement if no cleanup or abuse thresholds are currently exceeded.
 2. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
 3. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
 4. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
 5. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
+
+### 19A: Product Feature Prioritization
+
+Completed as:
+
+```text
+docs/architecture/phase-19-product-feature-prioritization.md
+```
+
+Decision:
+
+- 19A was planning-only.
+- Candidate A, public observation list filter/search UX, is recommended for 19B.
+- The recommended 19B scope is a narrow client-side improvement using the already-loaded approved observations.
+- Expected 19B work may touch `src/utils/observationFilters.ts`, `src/components/ObservationListPage.tsx`, `src/components/observations/ObservationListHeader.tsx`, and optionally `src/components/observations/ObservationGrid.tsx`.
+- 19B must not change Supabase schema, RLS, Storage, Kakao provider/fallback, admin Auth, public visibility, package files, or pending/rejected exposure behavior.
 
 ## Missing Features
 
