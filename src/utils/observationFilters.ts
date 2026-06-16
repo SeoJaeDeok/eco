@@ -1,14 +1,27 @@
 import { ALL_TAXON_FILTER, type TaxonFilter } from '../constants/taxon';
 import type { Observation } from '../types';
 
-export type ObservationSortOrder = 'latest' | 'oldest';
+export type ImageFilter = 'all' | 'with-image' | 'without-image';
+export type ObservationSortKey = 'newest' | 'oldest' | 'name';
 
-interface FilterObservationsOptions {
+export interface FilterObservationsOptions {
   selectedTaxon: TaxonFilter;
   searchQuery: string;
+  imageFilter?: ImageFilter;
 }
 
-export const filterObservations = (observations: Observation[], { selectedTaxon, searchQuery }: FilterObservationsOptions) => {
+export interface FilterAndSortObservationsOptions extends FilterObservationsOptions {
+  sortKey: ObservationSortKey;
+}
+
+export const hasObservationImage = (observation: Observation) => {
+  return Boolean(observation.imageUrl.trim());
+};
+
+export const filterObservations = (
+  observations: Observation[],
+  { selectedTaxon, searchQuery, imageFilter = 'all' }: FilterObservationsOptions,
+) => {
   let result = observations;
 
   if (selectedTaxon !== ALL_TAXON_FILTER) {
@@ -25,15 +38,37 @@ export const filterObservations = (observations: Observation[], { selectedTaxon,
     );
   }
 
+  if (imageFilter !== 'all') {
+    result = result.filter((obs) => {
+      const hasImage = hasObservationImage(obs);
+      return imageFilter === 'with-image' ? hasImage : !hasImage;
+    });
+  }
+
   return result;
 };
 
-export const sortObservations = (observations: Observation[], sortBy: ObservationSortOrder) => {
+const getObservationTime = (observation: Observation) => {
+  return Date.parse(observation.date.replace(/-/g, '/')) || 0;
+};
+
+export const sortObservations = (observations: Observation[], sortKey: ObservationSortKey) => {
   return [...observations].sort((a, b) => {
-    const aTime = Date.parse(a.date.replace(/-/g, '/')) || 0;
-    const bTime = Date.parse(b.date.replace(/-/g, '/')) || 0;
-    return sortBy === 'latest' ? bTime - aTime : aTime - bTime;
+    if (sortKey === 'name') {
+      return a.name.localeCompare(b.name, 'ko');
+    }
+
+    const aTime = getObservationTime(a);
+    const bTime = getObservationTime(b);
+    return sortKey === 'newest' ? bTime - aTime : aTime - bTime;
   });
+};
+
+export const filterAndSortObservations = (
+  observations: Observation[],
+  { sortKey, ...filterOptions }: FilterAndSortObservationsOptions,
+) => {
+  return sortObservations(filterObservations(observations, filterOptions), sortKey);
 };
 
 export const countObservationsByTaxon = (observations: Observation[], taxon: TaxonFilter) => {

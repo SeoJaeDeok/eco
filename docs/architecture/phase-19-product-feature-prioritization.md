@@ -292,3 +292,27 @@ Preserve these boundaries in 19B and later phases:
 2. Use 19C to verify mock and Supabase modes, document the result, and decide whether map/list coordination or upload UX should follow.
 3. Revisit Candidate C or D after 19B if no Storage cleanup or abuse thresholds are exceeded.
 4. Start Candidate E only as a schema/RLS/admin-flow design phase, not as a quick UI change.
+
+## 19B Implementation Result
+
+19B implemented the recommended Candidate A scope:
+
+- Text search remains client-side and covers observation name, scientific name, location, and description.
+- Taxon filtering remains unchanged and keeps the existing taxon badge/color rules.
+- Image-present filtering was added with `all`, `with-image`, and `without-image` states.
+- Sorting now supports newest, oldest, and observation-name order.
+- Result count and empty state were added to the public observation list.
+- Filtering and sorting operate only on the approved observations already returned by the active public repository.
+
+19B did not change:
+
+- Supabase queries
+- Supabase schema, RLS, policies, grants, or migrations
+- Storage upload or signed URL persistence rules
+- Kakao provider or static fallback
+- Admin/Auth flows
+- package files or dependencies
+
+Next recommended step:
+
+- 19C: verify the public list filter/search behavior in mock mode and Supabase mode if configured, then choose the next product feature.

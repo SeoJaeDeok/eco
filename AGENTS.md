@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 19A
+## Current State After Phase 19B
 
 Completed and verified:
 
@@ -46,6 +46,7 @@ Completed and verified:
 - 18D anonymous upload abuse mitigation decision is complete. It chooses a monitoring-first hybrid MVP direction, keeps anonymous upload enabled while volume is low, and defers CAPTCHA, rate-limit, Edge Function gates, and authenticated contributor mode to later approved phases.
 - 18E Storage cleanup automation design is complete. It recommends semi-manual candidate export/review for MVP cleanup, keeps automatic delete deferred, and documents safety guards before any future cleanup implementation.
 - 19A next product feature prioritization is complete. It recommends public observation list filter/search UX improvement as the 19B implementation target, with upload UX and admin review UX as follow-up candidates.
+- 19B public observation list filter/search UX improvement is complete. The public list now supports client-side text search, taxon filtering, image-present filtering, newest/oldest/name sorting, result counts, and an empty state while preserving approved-only repository reads.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -53,13 +54,13 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-19B: Public observation list filter/search UX improvement
+19C: Public list filter/search regression verification and next feature selection
 ```
 
 Recommended sequence:
 
-1. Start 19B with a narrow public observation list filter/search UX improvement if no cleanup or abuse thresholds are currently exceeded.
-2. Keep the 19B scope client-side and approved-observation-only.
+1. Start 19C with manual/browser verification of the 19B public list filters in mock mode and Supabase mode if configured.
+2. If 19B verification is accepted, continue to the next user-approved product feature, with upload UX and admin review UX as the leading follow-up candidates.
 3. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
 4. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 5. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
@@ -79,7 +80,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19A product feature prioritization is complete; the next recommended phase is 19B public observation list filter/search UX improvement unless cleanup or abuse thresholds justify a separate approved hardening phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19B public observation list filter/search UX improvement is complete; the next recommended phase is 19C public list filter/search regression verification unless cleanup or abuse thresholds justify a separate approved hardening phase.
 ```
 
 ## Current Stack
@@ -387,6 +388,7 @@ npm.cmd audit --audit-level=high
 - Phase 18D: Anonymous upload abuse mitigation decision completed.
 - Phase 18E: Storage cleanup automation design completed.
 - Phase 19A: Next product feature prioritization completed.
+- Phase 19B: Public observation list filter/search UX improvement completed.
 
 ## Review Checklist Before Final Response
 

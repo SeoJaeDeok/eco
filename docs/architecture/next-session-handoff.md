@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 19A.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 19B.
 
 Read this together with:
 
@@ -62,6 +62,7 @@ Read this together with:
 - 18D anonymous upload abuse mitigation decision
 - 18E Storage cleanup automation design
 - 19A next product feature prioritization
+- 19B public observation list filter/search UX improvement
 
 ## Verified Current State
 
@@ -195,6 +196,13 @@ Read this together with:
   - Recommended public observation list filter/search UX improvement as the 19B implementation target.
   - Ranked upload UX and admin review UX as useful follow-up candidates.
   - Kept 19A documentation-only with no app code, package, Supabase migration, policy, RLS, Storage, Kakao Map, Auth, admin, or public visibility changes.
+- 19B public observation list filter/search UX improvement was implemented:
+  - Public list filtering remains client-side against already-loaded approved observations.
+  - Existing text search and taxon filtering were preserved.
+  - Added image-present filtering for all, with-image, and without-image states.
+  - Added name sorting alongside newest and oldest sorting.
+  - Added result count and a Korean empty state for no matching public list results.
+  - Did not change Supabase queries, RLS, policies, Storage rules, Kakao provider/fallback, Auth/admin flows, package files, or public visibility behavior.
 
 ## Core Architecture
 
@@ -367,7 +375,7 @@ docs/architecture/phase-19-product-feature-prioritization.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19A product feature prioritization is complete; the next recommended phase is 19B public observation list filter/search UX improvement unless cleanup or abuse thresholds justify a separate approved hardening phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19B public observation list filter/search UX improvement is complete; the next recommended phase is 19C public list filter/search regression verification unless cleanup or abuse thresholds justify a separate approved hardening phase.
 ```
 
 ## Recommended Phase 16 Direction
@@ -681,11 +689,12 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. 19B: Public observation list filter/search UX improvement if no cleanup or abuse thresholds are currently exceeded.
-2. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
-3. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
-4. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
-5. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
+1. 19C: Public list filter/search regression verification in mock mode and Supabase mode if configured.
+2. Continue to the next user-approved product feature, with upload UX and admin review UX as leading follow-up candidates after 19B verification.
+3. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
+4. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
+5. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
+6. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ### 19A: Product Feature Prioritization
 
@@ -702,6 +711,25 @@ Decision:
 - The recommended 19B scope is a narrow client-side improvement using the already-loaded approved observations.
 - Expected 19B work may touch `src/utils/observationFilters.ts`, `src/components/ObservationListPage.tsx`, `src/components/observations/ObservationListHeader.tsx`, and optionally `src/components/observations/ObservationGrid.tsx`.
 - 19B must not change Supabase schema, RLS, Storage, Kakao provider/fallback, admin Auth, public visibility, package files, or pending/rejected exposure behavior.
+
+### 19B: Public Observation List Filter/Search UX Improvement
+
+Implemented:
+
+- Extended `src/utils/observationFilters.ts` with explicit `ImageFilter` and `ObservationSortKey` unions.
+- Added image-present filtering using display-only `Observation.imageUrl`.
+- Added name sorting while keeping newest as the default public list sort.
+- Kept search over observation name, scientific name, location, and description.
+- Kept taxon filtering and taxon count behavior.
+- Added public list result count and empty state.
+
+Scope boundaries kept:
+
+- No server-side filtering.
+- No Supabase query, policy, RLS, grant, migration, or Storage change.
+- No public exposure of pending or rejected observations.
+- No signed/public/blob/preview/data URL persistence.
+- No Kakao Map, Auth, admin, package, or dependency change.
 
 ## Missing Features
 

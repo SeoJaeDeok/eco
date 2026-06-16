@@ -1,6 +1,11 @@
 import { useMemo, useState } from 'react';
 import { ALL_TAXON_FILTER, type TaxonFilter } from '../constants/taxon';
-import { filterObservations, sortObservations, type ObservationSortOrder } from '../utils/observationFilters';
+import {
+  filterAndSortObservations,
+  filterObservations,
+  type ImageFilter,
+  type ObservationSortKey,
+} from '../utils/observationFilters';
 import { countUniqueSpecies } from '../utils/observationStats';
 import { ObservationGrid } from './observations/ObservationGrid';
 import { ObservationListHeader } from './observations/ObservationListHeader';
@@ -13,17 +18,18 @@ interface ObservationListPageProps {
 }
 
 export const ObservationListPage = ({ observations, onSelect }: ObservationListPageProps) => {
-  const [sortBy, setSortBy] = useState<ObservationSortOrder>('latest');
+  const [sortKey, setSortKey] = useState<ObservationSortKey>('newest');
   const [selectedTaxon, setSelectedTaxon] = useState<TaxonFilter>(ALL_TAXON_FILTER);
   const [searchQuery, setSearchQuery] = useState('');
+  const [imageFilter, setImageFilter] = useState<ImageFilter>('all');
 
   const filteredObservations = useMemo(() => {
-    return filterObservations(observations, { selectedTaxon, searchQuery });
-  }, [observations, selectedTaxon, searchQuery]);
+    return filterObservations(observations, { selectedTaxon, searchQuery, imageFilter });
+  }, [imageFilter, observations, selectedTaxon, searchQuery]);
 
   const sortedObservations = useMemo(() => {
-    return sortObservations(filteredObservations, sortBy);
-  }, [filteredObservations, sortBy]);
+    return filterAndSortObservations(observations, { selectedTaxon, searchQuery, imageFilter, sortKey });
+  }, [imageFilter, observations, searchQuery, selectedTaxon, sortKey]);
 
   const uniqueSpeciesCount = useMemo(() => {
     return countUniqueSpecies(filteredObservations);
@@ -35,11 +41,15 @@ export const ObservationListPage = ({ observations, onSelect }: ObservationListP
         <ObservationListHeader
           selectedTaxon={selectedTaxon}
           uniqueSpeciesCount={uniqueSpeciesCount}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
+          resultCount={filteredObservations.length}
+          totalCount={observations.length}
+          sortKey={sortKey}
+          onSortChange={setSortKey}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onSearchClear={() => setSearchQuery('')}
+          imageFilter={imageFilter}
+          onImageFilterChange={setImageFilter}
         />
 
         <ObservationTaxonFilter
