@@ -99,7 +99,19 @@ Read this together with:
 - `VITE_KAKAO_MAP_JAVASCRIPT_KEY` enables the Kakao provider; missing env keeps the static provider active.
 - SDK load failure falls back to the static map surfaces without exposing keys in errors.
 - UI components still use `DesignMap`, `StaticDesignMap`, and `DesignMarkerPicker`; they do not call Kakao SDK APIs directly.
-- Kakao Map manual UI verification is still pending.
+- 17C headless verification was retried against the registered local origin `http://127.0.0.1:3003/` with a locally configured Kakao key:
+  - `.env.local` existed and `VITE_KAKAO_MAP_JAVASCRIPT_KEY` was configured, without printing the value.
+  - `npm.cmd run typecheck` passed.
+  - `npm.cmd run build` passed.
+  - Vite dev server at `http://127.0.0.1:3003/` returned HTTP 200.
+  - Kakao SDK script injection was observed.
+  - a non-printing direct SDK request check with the same local referer returned HTTP 403.
+  - `window.kakao.maps.Map` did not become ready in the headless run.
+  - the map page fell back to the static fallback instead of crashing.
+  - no secret-like console/log pattern was detected by the headless check.
+  - mobile fallback surface was present without horizontal overflow.
+  - Kakao marker display/click, detail Kakao preview, and upload coordinate selection could not be verified because the SDK did not become ready.
+- Kakao Map manual UI verification remains partial. The retry points to Kakao app/key/domain configuration or propagation rather than an app crash; verify that the value is the JavaScript key for the same Kakao app and that the local dev origin is registered in Kakao Developers.
 
 ## Core Architecture
 
@@ -463,8 +475,8 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Start `17C: Kakao Map UI connection and manual verification`.
-2. Verify static map fallback for missing env or SDK load failure.
+1. Retry `17C: Kakao Map UI connection and manual verification` after confirming the configured value is the Kakao JavaScript key for the same app whose web platform domain includes the local dev origin.
+2. Verify real Kakao render, markers, marker click, detail preview, upload coordinate selection, and SDK failure fallback at `http://127.0.0.1:3003/`.
 3. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ## Missing Features
