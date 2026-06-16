@@ -65,7 +65,7 @@ Read this together with:
 - 19A next product feature prioritization
 - 19B public observation list filter/search UX improvement
 - 19C public observation list filter/search regression verification
-- Phase history archive for phases 1 through 18, plus a reusable phase template
+- Phase history archive for phases 1 through 18, plus a reusable bilingual phase template
 
 ## Verified Current State
 
@@ -214,6 +214,10 @@ Read this together with:
   - Supabase/no-key browser smoke passed for approved public list render, result count, name search, empty state, image-present filtering, detail modal image display, static map fallback, mobile width, runtime console errors, and secret-like console/log patterns.
   - Browser resource logs contained one non-secret resource load error during each mock/Supabase run, but no runtime console errors and no secret-like patterns.
   - No app code, package files, Supabase migration/policy files, Kakao provider files, Storage/Auth/Admin flows, or public visibility rules were changed.
+- Phase history archive bilingual update:
+  - Added Korean companion summaries under the English phase-history sections for Phase 1 through Phase 18.
+  - Updated the phase-history index and reusable template with the same bilingual convention.
+  - `docs/eco/phase-history/phase-19.md` was not created in this update.
 
 ## Core Architecture
 

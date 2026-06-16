@@ -4,11 +4,17 @@
 
 This archive keeps concise, durable summaries of completed project phases for the KNU Eco Map app.
 
+**한국어:** 이 아카이브는 KNU Eco Map 앱의 완료된 phase를 짧고 오래 유지 가능한 형태로 정리합니다.
+
 The active handoff document remains the source of truth for the latest current state:
+
+**한국어:** 최신 현재 상태는 항상 handoff 문서를 우선 기준으로 확인합니다.
 
 - `docs/architecture/next-session-handoff.md`
 
 This archive is intentionally split into one Markdown file per phase. That structure keeps each phase reviewable, prevents a single long history file from becoming hard to maintain, and makes it easy to add Phase 19, Phase 20, and later records after those phases are complete.
+
+**한국어:** phase별 독립 Markdown 구조는 Git diff 검토가 쉽고, 긴 단일 문서가 비대해지는 문제를 줄이며, Phase 19 이후 기록을 완료 시점마다 추가하기 좋습니다.
 
 ## How To Use This Archive
 
@@ -16,6 +22,8 @@ This archive is intentionally split into one Markdown file per phase. That struc
 - Use each phase file for historical context, not for current runtime configuration.
 - Check `docs/architecture/next-session-handoff.md` before starting new work.
 - When facts are not explicitly recorded in project docs or commits, phase files say so instead of guessing.
+
+**한국어:** 필요한 phase 파일을 찾을 때는 이 index를 사용하되, 실제 다음 작업 전에는 `next-session-handoff.md`를 먼저 확인합니다. 문서나 커밋으로 확인되지 않은 내용은 추정하지 않고 명시적으로 불확실하다고 적습니다.
 
 ## Phase Files
 
@@ -40,6 +48,8 @@ This archive is intentionally split into one Markdown file per phase. That struc
 | 17 | Kakao Map Provider | Verified | Designed, implemented, verified, and UX-hardened the Kakao Map provider while preserving static fallback. | [phase-17.md](phase-17.md) |
 | 18 | Storage Operations Hardening | Completed | Documented operations runbooks, monitoring, signed URL refresh MVP, abuse mitigation, and cleanup automation design. | [phase-18.md](phase-18.md) |
 
+**한국어:** 위 표는 완료된 Phase 1~18의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 19 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
+
 ## Adding A New Completed Phase
 
 1. Wait until the phase is complete or intentionally closed.
@@ -50,3 +60,5 @@ This archive is intentionally split into one Markdown file per phase. That struc
 6. Add the new phase row to this index.
 7. If useful, add a short pointer in `README.md`, `AGENTS.md`, or the handoff document.
 8. Run the documentation checks requested for the phase.
+
+**한국어:** 새 phase는 완료 또는 종료가 확인된 뒤 `_phase-template.md`를 복사해 작성합니다. 영어 설명을 유지하고, 각 섹션 아래에는 한국어 요약을 병기하되 실제 비밀값이나 확인되지 않은 검증 결과는 쓰지 않습니다.
