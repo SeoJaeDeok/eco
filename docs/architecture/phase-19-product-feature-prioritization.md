@@ -313,6 +313,16 @@ Preserve these boundaries in 19B and later phases:
 - Admin/Auth flows
 - package files or dependencies
 
-Next recommended step:
+## 19C Verification Result
 
-- 19C: verify the public list filter/search behavior in mock mode and Supabase mode if configured, then choose the next product feature.
+19C verified the 19B implementation:
+
+- Mock/no-key browser smoke passed for default newest ordering, result count, name/scientific/location/description text search, case/space-tolerant search, taxon filtering, image-present filtering, newest/oldest/name sorting, combined filters, empty state, detail modal, static fallback map, mobile width, runtime console errors, and secret-like console/log patterns.
+- Supabase read-only check passed with 11 approved rows visible, 1 approved row with `image_path`, 0 URL-like `image_url` values, 0 pending/rejected rows visible, and no query errors.
+- Supabase/no-key browser smoke passed for approved public list render, result count, name search, empty state, image-present filtering, detail modal image display, static fallback map, mobile width, runtime console errors, and secret-like console/log patterns.
+- Browser resource logs contained one non-secret resource load error during each mock/Supabase run, but no runtime console errors and no secret-like patterns.
+- No app code, package files, Supabase migrations/policies, Kakao provider files, Storage/Auth/Admin flows, or public visibility rules were changed during 19C.
+
+Phase 19 can be archived next by adding `docs/eco/phase-history/phase-19.md`.
+
+Next recommended product-feature candidates remain upload UX and admin review UX unless cleanup or abuse thresholds justify a separate approved hardening phase.

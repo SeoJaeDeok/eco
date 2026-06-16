@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 19B.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 19C.
 
 Read this together with:
 
@@ -64,6 +64,7 @@ Read this together with:
 - 18E Storage cleanup automation design
 - 19A next product feature prioritization
 - 19B public observation list filter/search UX improvement
+- 19C public observation list filter/search regression verification
 - Phase history archive for phases 1 through 18, plus a reusable phase template
 
 ## Verified Current State
@@ -205,6 +206,14 @@ Read this together with:
   - Added name sorting alongside newest and oldest sorting.
   - Added result count and a Korean empty state for no matching public list results.
   - Did not change Supabase queries, RLS, policies, Storage rules, Kakao provider/fallback, Auth/admin flows, package files, or public visibility behavior.
+- 19C public observation list filter/search regression verification passed:
+  - `npm.cmd run typecheck` passed.
+  - `npm.cmd run build` passed after rerunning outside the sandbox because the first sandboxed build hit a native dependency `spawn EPERM`.
+  - Mock/no-key browser smoke passed for default newest ordering, result count, text search over name/scientific name/location/description, case/space-tolerant search, taxon filtering, image-present filtering, newest/oldest/name sorting, combined filters, empty state, detail modal, static map fallback, mobile width, runtime console errors, and secret-like console/log patterns.
+  - Supabase read-only check saw 11 approved rows, 1 approved row with `image_path`, 0 URL-like `image_url` values, 0 pending/rejected rows visible, and no query errors.
+  - Supabase/no-key browser smoke passed for approved public list render, result count, name search, empty state, image-present filtering, detail modal image display, static map fallback, mobile width, runtime console errors, and secret-like console/log patterns.
+  - Browser resource logs contained one non-secret resource load error during each mock/Supabase run, but no runtime console errors and no secret-like patterns.
+  - No app code, package files, Supabase migration/policy files, Kakao provider files, Storage/Auth/Admin flows, or public visibility rules were changed.
 
 ## Core Architecture
 
@@ -378,7 +387,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19B public observation list filter/search UX improvement is complete; the next recommended phase is 19C public list filter/search regression verification unless cleanup or abuse thresholds justify a separate approved hardening phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19C public list filter/search regression verification passed; the next recommended documentation task is creating docs/eco/phase-history/phase-19.md, followed by the next user-approved product feature unless cleanup or abuse thresholds justify a separate approved hardening phase.
 ```
 
 ## Recommended Phase 16 Direction
@@ -692,8 +701,8 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. 19C: Public list filter/search regression verification in mock mode and Supabase mode if configured.
-2. Continue to the next user-approved product feature, with upload UX and admin review UX as leading follow-up candidates after 19B verification.
+1. Add `docs/eco/phase-history/phase-19.md` now that 19C passed and Phase 19 can be archived.
+2. Continue to the next user-approved product feature, with upload UX and admin review UX as leading follow-up candidates.
 3. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
 4. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
 5. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
@@ -733,6 +742,22 @@ Scope boundaries kept:
 - No public exposure of pending or rejected observations.
 - No signed/public/blob/preview/data URL persistence.
 - No Kakao Map, Auth, admin, package, or dependency change.
+
+### 19C: Public Observation List Filter/Search Regression Verification
+
+Completed:
+
+- Mock/no-key browser regression passed for the public list filter/search/sort surface.
+- Supabase/no-key browser regression passed for approved public list render, image-present filtering, detail modal image display, static map fallback, and mobile layout.
+- Supabase read-only public invariant check passed:
+  - 11 approved rows visible
+  - 0 pending/rejected rows visible
+  - 1 approved row with `image_path`
+  - 0 URL-like `image_url` values
+- Public filtering remains client-side and operates only on observations already returned by the active public repository.
+- `src/repositories/supabase/supabaseObservationRepository.ts` still filters public reads to `status = 'approved'`.
+- No app code was changed during 19C.
+- `docs/eco/phase-history/phase-19.md` was intentionally not created in 19C; it is the next recommended documentation task.
 
 ## Missing Features
 
