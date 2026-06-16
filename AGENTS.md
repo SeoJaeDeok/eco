@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20E Implementation
+## Current State After Phase 20E.6 Manual Smoke Documentation
 
 Completed and verified:
 
@@ -57,6 +57,7 @@ Completed and verified:
 - 20D.5 signed-out/headless smoke is partially verified: home/list/map/upload routes load, signed-out upload gate appears, upload form is hidden while signed out, Navbar does not expose admin, and direct `/#admin` still loads. Real Supabase login/logout was not verified because no test account credentials were available in-session.
 - 20E-prep promoted the reviewed public user contribution SQL into `supabase/migrations/0003_public_user_contribution.sql` as an apply-ready migration candidate. Codex did not apply it to Supabase.
 - 20E authenticated direct approved create is implemented in the Supabase repository path. Signed-in Supabase users create `approved` observations with `observer_id = auth.uid()`, optional safe `observer_display_name`, and Storage object paths under the authenticated owner path. Codex did not apply SQL/RLS in this phase.
+- 20E.6 manual smoke result is documented. The user confirmed the 0003 ownership/display columns are present and an admin-authenticated smoke passed for login, signed-out upload gate, logged-in upload form access, approved row creation, `observer_id`, safe non-email `observer_display_name`, image metadata, no URL-like `image_url`, public list display, pending/rejected public invisibility, logout gate return, and console/log secret checks. Because the test used the existing `/#admin` account, a non-admin contributor smoke remains recommended.
 - 20E does not implement observer display UI, owner edit, admin edit, public sign-up, display-name setup, package changes, or new dependencies.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
@@ -65,15 +66,15 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-20E smoke verification, then 20F observer display
+20F observer display, with non-admin contributor smoke recommended
 ```
 
 Recommended sequence:
 
-1. Smoke test 20E in Supabase mode with a configured non-admin test account: login, upload submit, `status = approved`, `observer_id = auth.uid()`, owner Storage path, and no URL-like `image_url`.
-2. Verify anonymous users still see the upload gate and cannot submit.
-3. Verify public reads remain approved-only with pending/rejected hidden.
-4. Start 20F observer display only after 20E create smoke is accepted.
+1. If a non-admin contributor account is available, rerun the 20E smoke with that account before or alongside 20F.
+2. Start 20F observer display using the existing `observer_display_name` snapshot and safe fallback rules.
+3. Keep observer edit, owner edit, admin edit, public sign-up, and display-name setup for later approved phases.
+4. Verify public reads remain approved-only with pending/rejected hidden after observer display changes.
 5. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
 6. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 7. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
@@ -93,7 +94,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20E authenticated direct approved create is implemented in the Supabase repository path. Codex did not apply SQL/RLS. The next recommended step is 20E Supabase smoke verification with a configured non-admin test account before 20F observer display. Observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20E authenticated direct approved create is implemented and 20E.6 admin-authenticated manual smoke is documented. Codex did not apply SQL/RLS. The next recommended step is 20F observer display, with a non-admin contributor smoke still recommended when an account is available. Owner edit and admin edit are not implemented yet.
 ```
 
 ## Current Stack
@@ -417,6 +418,7 @@ npm.cmd audit --audit-level=high
 - Phase 20D: Public login UI/auth state and signed-out upload gate completed.
 - Phase 20E-prep: Public user contribution SQL draft promoted to an apply-ready migration candidate; SQL was not applied.
 - Phase 20E: Authenticated direct approved observation create implemented in the Supabase repository path.
+- Phase 20E.6: Admin-authenticated manual smoke result for direct approved create documented; non-admin contributor smoke remains recommended.
 
 ## Review Checklist Before Final Response
 

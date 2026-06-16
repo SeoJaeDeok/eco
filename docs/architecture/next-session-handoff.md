@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20E authenticated direct create implementation.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20E.6 authenticated direct create manual smoke documentation.
 
 Read this together with:
 
@@ -73,6 +73,7 @@ Read this together with:
 - 20D public login UI/auth state and signed-out upload gate
 - 20E-prep public user contribution SQL draft promoted to an apply-ready migration candidate
 - 20E authenticated direct approved observation create
+- 20E.6 authenticated direct approved create manual smoke documentation
 
 ## Verified Current State
 
@@ -980,12 +981,54 @@ Status: PARTIAL.
 - Observer display UI, owner edit, admin edit, and extra SQL/RLS application remain unimplemented.
 - 20E full authenticated submit smoke pending: requires 0003 applied + test credentials.
 
+### 20E.6: Authenticated Direct Create Manual Smoke Result
+
+Status: admin-authenticated manual smoke passed; non-admin contributor smoke remains recommended.
+
+The user confirmed the 0003 schema columns in Supabase SQL Editor:
+
+- `profiles.display_name` is present as nullable `text`.
+- `observations.observer_id` is present.
+- `observations.observer_display_name` is present.
+
+Test account type:
+
+- The manual smoke used the existing `/#admin` account.
+- This confirms the authenticated create path for an authenticated/admin profile, but it is not a separate non-admin contributor smoke.
+- A `profiles` row is the app-owned profile record for the Supabase Auth user. It carries `role` for authorization and optional `display_name` for safe public display.
+- `observer_display_name` is a snapshot copied from a non-empty, non-email `profiles.display_name`; email must not be used as the public observer label.
+
+Manual smoke result reported by the user:
+
+- Login: passed.
+- Signed-out upload gate: passed.
+- Logged-in upload form access: passed.
+- Submit: passed.
+- DB row created: yes.
+- Inserted `status`: `approved`.
+- `observer_id`: present.
+- `observer_display_name`: safe display text, not an email.
+- `image_path`, `image_mime_type`, and `image_size_bytes`: stored normally when an image was submitted.
+- `image_url`: no signed, public, blob, or data URL stored.
+- Public list shows the new approved row: yes.
+- Pending/rejected public visibility: none observed.
+- Logout returns to upload gate: passed.
+- Console/log secret exposure: none observed.
+
+Scope boundaries:
+
+- Codex did not apply Supabase SQL/RLS.
+- Observer display UI remains unimplemented and is the 20F target.
+- Owner/admin edit remains unimplemented.
+- Public sign-up and display-name setup remain unimplemented.
+- A non-admin contributor smoke is still recommended before treating the contributor-only path as fully verified.
+
 Recommended next phase:
 
-1. Run 20E Supabase smoke with a configured non-admin test account.
-2. Confirm the inserted row has `status = approved`, `observer_id = auth.uid()`, owner Storage path metadata when an image is uploaded, and no URL-like `image_url`.
-3. Confirm anonymous submit remains gated and pending/rejected public visibility remains blocked.
-4. Start 20F observer display only after 20E smoke is accepted.
+1. Start 20F observer display using `observer_display_name` and safe fallback copy.
+2. If a non-admin contributor account is available, rerun the 20E create smoke with that account before or alongside 20F.
+3. Confirm anonymous submit remains gated and pending/rejected public visibility remains blocked after observer display changes.
+4. Keep owner/admin edit for later approved phases.
 
 ## Missing Features
 

@@ -529,7 +529,9 @@ Status: implemented in app/repository code.
 - Storage upload uses the owner path `observations/{auth.uid()}/...`, matching the 0003 Storage policy candidate.
 - Anonymous users remain blocked before submit by the 20D upload gate.
 - Codex did not apply SQL/RLS during 20E; the implementation assumes the operator-applied 0003 migration is active in the target Supabase environment.
-- Remaining verification: run Supabase login/create smoke and confirm anonymous insert denial plus authenticated direct approved insert.
+- 20E.6 user-reported schema check confirmed `profiles.display_name`, `observations.observer_id`, and `observations.observer_display_name` are present.
+- 20E.6 user-reported admin-authenticated smoke confirmed login, signed-out gate, logged-in form access, approved row creation, `observer_id`, safe non-email `observer_display_name`, image metadata, no URL-like `image_url`, public list display, pending/rejected public invisibility, logout gate return, and no console/log secret exposure.
+- Remaining verification: rerun the Supabase login/create smoke with a non-admin contributor account when available.
 
 ### 20F: Observer Display
 
@@ -567,6 +569,6 @@ Status: implemented in app/repository code.
 ## Remaining Decisions Before 20F
 
 - Decide if `observer_display_name` snapshot is accepted for public display.
-- Complete the 20E real Supabase create smoke with a configured non-admin test account.
+- Complete or intentionally defer the 20E non-admin contributor smoke. The admin-authenticated smoke passed, but it does not fully exercise the contributor-account assumption.
 - Decide how `observer_display_name` maps into public card/detail UI in 20F.
 - Decide whether a "my observations" view is needed before owner edit.

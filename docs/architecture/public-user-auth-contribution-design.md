@@ -583,6 +583,13 @@ Status: implemented in phase 20E.
 - Codex did not apply SQL/RLS during 20E; the implementation assumes the reviewed 0003 migration was already applied by the operator.
 - Observer display UI remains a 20F scope item.
 
+20E.6 manual smoke result:
+
+- The user confirmed `profiles.display_name`, `observations.observer_id`, and `observations.observer_display_name` are present in Supabase.
+- The manual smoke used the existing `/#admin` account.
+- Login, signed-out gate, logged-in upload form access, submit, approved row creation, `observer_id`, safe non-email `observer_display_name`, image metadata, no URL-like `image_url`, public list display, pending/rejected public invisibility, logout gate return, and console/log secret checks passed.
+- Because the smoke used an admin-authenticated account, a non-admin contributor smoke remains recommended before treating the contributor workflow as fully verified.
+
 ### 20F: Observer Display
 
 - Extend domain types and mappers with observer display fields.
