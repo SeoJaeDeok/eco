@@ -1,4 +1,5 @@
 import type { CreateObservationInput, Observation } from '../../types';
+import { normalizeObserverDisplayName } from '../../utils/observerDisplay';
 import { countUniqueSpecies } from '../../utils/observationStats';
 import type { ObservationRepository } from '../observationRepository';
 import type { ObservationDbRow } from './observationDbTypes';
@@ -38,20 +39,6 @@ const createImageDisplayFieldsById = async (rows: ObservationDbRow[]) => {
 const mapObservationRowWithSignedImageUrl = async (row: ObservationDbRow) => {
   const signedImageUrl = await resolveObservationImageSignedUrl(row.image_path);
   return mapObservationRowToObservation(row, signedImageUrl ? { imageUrl: signedImageUrl } : undefined);
-};
-
-const isEmailLikeDisplayName = (value: string) => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-};
-
-const normalizeObserverDisplayName = (value: string | null | undefined) => {
-  const trimmedValue = value?.trim();
-
-  if (!trimmedValue || isEmailLikeDisplayName(trimmedValue)) {
-    return undefined;
-  }
-
-  return trimmedValue;
 };
 
 const getCurrentContributor = async () => {

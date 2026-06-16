@@ -588,13 +588,31 @@ Status: implemented in phase 20E.
 - The user confirmed `profiles.display_name`, `observations.observer_id`, and `observations.observer_display_name` are present in Supabase.
 - The manual smoke used the existing `/#admin` account.
 - Login, signed-out gate, logged-in upload form access, submit, approved row creation, `observer_id`, safe non-email `observer_display_name`, image metadata, no URL-like `image_url`, public list display, pending/rejected public invisibility, logout gate return, and console/log secret checks passed.
-- Because the smoke used an admin-authenticated account, a non-admin contributor smoke remains recommended before treating the contributor workflow as fully verified.
+- Because the smoke used an admin-authenticated account, the contributor-account assumption still needed a non-admin retry until the later 20F.5 documentation.
+
+20F.5 non-admin contributor smoke documentation:
+
+- The user reported a new ordinary Supabase account with `role = 'user'`, a `public.profiles` row, and `display_name`.
+- The user tested the upload/create flow with that ordinary account and reported normal operation.
+- The prompt did not itemize field-by-field DB checks for that non-admin row, so launch readiness can still recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before owner/edit work if needed.
 
 ### 20F: Observer Display
 
-- Extend domain types and mappers with observer display fields.
-- Show observer display on public cards and detail modal.
-- Keep email hidden.
+Status: implemented in phase 20F.
+
+- Extended the domain model with optional `observerDisplayName`.
+- Supabase mappers read `observer_display_name` into the domain model after safe normalization.
+- Public observation cards and detail modal show observer display.
+- Rows without observer display data fall back to `등록 관찰자`.
+- Email-like display names are not shown publicly.
+- Owner edit, admin edit, public sign-up, display-name setup, package changes, and RLS/policy changes remain out of scope.
+
+20F.5 observer display regression documentation:
+
+- Code/static checks confirm cards and detail modal use the shared observer display helper.
+- The helper suppresses empty and email-like values before public display.
+- Public reads remain approved-only through the Supabase repository.
+- Owner/admin edit remains a later phase.
 
 ### 20G: Owner/Admin Edit Design
 

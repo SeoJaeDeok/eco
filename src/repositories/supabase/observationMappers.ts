@@ -1,4 +1,5 @@
 import type { CreateObservationInput, Observation } from '../../types';
+import { normalizeObserverDisplayName } from '../../utils/observerDisplay';
 import type { ObservationDbRow, ObservationInsertRow } from './observationDbTypes';
 
 interface ObservationImageInsertFields {
@@ -30,6 +31,8 @@ export const mapObservationRowToObservation = (
   row: ObservationDbRow,
   displayFields?: ObservationDisplayFields,
 ): Observation => {
+  const observerDisplayName = normalizeObserverDisplayName(row.observer_display_name);
+
   return {
     id: row.id,
     name: row.name,
@@ -43,6 +46,7 @@ export const mapObservationRowToObservation = (
       lng: row.longitude,
     },
     imageUrl: resolveObservationImageUrl(row, displayFields),
+    ...(observerDisplayName ? { observerDisplayName } : {}),
     status: row.status,
   };
 };

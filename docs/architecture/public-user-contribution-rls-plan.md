@@ -531,14 +531,25 @@ Status: implemented in app/repository code.
 - Codex did not apply SQL/RLS during 20E; the implementation assumes the operator-applied 0003 migration is active in the target Supabase environment.
 - 20E.6 user-reported schema check confirmed `profiles.display_name`, `observations.observer_id`, and `observations.observer_display_name` are present.
 - 20E.6 user-reported admin-authenticated smoke confirmed login, signed-out gate, logged-in form access, approved row creation, `observer_id`, safe non-email `observer_display_name`, image metadata, no URL-like `image_url`, public list display, pending/rejected public invisibility, logout gate return, and no console/log secret exposure.
-- Remaining verification: rerun the Supabase login/create smoke with a non-admin contributor account when available.
+- 20F.5 user-reported non-admin contributor smoke documented a `role = 'user'` account with a profile row, `display_name`, and normal upload/create operation. Field-by-field DB checks for that non-admin row were not itemized in the prompt, so launch readiness can still recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` if needed.
 
 ### 20F: Observer Display
 
-- Extend `Observation` domain type with optional observer display fields.
-- Map `observer_display_name` from Supabase rows.
-- Show observer display in list cards and detail modal.
-- Keep email hidden and fallback display copy for old rows.
+Status: implemented in app/UI code.
+
+- `Observation` has optional `observerDisplayName`.
+- Supabase mappers map `observer_display_name` from approved rows after safe normalization.
+- Public list cards and detail modal show observer display.
+- Rows without observer display data fall back to `등록 관찰자`.
+- Email-like observer display values are not shown publicly.
+- No RLS/policy/migration change was made in 20F.
+
+20F.5 documentation result:
+
+- Observer display regression was checked at code/static level.
+- The shared helper rejects empty and email-like observer display values.
+- Supabase public reads still filter `status = 'approved'`.
+- Owner/admin edit remains unimplemented and belongs to 20G/20H.
 
 ### Later Edit Phases
 
@@ -566,9 +577,8 @@ Status: implemented in app/repository code.
 - add dependencies
 - change Kakao Map code
 
-## Remaining Decisions Before 20F
+## Remaining Decisions Before 20G
 
-- Decide if `observer_display_name` snapshot is accepted for public display.
-- Complete or intentionally defer the 20E non-admin contributor smoke. The admin-authenticated smoke passed, but it does not fully exercise the contributor-account assumption.
-- Decide how `observer_display_name` maps into public card/detail UI in 20F.
+- Decide whether `observer_display_name` snapshot display needs a profile display-name setup/edit UI before launch.
+- Decide whether launch readiness needs field-by-field confirmation for the 20F.5 non-admin contributor row before owner/admin edit implementation.
 - Decide whether a "my observations" view is needed before owner edit.

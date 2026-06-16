@@ -31,7 +31,8 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Public user contribution DB/RLS draft: completed in phase 20C in `docs/architecture/public-user-contribution-rls-plan.md`; 20C.5 kept the reviewed draft under `docs/architecture/sql-drafts/`, and 20E-prep promoted an apply-ready candidate to `supabase/migrations/0003_public_user_contribution.sql` without applying it
 - Public login UI: login/logout state and signed-out upload gate completed in phase 20D through `AuthRepository`
 - Authenticated direct create: implemented in phase 20E for Supabase mode; signed-in users create approved observations with `observer_id`, owner Storage paths, and no URL-like `image_url`
-- Public login/create smoke: 20E.6 admin-authenticated manual smoke passed for direct approved create; a non-admin contributor smoke is still recommended
+- Public login/create smoke: 20E.6 admin-authenticated manual smoke passed for direct approved create; 20F.5 documents a user-reported non-admin contributor create smoke with `role = 'user'`, profile row, and `display_name`
+- Observer display: implemented in phase 20F for public observation cards and detail modal with safe fallback copy; 20F.5 documents code/static observer-display regression checks
 
 ## Implemented Features
 
@@ -69,6 +70,8 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 20D public login/logout UI and signed-out upload gate
 - Phase 20E authenticated direct approved observation create
 - Phase 20E.6 admin-authenticated manual smoke documentation
+- Phase 20F observer display on public cards/details
+- Phase 20F.5 observer display regression and non-admin contributor smoke documentation
 
 Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
@@ -223,7 +226,6 @@ Admin approval flow is documented in:
 - Bulk approval
 - Admin menu in `Navbar`
 - Public self-sign-up and display-name setup UI
-- Observer display on public cards/details
 - Owner edit or admin edit workflow for submitted observations
 - User account management UI
 - Spam protection, rate limit, or CAPTCHA
@@ -233,10 +235,10 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Start 20F observer display using `observer_display_name` and safe fallback copy.
-2. Rerun the 20E authenticated create smoke with a non-admin contributor account when one is available.
-3. Verify public reads remain approved-only with pending/rejected hidden after observer display changes.
-4. Keep owner edit, admin edit, public sign-up, and display-name setup for later approved phases.
+1. Start 20G owner/admin edit design if the 20F.5 documented smoke scope is accepted.
+2. If launch needs field-level evidence for the non-admin contributor row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
+3. Verify public reads remain approved-only with pending/rejected hidden after future observer/edit changes.
+4. Keep owner/admin edit implementation deferred until the 20G design is accepted.
 5. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
 6. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 7. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
@@ -245,5 +247,5 @@ Recommended next phase:
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20E authenticated direct approved create is implemented and 20E.6 admin-authenticated manual smoke is documented. Codex did not apply SQL/RLS. The next recommended step is 20F observer display, with a non-admin contributor smoke still recommended when an account is available. Owner edit and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20F observer display is implemented in public cards/details using safe observer display names with fallback copy, and 20F.5 documents observer-display regression checks plus a user-reported non-admin contributor create smoke. Codex did not apply SQL/RLS. The next recommended step is 20G owner/admin edit design. Owner edit and admin edit are not implemented yet.
 ```

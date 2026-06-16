@@ -17,6 +17,7 @@ export interface Observation {
   description: string;
   coords: Coordinates;
   imageUrl: string;
+  observerDisplayName?: string;
   status?: ObservationStatus;
   isFixed?: boolean;
 }

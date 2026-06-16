@@ -1,4 +1,5 @@
 import type { Observation } from '../../types';
+import { getObservationObserverDisplayName } from '../../utils/observerDisplay';
 import { TaxonBadge } from '../TaxonBadge';
 import { ImageFrame } from '../ui/ImageFrame';
 
@@ -8,6 +9,8 @@ interface ObservationCardProps {
 }
 
 export const ObservationCard = ({ observation, onSelect }: ObservationCardProps) => {
+  const observerDisplayName = getObservationObserverDisplayName(observation);
+
   return (
     <button type="button" className="group cursor-pointer text-left" onClick={() => onSelect(observation)}>
       <ImageFrame
@@ -18,6 +21,7 @@ export const ObservationCard = ({ observation, onSelect }: ObservationCardProps)
         placeholder={<div className="text-zinc-300 font-serif text-[10px] italic">No Photo</div>}
       />
       <p className="text-[9px] tracking-widest uppercase opacity-40 mb-0.5 ml-[1px]"><TaxonBadge taxon={observation.taxon} variant="text" /> • {observation.location} • {observation.date}</p>
+      <p className="text-[9px] tracking-wider opacity-45 mb-0.5 ml-[1px] truncate">관찰자 {observerDisplayName}</p>
       <h3 className="text-[11px] font-medium opacity-70 ml-[1px] group-hover:opacity-100 transition-opacity leading-tight truncate">{observation.name}</h3>
     </button>
   );

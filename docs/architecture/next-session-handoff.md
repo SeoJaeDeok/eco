@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20E.6 authenticated direct create manual smoke documentation.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20F.5 observer display regression documentation and non-admin contributor smoke documentation.
 
 Read this together with:
 
@@ -74,6 +74,8 @@ Read this together with:
 - 20E-prep public user contribution SQL draft promoted to an apply-ready migration candidate
 - 20E authenticated direct approved observation create
 - 20E.6 authenticated direct approved create manual smoke documentation
+- 20F observer display in public observation cards and detail modal
+- 20F.5 observer display regression and non-admin contributor smoke documentation
 
 ## Verified Current State
 
@@ -1023,19 +1025,62 @@ Scope boundaries:
 - Public sign-up and display-name setup remain unimplemented.
 - A non-admin contributor smoke is still recommended before treating the contributor-only path as fully verified.
 
+### 20F: Observer Display In Public Cards And Detail
+
+Implemented as a scoped public UI/repository mapping phase:
+
+- Added optional `observerDisplayName` to the `Observation` domain model.
+- Added a shared observer display helper that normalizes non-empty display names and rejects email-like strings.
+- Supabase row mapping now maps `observer_display_name` into `Observation.observerDisplayName` only after the same safe normalization.
+- Public observation cards show a compact `관찰자` line.
+- Public detail modal shows a `관찰자` field above the detail description.
+- Legacy/mock rows without observer display data fall back to `등록 관찰자`.
+- Public reads remain approved-only through the existing Supabase repository query.
+- No owner edit, admin edit, public sign-up, display-name setup, package change, Supabase migration, RLS/policy change, or admin route exposure was added.
+
 Recommended next phase:
 
-1. Start 20F observer display using `observer_display_name` and safe fallback copy.
-2. If a non-admin contributor account is available, rerun the 20E create smoke with that account before or alongside 20F.
-3. Confirm anonymous submit remains gated and pending/rejected public visibility remains blocked after observer display changes.
-4. Keep owner/admin edit for later approved phases.
+1. Review the 20F.5 documented smoke scope below.
+2. If launch needs field-by-field evidence for the non-admin contributor row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url`.
+3. Confirm anonymous submit remains gated and pending/rejected public visibility remains blocked after future observer/edit changes.
+4. Start 20G owner/admin edit design only after the 20F.5 documentation is accepted.
+
+### 20F.5: Observer Display Regression And Non-Admin Contributor Smoke Documentation
+
+Status: documented; code/static verification passed. Codex did not apply SQL/RLS and did not run a new live Supabase browser smoke in this session.
+
+20E non-admin contributor smoke result reported by the user:
+
+- A new ordinary Supabase account was prepared with `role = 'user'`, not `admin`.
+- The account has a `public.profiles` row.
+- The account has a `display_name`.
+- The user tested the upload/create flow with this ordinary account and reported normal operation.
+- The prompt did not itemize field-by-field DB checks for the non-admin row. The 20E.6 admin-authenticated smoke remains the recorded field-level check for `status`, `observer_id`, safe `observer_display_name`, image metadata, URL-like `image_url`, public list display, and pending/rejected invisibility.
+- If launch readiness needs non-admin field-level evidence, recheck those row values with the non-admin account before implementing owner/admin edit.
+
+20F observer display static/regression result:
+
+- `Observation.observerDisplayName` is optional and display-only.
+- `src/utils/observerDisplay.ts` normalizes non-empty observer display names and rejects email-like strings.
+- Supabase row mapping reads `observer_display_name` only through the safe normalization helper.
+- Public observation cards and detail modal display observer text through the same helper.
+- Legacy/mock rows without observer display data use the fallback `등록 관찰자`.
+- Public Supabase reads still filter `status = 'approved'`.
+- UI components still do not call Supabase directly.
+- Owner edit and admin edit remain unimplemented.
+- No package file, Supabase migration, RLS/policy, Storage, Kakao Map, or admin Navbar behavior changed.
+
+Recommended next phase:
+
+1. Start 20G owner/admin edit design.
+2. Keep edit implementation deferred until the 20G design is accepted.
+3. Before launch or edit implementation, optionally run a live browser smoke for mock/Supabase observer display and field-level non-admin row confirmation.
 
 ## Missing Features
 
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
 - Public self-sign-up and display-name setup UI
-- Observer display on public cards/details
 - Owner edit or admin edit workflow for submitted observations
 - Reject note
 - Audit log
