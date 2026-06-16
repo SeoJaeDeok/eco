@@ -3,6 +3,7 @@ export type UserRole = 'user' | 'admin';
 export interface UserProfile {
   id: string;
   role: UserRole;
+  displayName?: string;
   createdAt: string;
   updatedAt: string;
 }

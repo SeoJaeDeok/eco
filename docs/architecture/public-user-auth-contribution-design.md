@@ -341,7 +341,7 @@ Candidate columns:
 
 ```text
 public.profiles.display_name text null
-public.observations.observer_id uuid null references auth.users(id)
+public.observations.observer_id uuid null references public.profiles(id)
 public.observations.observer_display_name text null
 public.observations.updated_at timestamptz not null default now()
 ```
@@ -409,6 +409,15 @@ Recommended 20D approach:
 - Reuse `signInWithPassword` and `signOut`.
 - Extend `UserProfile` with `displayName?: string`.
 - Keep admin checks derived from profile role.
+
+20D implementation result:
+
+- Public login/logout UI and auth state now use the `AuthRepository` boundary.
+- A safe auth provider fallback keeps mock/no-Supabase-env mode from crashing.
+- `Navbar` shows public login/logout state without showing email addresses or exposing the hidden admin route.
+- Signed-out users who open the upload page see login guidance instead of the upload form.
+- Signed-in users can open the existing upload form.
+- Direct approved create, observer display, owner edit, admin edit, signup, display-name setup, and live DB/RLS changes remain out of scope.
 
 ### ObservationRepository
 
@@ -555,10 +564,12 @@ MVP recommendation:
 
 ### 20D: Public Login UI
 
-- Add public login/logout state behind `AuthRepository`.
-- Add Navbar login/logout affordance without exposing admin.
-- Add signed-out upload guidance.
-- Keep create behavior unchanged until RLS work is ready.
+Status: implemented in phase 20D.
+
+- Added public login/logout state behind `AuthRepository`.
+- Added Navbar login/logout affordance without exposing admin.
+- Added signed-out upload guidance.
+- Kept create behavior unchanged until RLS work is ready.
 
 ### 20E: Authenticated Direct Create
 
@@ -594,9 +605,8 @@ MVP recommendation:
 
 ## Explicit Non-Scope
 
-20B does not implement:
+20B does not implement, and 20D still intentionally does not implement:
 
-- public login UI
 - public sign-up UI
 - authenticated direct create
 - observer display fields

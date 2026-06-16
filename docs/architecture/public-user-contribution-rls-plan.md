@@ -469,10 +469,12 @@ Rollback checklist:
 
 ### 20D: Public Login UI And Auth State
 
-- Extend `AuthRepository`/profile mapping with display name.
-- Add public login/logout UI without exposing the admin route.
-- Add signed-out upload guidance.
-- Keep direct approved create disabled until RLS and repository changes are ready.
+Status: implemented in phase 20D.
+
+- Extended the auth boundary with a provider/fallback and `displayName?: string` profile shape.
+- Added public login/logout UI without exposing the admin route.
+- Added signed-out upload guidance.
+- Kept direct approved create disabled until RLS and repository changes are ready.
 
 ### 20E: Authenticated Direct Create
 

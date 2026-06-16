@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20C.5
+## Current State After Phase 20D.5 Partial Smoke
 
 Completed and verified:
 
@@ -53,7 +53,9 @@ Completed and verified:
 - 20B public user auth/contribution design is complete in `docs/architecture/public-user-auth-contribution-design.md`. It defines the recommended auth, DB/RLS, repository, UI, privacy, and phased implementation direction without implementing public login, direct approved contribution, observer display, owner edit, or admin edit.
 - 20C public user contribution DB/RLS draft is complete in `docs/architecture/public-user-contribution-rls-plan.md`.
 - 20C.5 public user contribution SQL draft application-readiness review is complete. The `0003` SQL draft now lives in `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql` instead of `supabase/migrations/` to avoid accidental migration-tool application before approval.
-- The 0003 draft has not been applied to Supabase and does not implement public login, direct approved contribution, observer display, owner edit, or admin edit.
+- 20D public login/logout UI, public auth state, and signed-out upload gate are implemented through `AuthRepository`.
+- 20D.5 signed-out/headless smoke is partially verified: home/list/map/upload routes load, signed-out upload gate appears, upload form is hidden while signed out, Navbar does not expose admin, and direct `/#admin` still loads. Real Supabase login/logout was not verified because no test account credentials were available in-session.
+- The 0003 draft has not been applied to Supabase and 20D does not implement direct approved contribution, observer display, owner edit, or admin edit.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -61,17 +63,18 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-20D: Public login UI/auth state implementation planning
+20D.5 retry: Public login/logout manual smoke with a configured test account
 ```
 
 Recommended sequence:
 
-1. Start 20D for public login UI/auth state planning and implementation.
-2. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until an approved 20E apply/test window.
-3. Keep direct approved contribution implementation, observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
-4. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
-5. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
-6. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
+1. Complete a 20D.5 login/logout retry with a configured non-admin test account before 20E.
+2. Start 20E only after explicit approval for the DB/RLS apply/test window and authenticated create implementation.
+3. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until that approved 20E window.
+4. Keep observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
+5. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
+6. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
+7. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
 
 ## New Session Entry Checklist
 
@@ -88,7 +91,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20C.5 public user contribution SQL draft readiness review is complete; the next recommended step is 20D public login UI/auth state implementation planning. Public user login UI, direct approved contribution implementation, observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20D public login UI/auth state and signed-out upload gate are complete, and 20D.5 signed-out/headless smoke is recorded as PARTIAL because no login test credentials were available. The next recommended step is a 20D.5 login/logout retry with a configured non-admin test account before 20E. Direct approved contribution, observer display UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Current Stack
@@ -405,6 +408,7 @@ npm.cmd audit --audit-level=high
 - Phase 20B: Public user auth/contribution design completed.
 - Phase 20C: Public user contribution DB/RLS migration draft completed.
 - Phase 20C.5: Public user contribution SQL draft application-readiness review completed.
+- Phase 20D: Public login UI/auth state and signed-out upload gate completed.
 
 ## Review Checklist Before Final Response
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20C.5.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20D.5 partial smoke verification.
 
 Read this together with:
 
@@ -70,6 +70,7 @@ Read this together with:
 - 20B public user auth/contribution design
 - 20C public user contribution DB/RLS migration draft
 - 20C.5 public user contribution SQL draft application-readiness review
+- 20D public login UI/auth state and signed-out upload gate
 
 ## Verified Current State
 
@@ -402,7 +403,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20C.5 public user contribution SQL draft readiness review is complete; the next recommended step is 20D public login UI/auth state implementation planning. Public user login UI, direct approved contribution implementation, observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20D public login UI/auth state and signed-out upload gate are complete, and 20D.5 signed-out/headless smoke is recorded as PARTIAL because no login test credentials were available. The next recommended step is to run a manual Supabase login/logout smoke with a configured test account before starting 20E authenticated direct create planning. Direct approved contribution, observer display UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -716,9 +717,9 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Start 20D public login UI/auth state implementation planning.
-2. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until an approved 20E apply/test window.
-3. Keep direct approved contribution implementation, observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
+1. Start 20E authenticated direct create planning only with an approved DB/RLS apply/test window.
+2. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until that approved 20E window.
+3. Keep observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
 4. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
 5. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
 6. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
@@ -859,12 +860,65 @@ Recommended next phase:
 2. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until the 20E authenticated create implementation and an approved apply/test window are ready.
 3. Promote the draft into `supabase/migrations/` only after explicit approval.
 
+### 20D: Public Login UI, Auth State, And Upload Gate
+
+Implemented as a scoped app-code phase:
+
+- Added an auth repository provider that keeps public auth behind `AuthRepository` and returns a safe unavailable fallback when Supabase auth env is not configured.
+- Added public login/logout state in `App`.
+- Added a public login affordance to `Navbar` without exposing `/#admin`.
+- Added a signed-out upload gate that shows login guidance instead of the upload form.
+- Signed-in users can reach the existing upload form.
+- Existing submit behavior is unchanged: 20D does not implement direct approved create.
+- No Supabase SQL was applied and the 0003 draft remains in `docs/architecture/sql-drafts/`.
+- No observer display, owner edit, admin edit, signup, display-name setup, package change, or Kakao Map change was made.
+
+Recommended next phase:
+
+1. Start 20E authenticated direct create planning only after explicitly approving a DB/RLS apply/test window.
+2. Promote the `0003` SQL draft into `supabase/migrations/` only as part of that approved window.
+3. Keep observer display for 20F and owner/admin edit for later approved phases.
+
+### 20D.5: Public Login UI/Auth State/Upload Gate Smoke Verification
+
+Status: PARTIAL.
+
+Completed checks:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed.
+- `git diff --check` passed.
+- Headless Chrome smoke loaded home, observation list, map, and upload routes without crashing.
+- Signed-out Navbar login control was present.
+- Signed-out upload route rendered `UploadLoginGate`.
+- Signed-out upload route did not render the upload form.
+- Public login panel was present in the signed-out upload gate.
+- Navbar did not expose an admin route or admin link.
+- Direct `/#admin` access still loaded the hidden admin route.
+- Static boundary checks confirmed UI components still do not call Supabase directly.
+- Static boundary checks confirmed no direct approved create, `observer_id` save, observer display, owner edit, admin edit, SQL apply, package change, or Supabase migration change was added.
+- Browser runtime check saw 0 JavaScript exceptions and 0 console errors.
+- Browser log check saw 1 URL-like resource log, but 0 actual secret-like key/token/password patterns.
+
+Not completed:
+
+- Supabase login success was not run because no test account email/password was available in this session.
+- Logout success after a real login was not run for the same reason.
+- Logged-in upload form access after real login remains a manual smoke TODO.
+- Live Supabase read-only pending/rejected count was not rerun in 20D.5; repository code and public approved-only query paths were unchanged.
+
+Recommended next phase:
+
+1. Run a manual 20D.5 retry with a configured non-admin test account to verify login success, logout success, and logged-in upload form access without printing credentials.
+2. Start 20E only after 20D.5 login/logout smoke is accepted and the DB/RLS apply/test window is explicitly approved.
+
 ## Missing Features
 
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
-- Public user login
+- Public self-sign-up and display-name setup UI
 - Direct approved public contribution
+- Observer display on public cards/details
 - Owner edit or admin edit workflow for submitted observations
 - Reject note
 - Audit log

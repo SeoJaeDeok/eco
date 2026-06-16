@@ -5,6 +5,8 @@ import { IntroPage } from './IntroPage';
 import { MapPage } from './MapPage';
 import { ObservationListPage } from './ObservationListPage';
 import { UploadMockPage } from './UploadMockPage';
+import { UploadLoginGate } from './auth/UploadLoginGate';
+import type { AuthSessionState } from '../repositories/authRepository';
 import type { Observation, PageId } from '../types';
 
 const AdminPage = lazy(() => import('./admin/AdminPage').then((module) => ({ default: module.AdminPage })));
@@ -12,11 +14,30 @@ const AdminPage = lazy(() => import('./admin/AdminPage').then((module) => ({ def
 interface AppRoutesProps {
   currentPage: PageId;
   observations: Observation[];
+  publicAuthState: AuthSessionState;
+  isCheckingPublicAuth: boolean;
+  isPublicAuthConfigured: boolean;
+  publicAuthError: string | null;
+  isSigningInPublic: boolean;
   onNavigate: (page: PageId) => void;
   onSelectObservation: (obs: Observation) => void;
+  onPublicSignIn: (email: string, password: string) => Promise<boolean>;
 }
 
-export const AppRoutes = ({ currentPage, observations, onNavigate, onSelectObservation }: AppRoutesProps) => {
+export const AppRoutes = ({
+  currentPage,
+  observations,
+  publicAuthState,
+  isCheckingPublicAuth,
+  isPublicAuthConfigured,
+  publicAuthError,
+  isSigningInPublic,
+  onNavigate,
+  onSelectObservation,
+  onPublicSignIn,
+}: AppRoutesProps) => {
+  const isPublicUserSignedIn = Boolean(publicAuthState.user);
+
   return (
     <AnimatePresence mode="wait">
       {currentPage === 'home' && (
@@ -41,7 +62,18 @@ export const AppRoutes = ({ currentPage, observations, onNavigate, onSelectObser
       )}
       {currentPage === 'upload' && (
         <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <UploadMockPage onCancel={() => onNavigate('observations')} />
+          {isPublicUserSignedIn ? (
+            <UploadMockPage onCancel={() => onNavigate('observations')} />
+          ) : (
+            <UploadLoginGate
+              errorMessage={publicAuthError}
+              isAuthConfigured={isPublicAuthConfigured}
+              isCheckingAuth={isCheckingPublicAuth}
+              isSigningIn={isSigningInPublic}
+              onSignIn={onPublicSignIn}
+              onNavigateHome={() => onNavigate('observations')}
+            />
+          )}
         </motion.div>
       )}
       {currentPage === 'admin' && (

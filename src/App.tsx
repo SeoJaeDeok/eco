@@ -3,10 +3,22 @@ import { AnimatePresence } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { AppRoutes } from './components/AppRoutes';
 import { ObservationDetail } from './components/ObservationDetail';
+import { activeAuthRepository, getConfiguredAuthRepositoryKind } from './repositories/authRepositoryProvider';
 import { activeObservationRepository } from './repositories/observationRepositoryProvider';
+import type { AuthSessionState } from './repositories/authRepository';
 import type { Observation, PageId } from './types';
 
 const ADMIN_HASH = '#admin';
+const PUBLIC_AUTH_CONFIGURED = getConfiguredAuthRepositoryKind() === 'supabase';
+const PUBLIC_AUTH_SESSION_ERROR = '로그인 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+const PUBLIC_AUTH_SIGN_IN_ERROR = '로그인에 실패했습니다. 계정 정보를 확인해 주세요.';
+const PUBLIC_AUTH_SIGN_OUT_ERROR = '로그아웃에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+
+const createEmptyAuthSessionState = (): AuthSessionState => ({
+  user: null,
+  profile: null,
+  isAdmin: false,
+});
 
 const getInitialPage = (): PageId => {
   if (typeof window !== 'undefined' && window.location.hash === ADMIN_HASH) {
@@ -23,6 +35,11 @@ export default function App() {
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
   const [isLoadingObservations, setIsLoadingObservations] = useState(true);
   const [observationLoadError, setObservationLoadError] = useState<string | null>(null);
+  const [publicAuthState, setPublicAuthState] = useState<AuthSessionState>(() => createEmptyAuthSessionState());
+  const [isCheckingPublicAuth, setIsCheckingPublicAuth] = useState(true);
+  const [isSigningInPublic, setIsSigningInPublic] = useState(false);
+  const [isSigningOutPublic, setIsSigningOutPublic] = useState(false);
+  const [publicAuthError, setPublicAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     let isCurrent = true;
@@ -50,6 +67,35 @@ export default function App() {
     };
 
     void loadObservations();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    const loadPublicAuthState = async () => {
+      try {
+        setIsCheckingPublicAuth(true);
+        setPublicAuthError(null);
+        const nextSessionState = await activeAuthRepository.getSessionState();
+
+        if (!isCurrent) return;
+        setPublicAuthState(nextSessionState);
+      } catch {
+        if (!isCurrent) return;
+        setPublicAuthState(createEmptyAuthSessionState());
+        setPublicAuthError(PUBLIC_AUTH_SESSION_ERROR);
+      } finally {
+        if (isCurrent) {
+          setIsCheckingPublicAuth(false);
+        }
+      }
+    };
+
+    void loadPublicAuthState();
 
     return () => {
       isCurrent = false;
@@ -103,6 +149,48 @@ export default function App() {
       });
   }, []);
 
+  const handlePublicSignIn = useCallback(async (email: string, password: string) => {
+    if (!PUBLIC_AUTH_CONFIGURED) {
+      setPublicAuthError('현재 환경에는 공개 로그인 설정이 없습니다.');
+      return false;
+    }
+
+    try {
+      setIsSigningInPublic(true);
+      setPublicAuthError(null);
+      const nextSessionState = await activeAuthRepository.signInWithPassword(email, password);
+      setPublicAuthState(nextSessionState);
+
+      if (!nextSessionState.user) {
+        setPublicAuthError(PUBLIC_AUTH_SIGN_IN_ERROR);
+        return false;
+      }
+
+      return true;
+    } catch {
+      setPublicAuthState(createEmptyAuthSessionState());
+      setPublicAuthError(PUBLIC_AUTH_SIGN_IN_ERROR);
+      return false;
+    } finally {
+      setIsSigningInPublic(false);
+    }
+  }, []);
+
+  const handlePublicSignOut = useCallback(async () => {
+    try {
+      setIsSigningOutPublic(true);
+      setPublicAuthError(null);
+      await activeAuthRepository.signOut();
+      setPublicAuthState(createEmptyAuthSessionState());
+    } catch {
+      setPublicAuthError(PUBLIC_AUTH_SIGN_OUT_ERROR);
+    } finally {
+      setIsSigningOutPublic(false);
+    }
+  }, []);
+
+  const publicAuthDisplayName = publicAuthState.profile?.displayName?.trim() || '사용자';
+
   return (
     <div className="relative min-h-screen bg-white" id="app-root">
       {currentPage === 'home' && (
@@ -112,7 +200,20 @@ export default function App() {
         />
       )}
 
-      <Navbar onNavigate={navigate} observationCount={observations.length} uniqueSpeciesCount={uniqueSpeciesCount} />
+      <Navbar
+        onNavigate={navigate}
+        observationCount={observations.length}
+        uniqueSpeciesCount={uniqueSpeciesCount}
+        publicAuthDisplayName={publicAuthDisplayName}
+        publicAuthError={publicAuthError}
+        isCheckingPublicAuth={isCheckingPublicAuth}
+        isPublicAuthConfigured={PUBLIC_AUTH_CONFIGURED}
+        isPublicUserSignedIn={Boolean(publicAuthState.user)}
+        isSigningInPublic={isSigningInPublic}
+        isSigningOutPublic={isSigningOutPublic}
+        onPublicSignIn={handlePublicSignIn}
+        onPublicSignOut={handlePublicSignOut}
+      />
 
       <main className="relative z-10">
         {isLoadingObservations && <p className="sr-only">관찰 데이터를 불러오는 중입니다.</p>}
@@ -124,8 +225,14 @@ export default function App() {
         <AppRoutes
           currentPage={currentPage}
           observations={observations}
+          publicAuthState={publicAuthState}
+          isCheckingPublicAuth={isCheckingPublicAuth}
+          isPublicAuthConfigured={PUBLIC_AUTH_CONFIGURED}
+          publicAuthError={publicAuthError}
+          isSigningInPublic={isSigningInPublic}
           onNavigate={navigate}
           onSelectObservation={handleSelectObservation}
+          onPublicSignIn={handlePublicSignIn}
         />
       </main>
 
