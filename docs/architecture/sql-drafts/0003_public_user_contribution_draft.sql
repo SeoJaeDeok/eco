@@ -5,6 +5,13 @@
 -- Supabase project by Codex. Apply only after explicit approval and after the
 -- 20D/20E frontend and repository changes are ready.
 --
+-- 20C.5 placement decision:
+-- - This draft intentionally lives under docs/architecture/sql-drafts/.
+-- - It is not in supabase/migrations/ because migration tooling can execute
+--   files from that folder regardless of warning comments.
+-- - To apply after approval, promote/copy this draft into supabase/migrations/
+--   with an apply-ready migration name, then run the approved manual checklist.
+--
 -- Goals:
 -- - Add public user display-name and observation ownership columns.
 -- - Keep public reads approved-only.

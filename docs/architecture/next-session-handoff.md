@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20C.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20C.5.
 
 Read this together with:
 
@@ -69,6 +69,7 @@ Read this together with:
 - 20A public Navbar alignment fix
 - 20B public user auth/contribution design
 - 20C public user contribution DB/RLS migration draft
+- 20C.5 public user contribution SQL draft application-readiness review
 
 ## Verified Current State
 
@@ -401,7 +402,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20C public user contribution DB/RLS draft is complete; the next recommended step is 20D public login UI/auth state implementation planning. Public user login UI, direct approved contribution implementation, observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20C.5 public user contribution SQL draft readiness review is complete; the next recommended step is 20D public login UI/auth state implementation planning. Public user login UI, direct approved contribution implementation, observer display UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -715,12 +716,13 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Start 20D public login UI/auth state implementation planning after reviewing the 20C DB/RLS draft.
-2. Keep direct approved contribution implementation, observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
-3. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
-4. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
-5. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
-6. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
+1. Start 20D public login UI/auth state implementation planning.
+2. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until an approved 20E apply/test window.
+3. Keep direct approved contribution implementation, observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
+4. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
+5. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
+6. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
+7. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ### 19A: Product Feature Prioritization
 
@@ -810,7 +812,7 @@ Recommended next phase:
 Completed as documentation/draft-only work:
 
 - Added `docs/architecture/public-user-contribution-rls-plan.md`.
-- Added `supabase/migrations/0003_public_user_contribution_draft.sql` as a draft candidate only.
+- Added `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql` as a draft candidate only.
 - Updated `docs/architecture/public-user-auth-contribution-design.md` with links to the 20C plan and draft.
 - Recommended DB/RLS direction:
   - add nullable `profiles.display_name`
@@ -830,6 +832,32 @@ Recommended next phase:
 1. Review the 20C draft before any Supabase apply.
 2. Start 20D public login UI/auth state implementation planning.
 3. Keep direct approved create for 20E, observer display for 20F, and owner/admin edit for later approved phases.
+
+### 20C.5: Public User Contribution SQL Draft Application-Readiness Review
+
+Completed as documentation/placement review work:
+
+- Reviewed `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql` against 0001 schema, 0002 Storage, and the 20B/20C architecture docs.
+- Moved the 0003 draft out of `supabase/migrations/` to `docs/architecture/sql-drafts/` because migration tooling can apply files from `supabase/migrations/` regardless of warning comments.
+- Kept the draft as not apply-ready for automatic migration.
+- Confirmed the DB/RLS direction remains:
+  - nullable `profiles.display_name`
+  - nullable `observations.observer_id` referencing `public.profiles(id)`
+  - nullable `observations.observer_display_name` snapshot candidate
+  - public anon/authenticated reads approved-only
+  - no owner read of non-approved rows in the MVP
+  - authenticated own approved insert guarded by `observer_id = auth.uid()`
+  - status changes remain admin-only in product design
+  - email public display remains prohibited
+  - image replacement remains out of scope
+- Added manual apply and rollback checklists to `docs/architecture/public-user-contribution-rls-plan.md`.
+- Did not apply SQL to Supabase, did not change live RLS/policies, did not change app code, and did not change package files.
+
+Recommended next phase:
+
+1. Start 20D public login UI/auth state implementation planning using the existing `AuthRepository`.
+2. Keep the 0003 SQL draft in `docs/architecture/sql-drafts/` until the 20E authenticated create implementation and an approved apply/test window are ready.
+3. Promote the draft into `supabase/migrations/` only after explicit approval.
 
 ## Missing Features
 

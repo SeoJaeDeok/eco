@@ -28,7 +28,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Public observation list regression: mock and Supabase filter/search/sort verification passed in phase 19C
 - Public Navbar alignment: fixed route-to-route horizontal shift in phase 20A by reserving stable scrollbar gutter space
 - Public user auth/contribution design: completed in phase 20B in `docs/architecture/public-user-auth-contribution-design.md`
-- Public user contribution DB/RLS draft: completed in phase 20C in `docs/architecture/public-user-contribution-rls-plan.md`; the `0003` SQL draft is not applied
+- Public user contribution DB/RLS draft: completed in phase 20C in `docs/architecture/public-user-contribution-rls-plan.md`; 20C.5 reviewed apply readiness and keeps the `0003` SQL draft under `docs/architecture/sql-drafts/` until approval
 
 ## Implemented Features
 
@@ -62,6 +62,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 20A public Navbar alignment fix
 - Phase 20B public user auth/contribution design
 - Phase 20C public user contribution DB/RLS migration draft
+- Phase 20C.5 public user contribution SQL draft application-readiness review
 
 Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
@@ -199,7 +200,7 @@ Supabase setup is documented in:
 - `docs/architecture/public-user-contribution-rls-plan.md`
 - `supabase/migrations/0001_create_observation_schema.sql`
 - `supabase/migrations/0002_create_observation_storage.sql`
-- `supabase/migrations/0003_public_user_contribution_draft.sql`
+- `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql`
 
 Admin approval flow is documented in:
 
@@ -225,8 +226,8 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Review the 20C DB/RLS draft before any Supabase apply.
-2. Start 20D public login UI/auth state implementation planning.
+1. Start 20D public login UI/auth state implementation planning.
+2. Keep the `0003` SQL draft in `docs/architecture/sql-drafts/` until an approved 20E apply/test window.
 3. Keep direct approved contribution implementation, observer display UI, owner edit, and admin edit unimplemented until their later approved implementation phases.
 4. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
 5. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
@@ -236,5 +237,5 @@ Recommended next phase:
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20C public user contribution DB/RLS draft is complete; the next recommended step is 20D public login UI/auth state implementation planning. Public user login UI, direct approved contribution implementation, observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20C.5 public user contribution SQL draft readiness review is complete; the next recommended step is 20D public login UI/auth state implementation planning. Public user login UI, direct approved contribution implementation, observer display UI, owner edit, and admin edit are not implemented yet.
 ```

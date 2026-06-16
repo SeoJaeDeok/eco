@@ -332,9 +332,10 @@ MVP recommendation: owner/admin edit should start with text, taxon, date, locati
 20C follow-up:
 
 - `docs/architecture/public-user-contribution-rls-plan.md` records the DB/RLS plan.
-- `supabase/migrations/0003_public_user_contribution_draft.sql` records a draft SQL candidate.
+- `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql` records a draft SQL candidate.
 - The SQL draft is not applied automatically and requires separate approval before use.
 - The draft keeps public reads approved-only, keeps email out of public display, and treats anonymous pending insert removal as a transition that must wait for login UI and repository changes.
+- 20C.5 moved the draft out of `supabase/migrations/` to prevent accidental migration-tool application before approval.
 
 Candidate columns:
 

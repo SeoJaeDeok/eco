@@ -16,10 +16,17 @@ This document records the phase 20C DB/RLS migration draft for public user login
 The companion SQL file is a candidate only:
 
 ```text
-supabase/migrations/0003_public_user_contribution_draft.sql
+docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql
 ```
 
 It must be reviewed and explicitly approved before any Supabase project applies it.
+
+20C.5 review update:
+
+- The SQL draft was moved out of `supabase/migrations/` and into `docs/architecture/sql-drafts/`.
+- Reason: Supabase migration tooling can apply `.sql` files in `supabase/migrations/` regardless of draft warning comments.
+- The draft is not promoted to an apply-ready migration yet.
+- To apply later, copy/promote the reviewed SQL into `supabase/migrations/` with an approved migration name and run the manual apply checklist below.
 
 ## 20B Design Conclusion Summary
 
@@ -342,6 +349,121 @@ It intentionally does not:
 - store signed/public/blob/data URLs
 - implement image replacement
 - delete Storage objects
+
+## 20C.5 Application Readiness Review
+
+Status: not apply-ready as an automatic migration.
+
+The SQL draft is close to an apply candidate, but it should not be applied while the app still uses the anonymous upload/create UI and existing Supabase create flow.
+
+### Placement Decision
+
+Decision: keep the draft outside `supabase/migrations/` until it is approved for application.
+
+Reasons:
+
+- The draft revokes and re-grants table permissions.
+- The draft drops the existing anonymous pending insert policy.
+- The draft adds authenticated direct approved insert.
+- The draft changes Storage upload policy candidates.
+- Supabase CLI or other migration tooling can execute files in `supabase/migrations/` even if the file comments say "draft only".
+
+Recommended placement:
+
+```text
+docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql
+```
+
+Promotion rule:
+
+- Keep the SQL in `docs/architecture/sql-drafts/` until 20D/20E are ready and the user explicitly approves applying DB/RLS changes.
+- When approved, copy or move it into `supabase/migrations/` with an apply-ready migration name.
+- Re-run the safety checklist before applying.
+
+### Confirmed DB/RLS Decisions
+
+- `profiles.display_name` remains nullable.
+- `observations.observer_id` remains nullable for existing rows.
+- `observer_id` references `public.profiles(id)` with `on delete set null`.
+- `observations.observer_display_name` is a nullable public display snapshot candidate.
+- Existing `updated_at` triggers from 0001 remain sufficient.
+- Existing rows should not be backfilled from email or admin accounts.
+- Public anon/authenticated reads remain approved-only.
+- Authenticated own non-approved read is not included in the MVP.
+- Authenticated direct approved insert requires `observer_id = auth.uid()`.
+- Owner update is limited by policy and grants to content/location metadata, with repository narrowing still required later.
+- Status changes remain admin-only in product design.
+- Admin all-read/all-update remains based on `public.is_admin()`.
+- Email public display remains prohibited.
+- Image replacement remains out of scope.
+
+### Open Decisions Before Apply
+
+- Confirm contributor accounts are invite/admin-created for MVP.
+- Confirm the `observer_display_name` snapshot approach.
+- Confirm whether 20D needs display-name setup or fallback-only behavior.
+- Confirm whether authenticated Storage upload paths switch to `observations/{auth.uid()}/...`.
+- Confirm whether owner/admin edit should use table update policies only or a later RPC for stricter field/status separation.
+- Confirm whether a "my observations" view needs owner read for non-approved rows.
+
+### Rollout Sequence
+
+Recommended sequence:
+
+1. Keep the current live DB/RLS unchanged.
+2. Implement 20D public login UI/auth state using the existing `AuthRepository`; this can be done before applying the SQL draft.
+3. Keep anonymous submit behavior unchanged until a signed-out upload gate exists.
+4. Prepare 20E repository create changes to set `observer_id`, optional `observer_display_name`, and `status = 'approved'`.
+5. Promote and apply the reviewed SQL only when 20D and 20E are ready to test together.
+6. Disable anonymous pending insert as part of that coordinated apply/test window.
+7. Implement observer display after the data columns are available.
+8. Defer owner/admin edit until the create/display flow has passed regression verification.
+
+### Manual Apply Checklist
+
+Before applying:
+
+- Confirm target project/environment in Supabase Dashboard.
+- Confirm no `.env.local` or secret values are copied into docs or SQL comments.
+- Export or snapshot current `public.profiles` and `public.observations` metadata as appropriate for the environment.
+- Record current observation status counts.
+- Record current pending/rejected public visibility checks.
+- Confirm 20D login UI and 20E repository create changes are ready for immediate smoke testing.
+- Confirm contributor account provisioning policy.
+- Confirm rollback owner.
+
+Manual SQL Editor apply:
+
+1. Promote the reviewed draft from `docs/architecture/sql-drafts/` to an approved migration or paste the reviewed SQL into Supabase SQL Editor.
+2. Apply first in a local/dev Supabase project.
+3. Verify new columns on `public.profiles` and `public.observations`.
+4. Verify RLS is still enabled on both tables.
+5. Verify policy list includes approved-only public select, authenticated own approved insert, owner update, and admin read/update.
+6. Verify Storage upload policy changes only if the app upload path has also changed.
+7. Repeat in production only after dev checks pass.
+
+Post-apply verification:
+
+- Anonymous approved read succeeds.
+- Anonymous pending/rejected read returns no rows.
+- Anonymous insert is denied after the transition.
+- Authenticated own approved insert succeeds with `observer_id = auth.uid()`.
+- Authenticated insert with mismatched `observer_id` is denied.
+- Authenticated insert with non-approved status is denied.
+- Authenticated owner update of allowed content fields succeeds.
+- Authenticated owner update that changes status is denied.
+- Authenticated non-owner update is denied.
+- Admin can still read all observations.
+- Admin can still approve/reject legacy pending rows.
+- New DB rows keep `image_url` null for Storage-backed images.
+- No public UI exposes email addresses.
+
+Rollback checklist:
+
+- Do not drop columns until attribution loss is accepted.
+- Restore anonymous pending insert only if product policy explicitly chooses it.
+- Restore previous grants/policies only after confirming public read remains approved-only.
+- Re-run pending/rejected public invisibility checks after rollback.
 
 ## 20D/20E/20F Implementation Sequence
 
