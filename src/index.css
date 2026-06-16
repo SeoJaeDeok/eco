@@ -7,6 +7,10 @@
 }
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply bg-white text-[#222] font-sans antialiased;
   }

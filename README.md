@@ -26,6 +26,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 19 product prioritization: completed in `docs/architecture/phase-19-product-feature-prioritization.md`
 - Public observation list UX: client-side search, taxon filtering, image-present filtering, newest/oldest/name sorting, result counts, and empty state completed in phase 19B
 - Public observation list regression: mock and Supabase filter/search/sort verification passed in phase 19C
+- Public Navbar alignment: fixed route-to-route horizontal shift in phase 20A by reserving stable scrollbar gutter space
 
 ## Implemented Features
 
@@ -56,6 +57,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 19A next product feature prioritization
 - Phase 19B public observation list filter/search UX improvement
 - Phase 19C public observation list filter/search regression verification
+- Phase 20A public Navbar alignment fix
 
 Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
@@ -205,6 +207,9 @@ Admin approval flow is documented in:
 - Audit log
 - Bulk approval
 - Admin menu in `Navbar`
+- Public user login
+- Direct approved public contribution
+- Owner edit or admin edit workflow for submitted observations
 - User account management UI
 - Spam protection, rate limit, or CAPTCHA
 - PWA/app packaging
@@ -213,8 +218,8 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Add `docs/eco/phase-history/phase-19.md` now that 19C passed and Phase 19 can be archived.
-2. Continue to the next user-approved product feature, with upload UX and admin review UX as leading follow-up candidates.
+1. Start 20B public user auth/contribution design.
+2. Keep public user login, direct approved contribution, owner edit, and admin edit unimplemented until a later approved implementation phase.
 3. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
 4. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 5. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
@@ -223,5 +228,5 @@ Recommended next phase:
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19C public list filter/search regression verification passed; the next recommended documentation task is creating docs/eco/phase-history/phase-19.md, followed by the next user-approved product feature unless cleanup or abuse thresholds justify a separate approved hardening phase.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20A Navbar alignment fix is complete; the next recommended step is 20B public user auth/contribution design. Public user login, direct approved contribution, owner edit, and admin edit are not implemented yet.
 ```

@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 19C
+## Current State After Phase 20A
 
 Completed and verified:
 
@@ -48,6 +48,8 @@ Completed and verified:
 - 19A next product feature prioritization is complete. It recommends public observation list filter/search UX improvement as the 19B implementation target, with upload UX and admin review UX as follow-up candidates.
 - 19B public observation list filter/search UX improvement is complete. The public list now supports client-side text search, taxon filtering, image-present filtering, newest/oldest/name sorting, result counts, and an empty state while preserving approved-only repository reads.
 - 19C public observation list filter/search regression verification is complete. Mock/no-key and Supabase/no-key browser checks passed for filtering, sorting, empty state, detail modal, static fallback map, mobile layout, and secret/logging checks; Supabase read-only checks confirmed approved-only visibility with 0 pending/rejected rows visible.
+- Phase 19 history archive is complete in `docs/eco/phase-history/phase-19.md`.
+- 20A Navbar alignment fix is complete. Public pages now reserve stable scrollbar gutter space so the fixed Navbar horizontal alignment does not shift between short and scrolling public routes.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -55,13 +57,13 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-Phase 19 history archive update, then next user-approved product feature
+20B: Public user auth/contribution design
 ```
 
 Recommended sequence:
 
-1. Add `docs/eco/phase-history/phase-19.md` now that 19C passed and Phase 19 can be archived.
-2. Continue to the next user-approved product feature, with upload UX and admin review UX as the leading follow-up candidates.
+1. Start 20B as a design-only phase for public user auth/contribution flow.
+2. Keep public user login, direct approved contribution, owner edit, and admin edit unimplemented until a later approved implementation phase.
 3. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
 4. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 5. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
@@ -81,7 +83,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/phase-19-product-feature-prioritization.md. Do not modify code yet. Phase 19C public list filter/search regression verification passed; the next recommended documentation task is creating docs/eco/phase-history/phase-19.md, followed by the next user-approved product feature unless cleanup or abuse thresholds justify a separate approved hardening phase.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20A Navbar alignment fix is complete; the next recommended step is 20B public user auth/contribution design. Public user login, direct approved contribution, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Current Stack

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 19C.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20A.
 
 Read this together with:
 
@@ -66,6 +66,7 @@ Read this together with:
 - 19B public observation list filter/search UX improvement
 - 19C public observation list filter/search regression verification
 - Phase history archive for phases 1 through 19, plus a reusable bilingual phase template
+- 20A public Navbar alignment fix
 
 ## Verified Current State
 
@@ -221,6 +222,10 @@ Read this together with:
 - Phase 19 history archive update:
   - Added `docs/eco/phase-history/phase-19.md` after 19C verification passed.
   - Updated the phase-history index with the Phase 19 row.
+- 20A Navbar alignment fix:
+  - Added stable viewport scrollbar gutter spacing in global CSS.
+  - This keeps the fixed public Navbar horizontally aligned between short pages such as Home/Map and scrolling pages such as Intro/List/Upload.
+  - Did not change Navbar labels, menu count, admin route visibility, Auth/Admin/Storage/Supabase/Kakao behavior, package files, or Supabase migrations.
 
 ## Core Architecture
 
@@ -394,7 +399,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/eco/phase-history/index.md. Do not modify code yet. Phase 19 public list filter/search UX is complete and archived; the next recommended step is the next user-approved product feature, with upload UX and admin review UX as leading candidates unless cleanup or abuse thresholds justify a separate approved hardening phase.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20A Navbar alignment fix is complete; the next recommended step is 20B public user auth/contribution design. Public user login, direct approved contribution, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -708,11 +713,12 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Continue to the next user-approved product feature, with upload UX and admin review UX as leading follow-up candidates.
-2. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
-3. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
-4. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
-5. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
+1. Start 20B public user auth/contribution design.
+2. Keep public user login, direct approved contribution, owner edit, and admin edit unimplemented until a later approved implementation phase.
+3. 18F: CAPTCHA/rate-limit implementation design only if 18B/18D thresholds are exceeded or launch risk changes.
+4. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E preconditions are met.
+5. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
+6. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ### 19A: Product Feature Prioritization
 
@@ -769,6 +775,9 @@ Completed:
 
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
+- Public user login
+- Direct approved public contribution
+- Owner edit or admin edit workflow for submitted observations
 - Reject note
 - Audit log
 - Bulk approval
