@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 17E
+## Current State After Phase 18A
 
 Completed and verified:
 
@@ -40,6 +40,7 @@ Completed and verified:
 - 17C Kakao Map manual verification passed with a configured local Kakao JavaScript key.
 - 17D Kakao Map fallback and regression verification passed for normal key, no-key fallback, invalid-key fallback, mock mode, Supabase mode, responsive layout, and secret/logging checks.
 - 17E Kakao Map UX hardening is complete: loading states, marker hit area/accessibility, and static fallback copy were minimally tightened without changing repository, Storage, Auth, admin, or package behavior.
+- 18A Supabase Storage operations hardening design/runbook is complete. It documents rejected/orphan cleanup options, anonymous upload abuse mitigations, signed URL refresh UX options, monitoring cadence, and read-only SQL drafts without changing app code, package files, Supabase migrations, RLS, or Storage policies.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -47,13 +48,13 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-Next user-approved phase
+18B: Read-only Storage cleanup/monitoring SQL and checklist, if approved
 ```
 
 Recommended sequence:
 
-1. Continue with the next user-approved phase.
-2. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
+1. Start 18B only if the user approves turning the 18A read-only SQL drafts into an operator checklist with thresholds.
+2. Otherwise continue with the next user-approved phase.
 3. Continue monitoring rejected/orphan image cleanup needs.
 
 ## New Session Entry Checklist
@@ -71,7 +72,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/kakao-map-provider-design.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. Phase 17E Kakao Map UX hardening은 완료됐고, 다음 작업은 사용자 승인에 따른 다음 phase입니다.
+AGENTS.md를 먼저 읽고, README.md와 docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, docs/architecture/supabase-storage-operations-hardening.md를 읽어 현재 상태를 요약해 주세요. 아직 코드는 수정하지 마세요. Phase 18A Supabase Storage operations hardening design/runbook은 완료됐고, 다음 추천 작업은 사용자 승인 시 18B readonly cleanup/monitoring SQL and checklist입니다.
 ```
 
 ## Current Stack
@@ -373,6 +374,7 @@ npm.cmd audit --audit-level=high
 - Phase 17C: Kakao Map manual verification completed.
 - Phase 17D: Kakao Map fallback and regression verification completed.
 - Phase 17E: Kakao Map UX hardening completed.
+- Phase 18A: Supabase Storage operations hardening design/runbook completed.
 
 ## Review Checklist Before Final Response
 

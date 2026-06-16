@@ -18,6 +18,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Kakao Map UX hardening: minimal loading, fallback copy, and marker accessibility improvements completed in phase 17E
 - Kakao Map provider design: completed in `docs/architecture/kakao-map-provider-design.md`
 - Supabase Storage image upload: implemented for Supabase mode with private object paths and runtime signed URLs
+- Supabase Storage operations hardening: design/runbook completed in `docs/architecture/supabase-storage-operations-hardening.md`
 
 ## Implemented Features
 
@@ -168,6 +169,7 @@ Supabase setup is documented in:
 - `docs/architecture/supabase-setup.md`
 - `docs/architecture/supabase-schema-rls.md`
 - `docs/architecture/supabase-storage-setup.md`
+- `docs/architecture/supabase-storage-operations-hardening.md`
 - `docs/architecture/kakao-map-provider-design.md`
 - `supabase/migrations/0001_create_observation_schema.sql`
 - `supabase/migrations/0002_create_observation_storage.sql`
@@ -193,12 +195,12 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Continue with the next user-approved phase.
+1. 18B: Turn the read-only Storage cleanup and monitoring SQL into an operator checklist with thresholds, if approved.
 2. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
 3. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
 
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17E Kakao Map UX hardening is complete; the next step is the next user-approved phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, and docs/architecture/supabase-storage-operations-hardening.md. Do not modify code yet. Phase 18A Supabase Storage operations hardening design/runbook is complete; the next recommended phase is 18B readonly cleanup/monitoring SQL and checklist, unless the user chooses another phase.
 ```

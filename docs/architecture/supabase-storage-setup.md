@@ -805,6 +805,12 @@ Operational risks to keep visible:
 
 Phase 16E is documentation-only. It does not change app code, Supabase SQL, Storage policies, package files, or UI behavior.
 
+The dedicated phase 18A operations hardening design and runbook is documented in:
+
+```text
+docs/architecture/supabase-storage-operations-hardening.md
+```
+
 ### Current Protections
 
 The MVP Storage flow currently relies on these controls:
@@ -954,15 +960,15 @@ Phase 16 final manual smoke passed for the target project. Re-run this checklist
 16. Confirm console/log output does not expose Supabase URL, anon key, token, email, password, or `.env.local` contents.
 17. Clean up test data and Storage objects according to the agreed retention policy.
 
-### Storage TODOs Before 17A
+### Storage Operations TODOs After 18A
 
-Before starting real Kakao Map provider work, keep these Storage items visible:
+Phase 18A converted the remaining Storage operations risks into a dedicated design/runbook. Keep these items visible:
 
-- Decide rejected image retention duration.
-- Decide manual or automated orphan cleanup cadence.
-- Decide whether anonymous upload remains acceptable for public launch.
-- Decide whether signed URL refresh is needed for long-lived list/detail pages.
-- Decide whether Storage monitoring should be manual or automated.
+- Use `docs/architecture/supabase-storage-operations-hardening.md` as the source for rejected/orphan cleanup procedures.
+- 18A recommends rejected images remain private and be retained for 30 days before manual cleanup, pending project-owner approval before any destructive action.
+- 18A recommends monthly orphan candidate checks and weekly pending/bucket usage monitoring while volume is low.
+- Anonymous upload remains a known abuse risk; start with monitoring, then revisit CAPTCHA, rate limit, or authenticated-only image upload if usage spikes.
+- Signed URL refresh UX remains a 18C candidate for long-lived list/detail/admin pages.
 - Re-run the full manual upload/admin/approve smoke test after any Storage, RLS, upload helper, admin review, or public detail changes.
 
 ## Explicit Non-Scope

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 17E.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 18A.
 
 Read this together with:
 
@@ -12,6 +12,7 @@ Read this together with:
 - `docs/architecture/admin-approval-flow.md`
 - `docs/architecture/supabase-storage-image-upload-design.md`
 - `docs/architecture/supabase-storage-setup.md`
+- `docs/architecture/supabase-storage-operations-hardening.md`
 - `docs/architecture/kakao-map-provider-design.md`
 
 ## Current Completed Phases
@@ -51,6 +52,7 @@ Read this together with:
 - 17C Kakao Map manual verification
 - 17D Kakao Map fallback and regression verification
 - 17E Kakao Map UX hardening
+- 18A Supabase Storage operations hardening design and runbook
 
 ## Verified Current State
 
@@ -138,6 +140,14 @@ Read this together with:
   - Updated static map/picker/preview copy so no-key and SDK-failure fallback states describe the current fallback behavior instead of only the original design-only state.
   - Updated upload page help copy so mock mode, Supabase submit, and Kakao map support are described without claiming storage or map SDK are unconnected.
   - Did not change Storage, Auth, admin, repository visibility, Supabase migration, package files, or dependencies.
+- 18A Storage operations hardening was documented as a design/runbook-only phase:
+  - Added `docs/architecture/supabase-storage-operations-hardening.md`.
+  - Defined orphan object scenarios and rejected-image retention options.
+  - Recommended 30-day rejected-image retention followed by manual cleanup.
+  - Recommended monthly orphan checks and weekly pending/bucket usage monitoring.
+  - Compared anonymous upload abuse mitigations including CAPTCHA, rate limit, authenticated-only upload, abuse monitoring, quotas, and review queue monitoring.
+  - Documented 10-minute signed URL expiration UX options and left refresh implementation for a later phase.
+  - Added read-only SQL drafts only; no destructive cleanup SQL, Storage delete, policy change, app code change, package change, or migration change was made.
 
 ## Core Architecture
 
@@ -286,6 +296,7 @@ docs/architecture/admin-approval-flow.md
 docs/architecture/admin-ui-routing-plan.md
 docs/architecture/supabase-storage-image-upload-design.md
 docs/architecture/supabase-storage-setup.md
+docs/architecture/supabase-storage-operations-hardening.md
 docs/architecture/kakao-map-provider-design.md
 ```
 
@@ -305,7 +316,7 @@ docs/architecture/kakao-map-provider-design.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/architecture/kakao-map-provider-design.md. Do not modify code yet. Phase 17E Kakao Map UX hardening is complete; the next step is the next user-approved phase.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, docs/architecture/supabase-storage-setup.md, and docs/architecture/supabase-storage-operations-hardening.md. Do not modify code yet. Phase 18A Supabase Storage operations hardening design/runbook is complete; the next recommended phase is 18B readonly cleanup/monitoring SQL and checklist, unless the user chooses another phase.
 ```
 
 ## Recommended Phase 16 Direction
@@ -499,9 +510,40 @@ Completed as documentation-only work:
 - Expanded the full manual Supabase UI smoke test checklist.
 - No app code, package files, or Supabase migration files were changed in 16E.
 
+### 18A: Storage Operations Hardening Design And Runbook
+
+Completed as documentation-only work:
+
+- Added `docs/architecture/supabase-storage-operations-hardening.md`.
+- Documented the current private `observation-images` bucket flow, object path storage, runtime signed URL display, approved-only public reads, pending public creates, anonymous insert-only upload, and no-upsert policy.
+- Defined orphan object scenarios including upload-succeeds/insert-fails, interrupted submit, network failure, validation/constraint mismatch, duplicate submit, and manual test leftovers.
+- Compared rejected-image retention options:
+  - immediate delete
+  - 30-day manual retention and cleanup
+  - audit-window retention
+- Recommended rejected images remain private and be retained for 30 days before manual cleanup.
+- Compared orphan cleanup options:
+  - manual SQL/listing review
+  - scheduled Edge Function
+  - admin cleanup tool
+  - path naming convention based candidate detection
+- Recommended monthly manual orphan checks while volume is low.
+- Compared anonymous upload abuse mitigations:
+  - CAPTCHA
+  - rate limit
+  - authenticated-only upload
+  - abuse monitoring
+  - file count/size quotas
+  - admin queue monitoring
+- Recommended monitoring first, then CAPTCHA/rate limit or authenticated-only image upload if abuse appears.
+- Compared signed URL refresh UX options and left image-load-error retry or detail-open refresh as a 18C candidate.
+- Added read-only SQL drafts for image inventory, URL-like legacy values, pending queue age, rejected retention candidates, bucket object inventory, daily upload volume, and orphan candidates.
+- Did not include active destructive delete SQL.
+- Did not change app code, package files, Supabase migrations, Storage policies, RLS, Kakao Map code, or public visibility behavior.
+
 Recommended next steps:
 
-1. Continue with the next user-approved phase.
+1. 18B: Turn the read-only Storage cleanup and monitoring SQL into an operator checklist with thresholds.
 2. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
 3. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
