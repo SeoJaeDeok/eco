@@ -99,19 +99,23 @@ Read this together with:
 - `VITE_KAKAO_MAP_JAVASCRIPT_KEY` enables the Kakao provider; missing env keeps the static provider active.
 - SDK load failure falls back to the static map surfaces without exposing keys in errors.
 - UI components still use `DesignMap`, `StaticDesignMap`, and `DesignMarkerPicker`; they do not call Kakao SDK APIs directly.
-- 17C headless verification was retried against the registered local origin `http://127.0.0.1:3003/` with a locally configured Kakao key:
+- 17C headless verification passed after the Kakao JavaScript key was corrected and the app was re-tested against the registered local origin `http://127.0.0.1:3003/`:
   - `.env.local` existed and `VITE_KAKAO_MAP_JAVASCRIPT_KEY` was configured, without printing the value.
+  - The user confirmed the corrected value is a Kakao JavaScript key, the same Kakao app has `http://127.0.0.1:3003` registered as a JavaScript SDK/Web domain, and Kakao Map product usage is enabled.
   - `npm.cmd run typecheck` passed.
   - `npm.cmd run build` passed.
   - Vite dev server at `http://127.0.0.1:3003/` returned HTTP 200.
-  - Kakao SDK script injection was observed.
-  - a non-printing direct SDK request check with the same local referer returned HTTP 403.
-  - `window.kakao.maps.Map` did not become ready in the headless run.
-  - the map page fell back to the static fallback instead of crashing.
+  - a non-printing direct SDK request check with the same local referer returned HTTP 200.
+  - `window.kakao.maps.load` and `window.kakao.maps.Map` became ready.
+  - the map page rendered the Kakao map surface.
+  - static fallback UI did not overlap the Kakao map surface.
+  - 11 observation markers and labels were detected.
+  - marker click opened the existing observation detail flow.
+  - the detail modal rendered a Kakao read-only position preview and retained visible coordinate text.
+  - the upload page rendered the Kakao location picker, and map click selection updated visible coordinates.
+  - mobile-width verification found the map surface and no horizontal overflow.
   - no secret-like console/log pattern was detected by the headless check.
-  - mobile fallback surface was present without horizontal overflow.
-  - Kakao marker display/click, detail Kakao preview, and upload coordinate selection could not be verified because the SDK did not become ready.
-- Kakao Map manual UI verification remains partial. The retry points to Kakao app/key/domain configuration or propagation rather than an app crash; verify that the value is the JavaScript key for the same Kakao app and that the local dev origin is registered in Kakao Developers.
+- 17C Kakao Map provider manual verification is complete for the headless-tested local dev origin. Re-run it after map provider, layout, Kakao app/domain, or repository visibility changes.
 
 ## Core Architecture
 
@@ -475,8 +479,8 @@ Completed as documentation-only work:
 
 Recommended next steps:
 
-1. Retry `17C: Kakao Map UI connection and manual verification` after confirming the configured value is the Kakao JavaScript key for the same app whose web platform domain includes the local dev origin.
-2. Verify real Kakao render, markers, marker click, detail preview, upload coordinate selection, and SDK failure fallback at `http://127.0.0.1:3003/`.
+1. Start `17D: Kakao Map fallback and regression verification`.
+2. Re-check static fallback, invalid/no-key fallback, public observation visibility, upload flow, and Storage/Admin regressions after map changes.
 3. Re-run Storage smoke checks after any future Storage, RLS, admin review, or public detail changes.
 
 ## Missing Features
