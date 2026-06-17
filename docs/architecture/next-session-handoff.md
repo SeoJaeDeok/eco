@@ -1425,9 +1425,10 @@ Remaining optional hardening:
 
 Recommended next phase:
 
-1. Write `docs/eco/phase-history/phase-20.md`.
-2. Update `docs/eco/phase-history/index.md` with the Phase 20 row.
-3. Optionally run malicious direct protected-field update attempts later as a hardening check.
+1. Phase 20 history archive entry is now recorded in `docs/eco/phase-history/phase-20.md`.
+2. `docs/eco/phase-history/index.md` now includes the Phase 20 row.
+3. Next work can choose the Phase 21/product polish direction.
+4. Optionally run malicious direct protected-field update attempts later as a hardening check.
 
 ## Missing Features
 

@@ -48,8 +48,9 @@ This archive is intentionally split into one Markdown file per phase. That struc
 | 17 | Kakao Map Provider | Verified | Designed, implemented, verified, and UX-hardened the Kakao Map provider while preserving static fallback. | [phase-17.md](phase-17.md) |
 | 18 | Storage Operations Hardening | Completed | Documented operations runbooks, monitoring, signed URL refresh MVP, abuse mitigation, and cleanup automation design. | [phase-18.md](phase-18.md) |
 | 19 | Public Observation List Filter/Search UX | Verified | Prioritized, implemented, and regression-verified client-side public list search, taxon/image filters, sorting, result counts, and empty state while preserving approved-only reads. | [phase-19.md](phase-19.md) |
+| 20 | Public User Contribution And Owner Editing | Verified | Implemented public login/upload gate, authenticated approved contribution, safe observer display, owner/admin content editing, and live owner/non-owner/admin smoke while preserving approved-only public reads. | [phase-20.md](phase-20.md) |
 
-**한국어:** 위 표는 완료된 Phase 1~19의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 20 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
+**한국어:** 위 표는 완료된 Phase 1~20의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 21 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
 
 ## Adding A New Completed Phase
 
