@@ -240,6 +240,90 @@ The apply-ready candidate differs from the draft in these ways:
 - It keeps rollback notes out of the migration body and leaves rollback as a separately reviewed operation.
 - It revokes direct execution on `public.guard_observation_edit_fields()` from `public`; the function is intended to run as a trigger, not as a frontend-callable function.
 
+## 20H.6 Manual Dev/Local Apply Result
+
+Status: documented from user-reported manual checks.
+
+Environment:
+
+- dev/local Supabase: 0004 was manually applied by the user.
+- production Supabase: not applied.
+- Codex did not run or apply SQL in this phase.
+- Apply errors: none reported.
+- Rollback needed: no.
+- Unexpected behavior from the provided screenshots/checks: none reported.
+
+Schema/function result:
+
+- `observations.updated_at` is present.
+- `observations.updated_at` data type is `timestamp with time zone`.
+- `observations.updated_at` is `not null`.
+- Protected-field function is present.
+  - Observed function name: `guard_observation_edit_fields`.
+- `updated_at` function is present.
+  - Observed function name: `set_updated_at`.
+- Protected-field trigger presence was not checked in the provided screenshot set.
+- `updated_at` trigger presence was not checked in the provided screenshot set.
+
+Policy result:
+
+- Public approved-only select policy retained: pass.
+- Owner update policy present: yes.
+- Owner update `observer_id = auth.uid()` guard present: yes.
+- Owner update `status = 'approved'` guard present: yes.
+- Admin update policy remains `public.is_admin()` based: yes.
+- Admin read policy remains `public.is_admin()` based: yes.
+- Admin delete policy remains `public.is_admin()` based: yes.
+- Authenticated own approved insert policy remains present: yes.
+- Pending/rejected public exposure policy added: no visible policy found from the provided policy result.
+- Status/image/observer protected-field behavior is not yet proven by update attempts; the function exists, but repository/UI update flows are not implemented yet.
+
+Public visibility note:
+
+- Total DB row status counts reported from the screenshot set:
+  - approved: 13
+  - pending: 3
+  - rejected: 2
+- These are total DB row counts, not a public visibility verification.
+- Pending visible in public UI/query: not checked in this 20H.6 screenshot set.
+- Rejected visible in public UI/query: not checked in this 20H.6 screenshot set.
+
+Test account readiness:
+
+- Owner A ready: yes, using the existing non-admin general account created earlier.
+- Owner A has an approved row: yes, based on the earlier 20E non-admin create smoke.
+- Non-owner B ready: not checked / not yet prepared unless later confirmed.
+- Admin ready: yes, using the existing hidden-admin account.
+
+Trigger verification TODO:
+
+The following read-only query should be run by the user in Supabase SQL Editor before treating trigger presence as verified:
+
+```sql
+select
+  trigger_schema,
+  trigger_name,
+  event_manipulation,
+  event_object_table,
+  action_timing
+from information_schema.triggers
+where trigger_schema = 'public'
+  and event_object_table = 'observations'
+order by trigger_name;
+```
+
+Expected trigger names include the protected-field guard trigger and the `updated_at` trigger for `public.observations`.
+
+Remaining apply validation:
+
+- Actual owner allowed-field update has not been tested.
+- Actual owner protected-field update denial has not been tested.
+- Actual non-owner update denial has not been tested.
+- Actual anonymous update denial has not been tested.
+- Actual admin update has not been tested.
+- Full public pending/rejected invisibility was not rerun in this 20H.6 screenshot set.
+- 20I repository update methods and 20J edit UI are still required before full owner/admin edit smoke can run through the app.
+
 ## Manual Apply Checklist
 
 Apply only in a dev/local Supabase project first.
@@ -389,11 +473,12 @@ Minimum 20K verification:
 
 1. 20H: DB/RLS plan and SQL draft only.
 2. 20H.5: SQL draft apply-readiness review and apply-ready migration candidate.
-3. Manual apply of `supabase/migrations/0004_owner_admin_observation_edit.sql` in dev/local Supabase after explicit approval.
-4. 20I: repository update methods and mapper/type changes.
-5. 20J: edit UI implementation.
-6. 20K: owner/admin edit smoke and regression.
-7. 20L: optional image replacement design, only if separately needed.
+3. 20H.6: manual dev/local apply result documentation.
+4. Confirm trigger presence with the read-only `information_schema.triggers` query above.
+5. 20I: repository update methods and mapper/type changes.
+6. 20J: edit UI implementation.
+7. 20K: owner/admin edit smoke and regression.
+8. 20L: optional image replacement design, only if separately needed.
 
 ## Explicit Non-Scope
 
@@ -416,8 +501,8 @@ Minimum 20K verification:
 
 ## Remaining Decisions Before 20I
 
-- Apply `supabase/migrations/0004_owner_admin_observation_edit.sql` manually in dev/local Supabase after approval.
-- Confirm owner/non-owner/admin update probes pass after the manual apply.
+- Confirm protected-field and `updated_at` triggers exist with the read-only trigger query.
+- Decide whether 20I should include direct repository-level probe helpers or leave all update attempts for 20K UI/regression.
 - Decide whether the domain model should expose internal `observerId` or use repository-level permission metadata for edit buttons.
 - Decide mock repository update behavior for local UX testing.
-- Keep RPC as fallback only if manual apply or 20K smoke shows the hybrid trigger/RLS/grant model is not sufficient.
+- Keep RPC as fallback only if repository/update smoke shows the hybrid trigger/RLS/grant model is not sufficient.

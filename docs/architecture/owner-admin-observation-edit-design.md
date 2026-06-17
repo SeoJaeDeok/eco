@@ -418,6 +418,26 @@ Phase 20H.5 accepted the hybrid trigger/RLS/grant model for a dev/local apply-re
 
 - `supabase/migrations/0004_owner_admin_observation_edit.sql`
 
-Codex did not apply the SQL. The next step is manual dev/local apply and verification before 20I repository update methods.
+Codex did not apply the SQL in 20H.5. The manual dev/local apply result is recorded in 20H.6 below.
 
 RPC remains a fallback if the trigger/RLS/grant approach fails apply-readiness or smoke testing.
+
+## 20H.6 Manual Apply Result
+
+The user manually applied `supabase/migrations/0004_owner_admin_observation_edit.sql` in the dev/local Supabase environment.
+
+Recorded result:
+
+- dev/local Supabase apply: yes.
+- production apply: no.
+- apply errors: none reported.
+- Codex did not run or apply SQL.
+- `observations.updated_at` is present as `timestamp with time zone` and not nullable.
+- `guard_observation_edit_fields` and `set_updated_at` functions are present.
+- owner update, admin update/read/delete, and authenticated own approved insert policies were observed.
+- public approved-only select was retained.
+- no visible pending/rejected public exposure policy was found in the provided policy result.
+- trigger presence was not checked in the provided screenshot set and remains a read-only SQL Editor TODO.
+- actual owner/non-owner/admin update attempts are not yet run because repository update methods and edit UI are not implemented.
+
+20I can proceed to repository update methods after confirming trigger presence and preserving the same non-scope boundaries: no image replacement, no admin Navbar exposure, and no public pending/rejected visibility.

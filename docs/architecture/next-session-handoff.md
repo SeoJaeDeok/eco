@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20H.5 owner/admin observation edit SQL apply-readiness review.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20H.6 owner/admin observation edit manual apply result documentation.
 
 Read this together with:
 
@@ -81,6 +81,7 @@ Read this together with:
 - 20G owner/admin observation edit design
 - 20H owner/admin observation edit DB/RLS plan and SQL draft
 - 20H.5 owner/admin observation edit SQL apply-readiness review and migration candidate
+- 20H.6 owner/admin observation edit 0004 manual apply result documentation
 
 ## Verified Current State
 
@@ -416,7 +417,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H.5 owner/admin edit SQL apply-readiness review is complete. The 0004 apply-ready migration candidate exists at supabase/migrations/0004_owner_admin_observation_edit.sql, but Codex did not apply it. The next recommended step is manual dev/local 0004 apply and RLS probes before 20I repository update methods. Edit UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H.6 owner/admin edit 0004 manual apply result documentation is complete. The user manually applied 0004 in dev/local Supabase, production was not changed, and Codex did not apply SQL. Trigger presence still needs read-only SQL Editor confirmation before 20I repository update methods. Edit UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -1164,10 +1165,67 @@ Completed as documentation and migration-candidate work:
 
 Recommended next phase:
 
-1. Manually apply `supabase/migrations/0004_owner_admin_observation_edit.sql` in dev/local Supabase after explicit approval.
-2. Run owner/non-owner/admin update-denial and update-success probes from the 20H.5 checklist.
-3. Start 20I repository update methods only after the 0004 manual apply passes.
+1. Manual dev/local apply was later reported and documented in 20H.6 below.
+2. Owner/non-owner/admin update-denial and update-success probes remain pending until repository/UI paths exist.
+3. Start 20I repository update methods after trigger presence is confirmed.
 4. Keep owner/admin edit UI deferred until repository update methods are accepted.
+
+### 20H.6: Owner/Admin Observation Edit 0004 Manual Apply Result Documentation
+
+Completed as documentation-only work from the user's manual Supabase checks:
+
+- The user manually applied `supabase/migrations/0004_owner_admin_observation_edit.sql` in dev/local Supabase.
+- Production Supabase was not changed.
+- Codex did not run or apply SQL/RLS in this phase.
+- Apply errors: none reported.
+- Rollback needed: no.
+- `observations.updated_at` is present as `timestamp with time zone` and not nullable.
+- The protected-field function was observed as `guard_observation_edit_fields`.
+- The `updated_at` function was observed as `set_updated_at`.
+- Protected-field trigger presence was not checked in the provided screenshot set.
+- `updated_at` trigger presence was not checked in the provided screenshot set.
+- Policy checks from the user-reported result:
+  - public approved-only select retained: pass
+  - owner update policy present: yes
+  - owner update `observer_id = auth.uid()` guard present: yes
+  - owner update `status = 'approved'` guard present: yes
+  - admin update/read/delete policies remain `public.is_admin()` based
+  - authenticated own approved insert policy remains present
+  - no visible pending/rejected public exposure policy was found in the provided policy result
+- Total DB status counts reported in the screenshot set:
+  - approved: 13
+  - pending: 3
+  - rejected: 2
+- The status counts are total DB row counts, not public visibility verification.
+- Pending/rejected visible count in public UI/query was not checked in this 20H.6 screenshot set.
+- Owner A is ready using the existing non-admin general account created earlier.
+- Owner A has an approved row based on the earlier 20E non-admin create smoke.
+- Non-owner B is not yet checked or prepared unless later confirmed.
+- Admin is ready through the existing hidden-admin account.
+- Actual owner/non-owner/admin update attempts are not yet run because repository update methods and edit UI are not implemented.
+
+Trigger verification TODO:
+
+```sql
+select
+  trigger_schema,
+  trigger_name,
+  event_manipulation,
+  event_object_table,
+  action_timing
+from information_schema.triggers
+where trigger_schema = 'public'
+  and event_object_table = 'observations'
+order by trigger_name;
+```
+
+Recommended next phase:
+
+1. Ask the user to run the read-only trigger query above and confirm the protected-field and `updated_at` triggers exist.
+2. Start 20I repository update methods after trigger presence is confirmed.
+3. Keep owner/admin edit UI deferred until repository update methods are accepted.
+4. Keep image replacement out of scope.
+5. Run full owner/non-owner/admin update smoke in 20K after repository and UI paths exist.
 
 ## Missing Features
 

@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20H.5 Owner/Admin Edit SQL Readiness Review
+## Current State After Phase 20H.6 Owner/Admin Edit Manual Apply Result Documentation
 
 Completed and verified:
 
@@ -68,6 +68,8 @@ Completed and verified:
 - 20H.5 owner/admin observation edit SQL apply-readiness review is complete. The hybrid repository whitelist + column grants + owner/admin RLS + protected-field trigger strategy is accepted as the initial apply-ready direction, with RPC kept as fallback.
 - 20H.5 added `supabase/migrations/0004_owner_admin_observation_edit.sql` as an apply-ready migration candidate. Codex did not apply it to Supabase.
 - 20H.5 does not implement repository update methods, edit UI, image replacement, package changes, or new dependencies.
+- 20H.6 manual apply result documentation is complete. The user manually applied 0004 in dev/local Supabase with no reported errors, production was not changed, and Codex did not apply SQL/RLS. Trigger presence still needs read-only SQL Editor confirmation before 20I.
+- 20H.6 does not implement repository update methods, edit UI, image replacement, package changes, or new dependencies.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -75,15 +77,15 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-Manual dev/local 0004 apply, then 20I repository update methods
+20I repository update methods after trigger confirmation
 ```
 
 Recommended sequence:
 
-1. Manually apply `supabase/migrations/0004_owner_admin_observation_edit.sql` in dev/local Supabase after explicit approval.
-2. Run owner/non-owner/admin RLS probes from the 20H.5 checklist.
-3. Start 20I repository update methods only after the 0004 manual apply passes.
-4. Keep edit UI implementation deferred until repository update methods are accepted.
+1. Ask the user to confirm protected-field and `updated_at` trigger presence with the read-only trigger query in `docs/architecture/owner-admin-observation-edit-rls-plan.md`.
+2. Start 20I repository update methods after trigger presence is confirmed.
+3. Keep edit UI implementation deferred until repository update methods are accepted.
+4. Run owner/non-owner/admin update probes in 20K after repository and UI paths exist.
 5. If launch needs field-by-field evidence for a non-admin row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
 6. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
 7. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
@@ -104,7 +106,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H.5 owner/admin edit SQL apply-readiness review is complete. The 0004 apply-ready migration candidate exists at supabase/migrations/0004_owner_admin_observation_edit.sql, but Codex did not apply it. The next recommended step is manual dev/local 0004 apply and RLS probes before 20I repository update methods. Edit UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H.6 owner/admin edit manual apply result documentation is complete. The user manually applied 0004 in dev/local Supabase, production was not changed, and Codex did not apply SQL/RLS. The next recommended step is read-only trigger confirmation, then 20I repository update methods. Edit UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Current Stack
@@ -434,6 +436,7 @@ npm.cmd audit --audit-level=high
 - Phase 20G: Owner/admin observation edit design completed.
 - Phase 20H: Owner/admin observation edit DB/RLS plan and SQL draft completed; SQL was not applied.
 - Phase 20H.5: Owner/admin edit SQL apply-readiness review completed and 0004 migration candidate added; SQL was not applied.
+- Phase 20H.6: Owner/admin edit 0004 manual dev/local apply result documented; Codex did not apply SQL.
 
 ## Review Checklist Before Final Response
 
