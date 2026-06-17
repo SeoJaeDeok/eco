@@ -326,7 +326,7 @@ Remaining apply validation:
 
 ## 20H.7 Trigger And Public Visibility Confirmation
 
-Status: PARTIAL, with pending visibility still requiring clarification.
+Status: PARTIAL at the time; pending visibility was later resolved by 20K manual smoke as hidden.
 
 Codex did not run SQL or apply additional RLS changes in 20H.7. This section records user-reported checks only.
 
@@ -354,8 +354,8 @@ Interpretation:
 
 - The trigger connection check passed.
 - The rejected visibility correction satisfies the rejected-row public visibility check.
-- The pending visibility report still needs clarification because pending rows may exist in the database but must not be visible in public list/detail UI or public repository reads.
-- Because pending was reported as visible in public list/detail and was not corrected in the 20I prompt, 20H.7 public visibility remains PARTIAL, not PASS.
+- The pending visibility report was ambiguous at the time because pending rows may exist in the database but must not be visible in public list/detail UI or public repository reads.
+- 20H.7 public visibility remained PARTIAL at the time, then 20K manual smoke verified pending/rejected rows were not visible in public list/detail.
 
 Remaining validation:
 
@@ -612,10 +612,9 @@ Minimum 20K verification:
 - admin route exposure in `Navbar`
 - public exposure of pending/rejected observations
 
-## Remaining Decisions Before 20K
+## Remaining Optional Hardening After 20K
 
-- Recheck pending/rejected public invisibility during 20K smoke.
-- Owner/non-owner/admin update attempts remain for 20K UI/regression.
+- Malicious direct protected-field DB update attempts were not separately run during 20K.
 - 20J chose internal `observerId` for permission checks only; do not render it as public UI copy.
 - Keep RPC as fallback only if repository/update smoke shows the hybrid trigger/RLS/grant model is not sufficient.
 
@@ -642,18 +641,18 @@ Field-level UI boundary:
 - The edit form does not expose `status`, observer fields, image fields, `image_url`, or timestamp fields.
 - Image replacement remains out of scope.
 
-20K verification must still prove:
+20K live smoke verified:
 
 - owner allowed-field update works
-- owner protected-field update remains impossible through UI/payload
-- non-owner and anonymous users cannot edit
+- owner protected-field update remains impossible through UI and recorded DB protected fields stayed unchanged
+- non-owner and anonymous users cannot edit through the UI path
 - admin content update works
 - pending/rejected rows remain hidden from public list/detail
 - no signed/public/blob/data URL is stored by update paths
 
 ## 20K Smoke/Regression Preflight
 
-Status: PARTIAL.
+Status: PASS.
 
 20K static/build preflight completed:
 
@@ -667,22 +666,25 @@ Status: PARTIAL.
 - Static Navbar check found no admin route exposure.
 - Package files and Supabase migrations were not changed.
 
-20K live checks remain pending because Codex did not have login credentials and in-app browser automation was unavailable:
+User-reported live manual smoke result:
 
-- owner A allowed-field edit
-- owner A DB row invariant checks after save
-- non-owner B edit affordance/update denial
-- anonymous no-edit affordance in a browser
-- admin content edit
-- malicious protected-field update attempts
-- public pending/rejected invisibility through the live UI/query
-- console/log secret check during browser interaction
+- Owner A live edit result: pass.
+- Owner A allowed field update reflected in detail/list: pass.
+- Owner A status/image/observer fields not editable in UI: pass.
+- Owner A DB protected fields unchanged: pass.
+- Non-owner B edit hidden/denied result: pass.
+- Anonymous edit hidden result: pass.
+- Admin edit result: pass.
+- Admin route still hidden from `Navbar`: pass.
+- Updated approved row remains public: pass.
+- Pending visible in public list/detail: no.
+- Rejected visible in public list/detail: no.
+- `image_url` URL-like storage check: pass; no signed/public/blob/data URL stored.
+- Console/log secret check: pass.
+- Overall: PASS.
 
-Precondition state for the remaining live smoke:
+Remaining RLS/protected-field hardening:
 
-- owner A ordinary account ready: yes, user-reported.
-- owner A approved row: yes, user-reported.
-- non-owner B ordinary account ready: not confirmed.
-- admin account ready: yes, user-reported.
-- 0004 dev/local apply: yes, user-reported.
-- production apply: no.
+- Malicious direct protected-field DB update attempts were not separately run.
+- The existing trigger/RLS design remains the DB-level protection layer.
+- Production apply remains separate from the documented dev/local apply history unless separately confirmed later.

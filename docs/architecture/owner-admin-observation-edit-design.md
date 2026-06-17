@@ -456,9 +456,7 @@ The user also reported:
 - rejected visible in public list/detail: corrected to no.
 - console/log secret exposure: pass.
 
-This is recorded as a PARTIAL visibility result, not a public visibility PASS. Pending/rejected rows may exist in the database, but they must not appear in public list/detail UI or public repository reads. Rejected visibility was corrected to hidden; pending visibility still needs clarification because it was not explicitly corrected in the 20I prompt.
-
-Before edit UI implementation proceeds against this environment, clarify whether pending "yes" means the check was performed or the row was actually visible. If pending rows were actually visible, run a focused public visibility investigation/fix before owner/admin edit UI implementation.
+This was recorded as a PARTIAL visibility result at the time. Pending/rejected rows may exist in the database, but they must not appear in public list/detail UI or public repository reads. Rejected visibility was corrected to hidden, and the earlier pending visibility ambiguity was later resolved by 20K manual smoke as hidden.
 
 ## 20I Repository Update Methods Result
 
@@ -514,13 +512,13 @@ Still excluded:
 - additional SQL/RLS application
 - admin route exposure in `Navbar`
 
-20K should run owner/non-owner/admin smoke and public visibility regression before treating the edit workflow as fully verified.
+20K live smoke verified the owner/non-owner/admin edit workflow and public visibility regression by user manual testing.
 
 ## 20K Smoke/Regression Preflight
 
-Status: PARTIAL.
+Status: PASS.
 
-20K static/build preflight completed without marking the live edit workflow as fully verified:
+20K static/build preflight completed:
 
 - `npm.cmd run typecheck` passed.
 - `npm.cmd run build` passed.
@@ -532,19 +530,23 @@ Status: PARTIAL.
 - `Navbar` still does not expose the admin route.
 - Package files and Supabase migration files were not changed.
 
-Live smoke remains required before treating owner/admin edit as verified:
+User-reported live manual smoke result:
 
-- owner A allowed-field edit and DB row invariant checks
-- non-owner B hidden affordance and update denial
-- anonymous no-edit affordance
-- admin content edit
-- public pending/rejected invisibility through the live UI/query
-- console/log secret check during live browser interaction
+- Owner A live edit passed.
+- Owner A allowed field update was reflected in detail/list.
+- Owner A status/image/observer fields were not editable in UI.
+- Owner A DB protected fields stayed unchanged.
+- Non-owner B edit was hidden/denied.
+- Anonymous edit affordance was hidden.
+- Admin content edit passed.
+- Admin route stayed hidden from `Navbar`.
+- Updated approved row remained public.
+- Pending and rejected rows were not visible in public list/detail.
+- `image_url` had no signed/public/blob/data URL stored.
+- Console/log secret check passed.
+- Overall 20K smoke result: PASS.
 
-User-reported prerequisites remain:
+Remaining optional hardening:
 
-- owner A ordinary account is ready and has an approved row.
-- admin account is ready.
-- 0004 is applied in dev/local Supabase.
-- production remains unchanged.
-- non-owner B readiness is not confirmed.
+- Malicious direct protected-field DB update attempts were not separately run.
+- Image replacement remains out of scope.

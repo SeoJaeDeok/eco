@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20J owner/admin observation edit UI and the partial 20K edit smoke preflight.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20K owner/admin edit smoke verification.
 
 Read this together with:
 
@@ -85,11 +85,11 @@ Read this together with:
 - 20H.7 owner/admin edit trigger and public visibility confirmation documentation
 - 20I owner/admin observation update repository methods
 - 20J owner/admin observation edit UI
-- 20K owner/admin observation edit smoke/regression preflight is partially documented; live owner/non-owner/admin update smoke remains pending.
+- 20K owner/admin observation edit smoke/regression passed by user manual verification.
 
 ## Verified Current State
 
-- Public routes load, with a 20H.7 visibility blocker to clarify:
+- Public routes load, and 20K verified pending/rejected public invisibility:
   - Home
   - Biodiversity guide
   - Observation list
@@ -421,7 +421,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20J owner/admin observation edit UI is implemented in the public detail modal. 20K static/build preflight passed, but live owner/non-owner/admin edit smoke still needs credentials and browser/manual verification. Repository update payloads are content-only and exclude status/image/observer fields. The expected 0004 update triggers are connected in dev/local Supabase, production was not changed, and Codex did not apply SQL. Rejected visibility was corrected to hidden.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20K owner/admin edit live smoke passed by user manual verification. Phase 20 core feature set is complete, and the next recommended step is writing docs/eco/phase-history/phase-20.md. Repository update payloads are content-only and exclude status/image/observer fields. The expected 0004 update triggers are connected in dev/local Supabase, production was not changed, and Codex did not apply SQL.
 ```
 
 ## Recommended Phase 16 Direction
@@ -1226,7 +1226,7 @@ order by trigger_name;
 Recommended next phase:
 
 1. Trigger presence was later confirmed in 20H.7 below.
-2. Rejected visibility was later corrected to hidden; pending visibility still needs clarification before edit UI.
+2. Rejected visibility was later corrected to hidden; the earlier pending visibility ambiguity was resolved by 20K manual smoke as hidden.
 3. Keep owner/admin edit UI deferred until repository update methods are accepted.
 4. Keep image replacement out of scope.
 5. Run full owner/non-owner/admin update smoke in 20K after repository and UI paths exist.
@@ -1259,19 +1259,17 @@ Interpretation:
 
 - Trigger confirmation is complete for the expected 0004 update triggers.
 - Rejected visibility is corrected to hidden.
-- The pending visibility report still needs clarification unless "yes" meant only that the check was performed.
+- The pending visibility report was ambiguous at the time of 20H.7 and was later resolved by 20K manual smoke as hidden.
 - The project invariant is unchanged: pending/rejected rows may exist in the DB, but public list/detail and public repository reads must not show them.
-- This public visibility result is therefore recorded as PARTIAL, not PASS.
+- This 20H.7 public visibility result was recorded as PARTIAL at that time, then resolved by 20K manual smoke.
 - Codex did not apply SQL/RLS in this phase.
 - Repository update methods, edit UI, image replacement, and owner/non-owner/admin update attempts remain unimplemented/not run.
 
-Recommended next phase:
+Later result:
 
-1. Clarify or rerun the pending public visibility check before edit UI work.
-2. If pending rows are actually visible in public list/detail, run a focused visibility investigation/fix before owner/admin edit UI work.
-3. If pending visibility is confirmed hidden, continue with the owner/admin edit implementation sequence.
-4. Keep owner/admin edit UI deferred until repository update methods are accepted.
-5. Keep image replacement out of scope.
+- 20K manual smoke resolved pending/rejected public visibility as hidden.
+- Owner/admin edit UI and repository update methods were completed after this 20H.7 checkpoint.
+- Image replacement remains out of scope.
 
 ### 20I: Owner/Admin Observation Update Repository Methods
 
@@ -1372,27 +1370,25 @@ Not implemented in 20J:
 
 Recommended next phase:
 
-1. Run 20K owner/non-owner/admin edit smoke and regression.
-2. Verify owner can update allowed fields and cannot access protected fields through UI.
-3. Verify anonymous and authenticated non-owner users do not see edit affordances.
-4. Verify signed-in admin can update from detail without exposing admin in `Navbar`.
-5. Verify pending/rejected rows remain hidden from public list/detail.
+1. 20K passed by user manual verification.
+2. Write the Phase 20 history archive entry.
+3. Keep malicious direct protected-field update attempts as an optional hardening check.
 
 ### 20K: Owner/Admin Observation Edit Smoke And Regression
 
-Status: PARTIAL.
+Status: PASS.
 
 Preconditions recorded without exposing credentials or secrets:
 
 - Owner A ordinary account ready: yes, user-reported from earlier non-admin contributor setup.
 - Owner A approved row exists: yes, user-reported from the earlier 20E non-admin create smoke.
-- Non-owner B ordinary account ready: not confirmed in this session.
+- Non-owner B ordinary account ready: yes, used for the user-reported 20K non-owner check.
 - Admin account ready: yes, user-reported existing hidden-admin account.
 - 0004 migration applied in dev/local Supabase: yes, user-reported and documented in 20H.6/20H.7.
 - Production Supabase apply: no.
 - Login credentials were not available to Codex and were not requested or printed.
 
-Verification completed in this session:
+Verification completed before live manual smoke:
 
 - `npm.cmd run typecheck` passed.
 - `npm.cmd run build` passed.
@@ -1404,37 +1400,40 @@ Verification completed in this session:
 - Static Navbar check found no admin route exposure.
 - Package files and `supabase/migrations` are unchanged by the 20J/20K working tree.
 
-Verification not completed in this session:
+User-reported live manual smoke result:
 
-- In-app browser automation was unavailable.
-- Owner A live allowed-field edit was not run.
-- Owner A DB row post-update checks were not run.
-- Non-owner B hidden edit affordance and update denial were not run.
-- Admin live content edit was not run.
-- Malicious protected-field DB update attempts were not run.
-- Public pending/rejected UI visibility was not rerun through a browser in this session.
+- Owner A live edit result: pass.
+- Owner A allowed field update reflected in detail/list: pass.
+- Owner A status/image/observer fields not editable in UI: pass.
+- Owner A DB protected fields unchanged: pass.
+- Non-owner B edit hidden/denied result: pass.
+- Anonymous edit hidden result: pass.
+- Admin edit result: pass.
+- Admin route still hidden from `Navbar`: pass.
+- Updated approved row remains public: pass.
+- Pending visible in public list/detail: no.
+- Rejected visible in public list/detail: no.
+- `image_url` URL-like storage check: pass; no signed/public/blob/data URL stored.
+- Console/log secret check: pass.
+- Overall: PASS.
 
-Public visibility interpretation:
+Remaining optional hardening:
 
-- Repository code still reads public list/detail through `status = 'approved'`.
-- Rejected public visibility was corrected to hidden in the user report.
-- Pending public visibility still needs a live public UI/query rerun before 20K can be marked PASS.
+- Malicious direct protected-field DB update attempts were not separately run.
+- Image replacement remains out of scope.
+- Audit log, reject note, bulk approval, and user management remain out of scope.
 
 Recommended next phase:
 
-1. Complete live 20K manual/browser smoke with owner A, non-owner B, and admin credentials.
-2. Verify owner allowed-field update and DB row invariants after save.
-3. Verify anon and non-owner users do not see edit affordances.
-4. Verify admin can update content without exposing admin in `Navbar`.
-5. Rerun public pending/rejected invisibility checks in the same Supabase environment.
-6. If those pass, proceed to commit/push the 20J implementation plus 20K verification notes.
+1. Write `docs/eco/phase-history/phase-20.md`.
+2. Update `docs/eco/phase-history/index.md` with the Phase 20 row.
+3. Optionally run malicious direct protected-field update attempts later as a hardening check.
 
 ## Missing Features
 
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
 - Public self-sign-up and display-name setup UI
-- Full live owner/non-owner/admin edit smoke/regression for submitted observations
 - Reject note
 - Audit log
 - Bulk approval

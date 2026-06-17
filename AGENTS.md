@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20J Owner/Admin Observation Edit UI
+## Current State After Phase 20K Owner/Admin Edit Smoke Verification
 
 Completed and verified:
 
@@ -71,14 +71,16 @@ Completed and verified:
 - 20H.6 manual apply result documentation is complete. The user manually applied 0004 in dev/local Supabase with no reported errors, production was not changed, and Codex did not apply SQL/RLS. Trigger presence was later confirmed in 20H.7.
 - 20H.6 does not implement repository update methods, edit UI, image replacement, package changes, or new dependencies.
 - 20H.7 trigger and public visibility confirmation documentation is complete. The expected `observations_guard_edit_fields` and `observations_set_updated_at` `BEFORE UPDATE` triggers are connected to `public.observations`.
-- 20H.7 records public approved list loading as passed and rejected visibility as corrected to hidden. Pending visibility still needs clarification if it was actually visible. Codex did not apply SQL/RLS.
+- 20H.7 records public approved list loading as passed and rejected visibility as corrected to hidden. The earlier pending visibility ambiguity was later resolved by 20K manual smoke as hidden. Codex did not apply SQL/RLS.
 - 20H.7 does not implement repository update methods, edit UI, image replacement, package changes, or new dependencies.
 - 20I owner/admin observation update repository methods are complete. Owner/admin content update contracts and Supabase payload mappers include only text/classification/date/location/coordinates/description fields and exclude status, observer, image, `image_url`, and timestamp fields.
 - 20I adds `ObservationRepository.updateOwnObservation`, `AdminObservationRepository.updateObservationAsAdmin`, Supabase implementations, and mock in-memory owner update behavior. It does not add edit UI, image replacement, package changes, new dependencies, or additional SQL/RLS.
 - 20J owner/admin observation edit UI is implemented in the public observation detail modal. The edit affordance is shown only to the signed-in owner or a signed-in admin, uses repository update methods, and exposes only content/date/location/coordinate/description fields.
 - 20J adds internal `observerId` mapping for permission checks only. It is not rendered as public copy.
 - 20J does not add card edit buttons, image replacement, status edit UI, observer edit UI, image metadata edit UI, package changes, new dependencies, additional SQL/RLS, or admin Navbar exposure.
-- 20K owner/admin edit smoke/regression preflight is partial: typecheck, build, diff check, local root HTTP, protected-field static checks, UI repository-boundary checks, and Navbar admin-exposure checks passed. Live owner/non-owner/admin edit smoke still needs credentials/browser verification.
+- 20K owner/admin edit live smoke/regression is complete. The user verified owner allowed-field edit, detail/list refresh, protected fields hidden in UI, DB protected fields unchanged, non-owner edit hidden/denied, anonymous edit hidden, admin edit, admin route hidden from `Navbar`, updated approved row public visibility, pending/rejected public invisibility, no URL-like `image_url`, and console/log secret checks.
+- Malicious direct protected-field update attempts were not separately run and remain an optional hardening check.
+- Phase 20 core feature set is complete: public login/upload gate, authenticated approved contribution, safe observer display, owner/admin content edit, and owner/admin edit smoke are implemented or documented.
 - General public routes still load, and public read methods remain approved-only in repository code. Pending/rejected rows must remain hidden from public list/detail.
 
 ## Next Starting Point
@@ -86,21 +88,17 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-Complete 20K live owner/admin edit smoke and regression
+Phase 20 history archive
 ```
 
 Recommended sequence:
 
-1. Complete live 20K owner/non-owner/admin edit smoke and regression with credentials/browser access.
-2. Verify owner sees the detail-modal edit affordance on own approved rows and can update allowed fields.
-3. Verify anonymous and authenticated non-owner users do not see the edit affordance.
-4. Verify signed-in admin can use the detail-modal edit affordance without exposing admin in `Navbar`.
-5. Verify status, observer fields, image fields, and URL-like image values are not editable or sent in update payloads.
-6. Verify pending/rejected rows remain hidden from public list/detail.
-7. If launch needs field-by-field evidence for a non-admin row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` during 20K.
-8. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
-9. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
-10. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
+1. Add the Phase 20 history archive entry in `docs/eco/phase-history/phase-20.md`.
+2. Update `docs/eco/phase-history/index.md` after the Phase 20 entry is written.
+3. Keep malicious direct protected-field update attempts as an optional hardening check, not as a blocker for the recorded 20K PASS.
+4. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
+5. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
+6. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
 
 ## New Session Entry Checklist
 
@@ -117,7 +115,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20J owner/admin observation edit UI is implemented in the public detail modal. 20K static/build preflight passed, but live owner/non-owner/admin edit smoke still needs credentials/browser verification. Edit fields are content-only and exclude status/image/observer fields.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20K owner/admin edit live smoke passed by user manual verification. Phase 20 core feature set is complete, and the next recommended step is writing `docs/eco/phase-history/phase-20.md`.
 ```
 
 ## Current Stack
@@ -448,9 +446,10 @@ npm.cmd audit --audit-level=high
 - Phase 20H: Owner/admin observation edit DB/RLS plan and SQL draft completed; SQL was not applied.
 - Phase 20H.5: Owner/admin edit SQL apply-readiness review completed and 0004 migration candidate added; SQL was not applied.
 - Phase 20H.6: Owner/admin edit 0004 manual dev/local apply result documented; Codex did not apply SQL.
-- Phase 20H.7: Owner/admin edit trigger confirmation documented; rejected visibility was corrected to hidden and pending visibility still needs clarification if it was actually visible.
+- Phase 20H.7: Owner/admin edit trigger confirmation documented; rejected visibility was corrected to hidden, and the earlier pending visibility ambiguity was later resolved by 20K manual smoke as hidden.
 - Phase 20I: Owner/admin observation update repository methods implemented without edit UI or additional SQL/RLS.
 - Phase 20J: Owner/admin observation edit UI implemented in the public detail modal without image replacement or additional SQL/RLS.
+- Phase 20K: Owner/admin edit live smoke/regression passed by user manual verification; malicious direct protected-field update attempts remain optional hardening.
 
 ## Review Checklist Before Final Response
 
