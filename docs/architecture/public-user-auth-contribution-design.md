@@ -616,13 +616,21 @@ Status: implemented in phase 20F.
 
 ### 20G: Owner/Admin Edit Design
 
-- Finalize editable fields, validation, conflict handling, and RLS tests.
-- Decide whether admin edit ships with owner edit or as a separate step.
+Status: completed as design-only in `docs/architecture/owner-admin-observation-edit-design.md`.
+
+- Owner/admin edit MVP should allow content and location metadata edits only.
+- Owner edit should use `observer_id = auth.uid()` as the ownership guard.
+- Admin edit should remain under hidden `/#admin` and `public.is_admin()` authorization.
+- Status changes remain admin-only.
+- Observer fields, image path/metadata, and `image_url` are not editable.
+- Image replacement remains out of scope for the first edit MVP.
+- 20H should review whether column grants plus RLS are sufficient or whether owner edit should use an RPC for stricter field protection.
 
 ### 20H: Owner/Admin Edit Implementation
 
-- Add repository update methods.
-- Add minimal edit UI.
+- Start only after the 20H DB/RLS plan or migration candidate is accepted.
+- Add repository update methods behind `ObservationRepository` and `AdminObservationRepository`.
+- Add minimal edit UI in a later phase.
 - Keep image replacement out of scope unless separately approved.
 
 ### 20I: Regression Verification

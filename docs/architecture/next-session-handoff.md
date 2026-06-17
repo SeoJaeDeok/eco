@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20F.5 observer display regression documentation and non-admin contributor smoke documentation.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20G owner/admin observation edit design.
 
 Read this together with:
 
@@ -18,6 +18,7 @@ Read this together with:
 - `docs/architecture/supabase-storage-cleanup-automation-design.md`
 - `docs/architecture/kakao-map-provider-design.md`
 - `docs/architecture/phase-19-product-feature-prioritization.md`
+- `docs/architecture/owner-admin-observation-edit-design.md`
 - `docs/eco/phase-history/index.md`
 
 ## Current Completed Phases
@@ -76,6 +77,7 @@ Read this together with:
 - 20E.6 authenticated direct approved create manual smoke documentation
 - 20F observer display in public observation cards and detail modal
 - 20F.5 observer display regression and non-admin contributor smoke documentation
+- 20G owner/admin observation edit design
 
 ## Verified Current State
 
@@ -411,7 +413,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20E authenticated direct approved create is implemented in the Supabase repository path. Codex did not apply SQL/RLS. The next recommended step is 20E Supabase smoke verification with a configured non-admin test account before 20F observer display. Observer display UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20G owner/admin observation edit design is complete. Codex did not implement edit UI or apply SQL/RLS. The next recommended step is 20H owner/admin edit DB/RLS implementation plan or migration candidate. Owner edit and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -1075,6 +1077,41 @@ Recommended next phase:
 1. Start 20G owner/admin edit design.
 2. Keep edit implementation deferred until the 20G design is accepted.
 3. Before launch or edit implementation, optionally run a live browser smoke for mock/Supabase observer display and field-level non-admin row confirmation.
+
+### 20G: Owner/Admin Observation Edit Design
+
+Completed as documentation-only work:
+
+- Added `docs/architecture/owner-admin-observation-edit-design.md`.
+- Confirmed the user requirement: observation records should be editable only by the original observer or an admin.
+- Recommended owner edit MVP fields:
+  - common name/title
+  - scientific name
+  - taxon
+  - observed date
+  - location name
+  - coordinates
+  - description
+- Recommended non-editable owner/admin MVP fields:
+  - `observer_id`
+  - `observer_display_name`
+  - `image_url`
+  - `image_path`
+  - `image_mime_type`
+  - `image_size_bytes`
+- Recommended status changes remain admin-only.
+- Recommended image replacement stay out of the MVP and move to a later dedicated design phase.
+- Recommended owner edit enter from public detail only, not observation cards.
+- Recommended admin edit begin inside hidden `/#admin`, without exposing admin in `Navbar`.
+- Recommended field-level protection combine RLS/grants with repository payload narrowing, and review an RPC option in 20H if owner/admin status separation is not robust enough with grants alone.
+- Did not implement edit UI, repository updates, SQL/RLS changes, package changes, Storage changes, Kakao Map changes, or admin Navbar exposure.
+
+Recommended next phase:
+
+1. Start 20H owner/admin edit DB/RLS implementation plan or migration candidate.
+2. Keep SQL application separate and explicitly approved.
+3. Keep owner/admin edit UI implementation deferred until repository/RLS design is accepted.
+4. Keep image replacement out of scope.
 
 ## Missing Features
 

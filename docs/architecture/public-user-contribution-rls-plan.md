@@ -553,9 +553,11 @@ Status: implemented in app/UI code.
 
 ### Later Edit Phases
 
-- 20G: owner/admin edit design finalization.
-- 20H: owner/admin edit implementation.
-- 20I: full regression verification.
+- 20G: owner/admin edit design finalization, completed in `docs/architecture/owner-admin-observation-edit-design.md`.
+- 20H: owner/admin edit DB/RLS implementation plan or migration candidate.
+- 20I: repository update methods.
+- 20J: edit UI implementation.
+- 20K: full regression verification.
 
 ## Explicit Non-Scope
 
@@ -577,8 +579,11 @@ Status: implemented in app/UI code.
 - add dependencies
 - change Kakao Map code
 
-## Remaining Decisions Before 20G
+## Remaining Decisions Before 20H
 
-- Decide whether `observer_display_name` snapshot display needs a profile display-name setup/edit UI before launch.
-- Decide whether launch readiness needs field-by-field confirmation for the 20F.5 non-admin contributor row before owner/admin edit implementation.
+- Decide whether owner updates can be protected safely with column grants plus RLS, or whether an owner-update RPC is required.
+- Decide whether the current 0003 `status` update grant needs to be split before owner edit ships.
+- Decide whether admin content edit starts only in hidden `/#admin` or also appears in public detail for signed-in admins later.
+- Decide whether launch readiness needs field-by-field confirmation for the 20F.5 non-admin contributor row before edit implementation.
 - Decide whether a "my observations" view is needed before owner edit.
+- Keep `observer_display_name` snapshot editing, image replacement, and ownership transfer out of the first edit MVP unless separately approved.

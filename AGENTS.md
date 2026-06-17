@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20F.5 Observer Display Verification Documentation
+## Current State After Phase 20G Owner/Admin Edit Design
 
 Completed and verified:
 
@@ -60,7 +60,8 @@ Completed and verified:
 - 20E.6 manual smoke result is documented. The user confirmed the 0003 ownership/display columns are present and an admin-authenticated smoke passed for login, signed-out upload gate, logged-in upload form access, approved row creation, `observer_id`, safe non-email `observer_display_name`, image metadata, no URL-like `image_url`, public list display, pending/rejected public invisibility, logout gate return, and console/log secret checks.
 - 20F observer display is implemented in public observation cards and detail modal. It uses safe `observer_display_name` values when present and falls back to `등록 관찰자`; email-like display names are not shown.
 - 20F.5 observer display regression and non-admin contributor smoke documentation is complete. The user reported a non-admin Supabase account with `role = 'user'`, a profile row, and `display_name`; authenticated create worked with that account. Code/static checks confirmed observer display uses safe fallback, email-like values are suppressed, public reads remain approved-only, and owner/admin edit is still not implemented.
-- 20F does not implement owner edit, admin edit, public sign-up, display-name setup, package changes, or new dependencies.
+- 20G owner/admin observation edit design is complete in `docs/architecture/owner-admin-observation-edit-design.md`. It recommends owner/admin edit for text/classification/date/location/coordinates/description only, keeps status admin-only, keeps observer/image fields non-editable, excludes image replacement from the MVP, and defers SQL/RLS and UI implementation to later phases.
+- 20G does not implement owner edit UI, admin edit UI, public sign-up, display-name setup, SQL/RLS application, package changes, or new dependencies.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -68,15 +69,15 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-20G owner/admin edit design
+20H owner/admin edit DB/RLS plan
 ```
 
 Recommended sequence:
 
-1. Start 20G owner/admin edit design only after confirming the 20F.5 documented smoke scope is sufficient for the target environment.
-2. If launch needs field-by-field evidence for a non-admin row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
-3. Keep owner edit, admin edit, public sign-up, and display-name setup for later approved phases.
-4. Continue verifying public reads remain approved-only with pending/rejected hidden after observer display changes.
+1. Start 20H owner/admin edit DB/RLS implementation plan or migration candidate.
+2. Decide whether owner updates use column grants plus RLS or a stricter owner-update RPC.
+3. Keep owner/admin edit UI implementation deferred until repository/RLS design is accepted.
+4. If launch needs field-by-field evidence for a non-admin row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
 5. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
 6. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 7. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
@@ -96,7 +97,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20F observer display is implemented in public cards/details using safe observer display names with fallback copy, and 20F.5 documents observer-display regression checks plus a user-reported non-admin contributor create smoke. Codex did not apply SQL/RLS. The next recommended step is 20G owner/admin edit design. Owner edit and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20G owner/admin observation edit design is complete. Codex did not implement edit UI or apply SQL/RLS. The next recommended step is 20H owner/admin edit DB/RLS implementation plan or migration candidate. Owner edit and admin edit are not implemented yet.
 ```
 
 ## Current Stack
@@ -423,6 +424,7 @@ npm.cmd audit --audit-level=high
 - Phase 20E.6: Admin-authenticated manual smoke result for direct approved create documented.
 - Phase 20F: Observer display implemented in public observation cards and detail modal.
 - Phase 20F.5: Observer display regression and non-admin contributor smoke results documented.
+- Phase 20G: Owner/admin observation edit design completed.
 
 ## Review Checklist Before Final Response
 

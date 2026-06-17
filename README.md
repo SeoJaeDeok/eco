@@ -33,6 +33,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Authenticated direct create: implemented in phase 20E for Supabase mode; signed-in users create approved observations with `observer_id`, owner Storage paths, and no URL-like `image_url`
 - Public login/create smoke: 20E.6 admin-authenticated manual smoke passed for direct approved create; 20F.5 documents a user-reported non-admin contributor create smoke with `role = 'user'`, profile row, and `display_name`
 - Observer display: implemented in phase 20F for public observation cards and detail modal with safe fallback copy; 20F.5 documents code/static observer-display regression checks
+- Owner/admin observation edit design: completed in phase 20G in `docs/architecture/owner-admin-observation-edit-design.md`; edit UI and SQL/RLS application are not implemented
 
 ## Implemented Features
 
@@ -72,6 +73,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 20E.6 admin-authenticated manual smoke documentation
 - Phase 20F observer display on public cards/details
 - Phase 20F.5 observer display regression and non-admin contributor smoke documentation
+- Phase 20G owner/admin observation edit design
 
 Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
 
@@ -207,6 +209,7 @@ Supabase setup is documented in:
 - `docs/architecture/phase-19-product-feature-prioritization.md`
 - `docs/architecture/public-user-auth-contribution-design.md`
 - `docs/architecture/public-user-contribution-rls-plan.md`
+- `docs/architecture/owner-admin-observation-edit-design.md`
 - `supabase/migrations/0003_public_user_contribution.sql`
 - `supabase/migrations/0001_create_observation_schema.sql`
 - `supabase/migrations/0002_create_observation_storage.sql`
@@ -235,10 +238,10 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Start 20G owner/admin edit design if the 20F.5 documented smoke scope is accepted.
-2. If launch needs field-level evidence for the non-admin contributor row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
-3. Verify public reads remain approved-only with pending/rejected hidden after future observer/edit changes.
-4. Keep owner/admin edit implementation deferred until the 20G design is accepted.
+1. Start 20H owner/admin edit DB/RLS implementation plan or migration candidate.
+2. Decide whether owner updates use column grants plus RLS or a stricter owner-update RPC.
+3. Keep owner/admin edit UI implementation deferred until repository/RLS design is accepted.
+4. If launch needs field-level evidence for the non-admin contributor row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
 5. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
 6. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
 7. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
@@ -247,5 +250,5 @@ Recommended next phase:
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20F observer display is implemented in public cards/details using safe observer display names with fallback copy, and 20F.5 documents observer-display regression checks plus a user-reported non-admin contributor create smoke. Codex did not apply SQL/RLS. The next recommended step is 20G owner/admin edit design. Owner edit and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20G owner/admin observation edit design is complete. Codex did not implement edit UI or apply SQL/RLS. The next recommended step is 20H owner/admin edit DB/RLS implementation plan or migration candidate. Owner edit and admin edit are not implemented yet.
 ```
