@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20G owner/admin observation edit design.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20H owner/admin observation edit DB/RLS plan.
 
 Read this together with:
 
@@ -19,6 +19,7 @@ Read this together with:
 - `docs/architecture/kakao-map-provider-design.md`
 - `docs/architecture/phase-19-product-feature-prioritization.md`
 - `docs/architecture/owner-admin-observation-edit-design.md`
+- `docs/architecture/owner-admin-observation-edit-rls-plan.md`
 - `docs/eco/phase-history/index.md`
 
 ## Current Completed Phases
@@ -78,6 +79,7 @@ Read this together with:
 - 20F observer display in public observation cards and detail modal
 - 20F.5 observer display regression and non-admin contributor smoke documentation
 - 20G owner/admin observation edit design
+- 20H owner/admin observation edit DB/RLS plan and SQL draft
 
 ## Verified Current State
 
@@ -413,7 +415,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20G owner/admin observation edit design is complete. Codex did not implement edit UI or apply SQL/RLS. The next recommended step is 20H owner/admin edit DB/RLS implementation plan or migration candidate. Owner edit and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H owner/admin observation edit DB/RLS plan is complete. The 0004 SQL draft is in docs/architecture/sql-drafts only and was not applied or promoted to supabase/migrations. The next recommended step is 20H.5 SQL draft apply-readiness review. Repository update methods, edit UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -1111,6 +1113,35 @@ Recommended next phase:
 1. Start 20H owner/admin edit DB/RLS implementation plan or migration candidate.
 2. Keep SQL application separate and explicitly approved.
 3. Keep owner/admin edit UI implementation deferred until repository/RLS design is accepted.
+4. Keep image replacement out of scope.
+
+### 20H: Owner/Admin Observation Edit DB/RLS Plan
+
+Completed as documentation and SQL-draft-only work:
+
+- Added `docs/architecture/owner-admin-observation-edit-rls-plan.md`.
+- Added draft-only SQL at `docs/architecture/sql-drafts/0004_owner_admin_observation_edit_draft.sql`.
+- Kept the SQL draft out of `supabase/migrations/`.
+- Recommended a hybrid field-protection model:
+  - repository payload whitelist
+  - column-level update grants
+  - owner/admin RLS policies
+  - protected-field trigger guard
+  - RPC only as a fallback if grant/RLS separation is not robust enough
+- Kept public reads approved-only.
+- Kept pending/rejected observations hidden from public list/detail.
+- Kept status changes admin-only.
+- Kept observer fields, image fields, `image_url`, `created_at`, and direct `updated_at` writes protected.
+- Reused the existing 0001 `updated_at` trigger strategy.
+- Did not apply SQL/RLS to Supabase.
+- Did not create `supabase/migrations/0004...`.
+- Did not implement repository update methods, edit UI, image replacement, package changes, Storage changes, Kakao Map changes, or admin Navbar exposure.
+
+Recommended next phase:
+
+1. Start 20H.5 owner/admin edit SQL draft apply-readiness review.
+2. Decide whether `docs/architecture/sql-drafts/0004_owner_admin_observation_edit_draft.sql` should be promoted to `supabase/migrations/0004_owner_admin_observation_edit.sql`.
+3. Keep repository update methods and owner/admin edit UI deferred until the 0004 SQL approach is accepted.
 4. Keep image replacement out of scope.
 
 ## Missing Features

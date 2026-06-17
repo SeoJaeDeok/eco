@@ -626,16 +626,32 @@ Status: completed as design-only in `docs/architecture/owner-admin-observation-e
 - Image replacement remains out of scope for the first edit MVP.
 - 20H should review whether column grants plus RLS are sufficient or whether owner edit should use an RPC for stricter field protection.
 
-### 20H: Owner/Admin Edit Implementation
+### 20H: Owner/Admin Edit DB/RLS Plan
 
-- Start only after the 20H DB/RLS plan or migration candidate is accepted.
+Status: completed as design/SQL-draft-only in `docs/architecture/owner-admin-observation-edit-rls-plan.md`.
+
+- Added draft-only SQL at `docs/architecture/sql-drafts/0004_owner_admin_observation_edit_draft.sql`.
+- Recommended repository payload whitelist plus column-level grants, owner/admin RLS, and a protected-field trigger.
+- Kept RPC as a fallback if the grant/RLS/trigger model is not accepted in 20H.5.
+- Did not apply SQL/RLS to Supabase.
+- Did not add repository update methods or edit UI.
+- Kept image replacement out of scope.
+
+### 20I: Repository Update Methods
+
+- Start only after the 20H.5 DB/RLS apply-readiness review is accepted.
 - Add repository update methods behind `ObservationRepository` and `AdminObservationRepository`.
-- Add minimal edit UI in a later phase.
+- Keep payload whitelists aligned with the 20H field matrix.
+
+### 20J: Edit UI
+
+- Add minimal owner/admin edit UI after repository methods are accepted.
+- Keep owner edit in public detail and admin edit under hidden `/#admin`.
 - Keep image replacement out of scope unless separately approved.
 
-### 20I: Regression Verification
+### 20K: Regression Verification
 
-- Verify anonymous read and no-create behavior.
+- Verify anonymous read and no-edit behavior.
 - Verify authenticated create approved behavior.
 - Verify owner edit and non-owner denial.
 - Verify admin edit/review still works.

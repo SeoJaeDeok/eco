@@ -400,3 +400,14 @@ Use a conservative owner/admin edit MVP:
 - URL/image metadata fields: not editable.
 - Public reads: approved-only.
 - Field-level protection: combine DB grants/RLS with repository payload narrowing; consider RPC in 20H if status/admin separation cannot be made robust with grants alone.
+
+## 20H RLS Plan Link
+
+Phase 20H completed the DB/RLS implementation plan and draft-only SQL in:
+
+- `docs/architecture/owner-admin-observation-edit-rls-plan.md`
+- `docs/architecture/sql-drafts/0004_owner_admin_observation_edit_draft.sql`
+
+20H recommends a hybrid model: repository payload whitelist plus column-level grants, owner/admin RLS, and a protected-field trigger. RPC remains a fallback if the grant/RLS/trigger approach is not accepted in the 20H.5 apply-readiness review.
+
+The 0004 SQL draft was not applied to Supabase and was not placed in `supabase/migrations/`.

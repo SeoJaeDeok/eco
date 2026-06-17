@@ -579,7 +579,7 @@ Status: implemented in app/UI code.
 - add dependencies
 - change Kakao Map code
 
-## Remaining Decisions Before 20H
+## Remaining Decisions Before 20H.5/20I
 
 - Decide whether owner updates can be protected safely with column grants plus RLS, or whether an owner-update RPC is required.
 - Decide whether the current 0003 `status` update grant needs to be split before owner edit ships.
@@ -587,3 +587,18 @@ Status: implemented in app/UI code.
 - Decide whether launch readiness needs field-by-field confirmation for the 20F.5 non-admin contributor row before edit implementation.
 - Decide whether a "my observations" view is needed before owner edit.
 - Keep `observer_display_name` snapshot editing, image replacement, and ownership transfer out of the first edit MVP unless separately approved.
+
+## 20H Owner/Admin Edit RLS Plan Link
+
+Phase 20H moved the owner/admin edit RLS discussion into:
+
+- `docs/architecture/owner-admin-observation-edit-rls-plan.md`
+- `docs/architecture/sql-drafts/0004_owner_admin_observation_edit_draft.sql`
+
+The 20H recommendation is a hybrid field-protection model: repository payload whitelist plus column-level update grants, owner/admin RLS, and a protected-field trigger. The draft stays in `docs/architecture/sql-drafts/`; it was not applied to Supabase and was not promoted into `supabase/migrations/`.
+
+Remaining before 20H.5/20I:
+
+- Decide whether to accept the trigger-guard approach or move to an owner-update RPC.
+- Decide whether to promote the 0004 draft to an apply-ready migration.
+- Decide whether edit permission data is exposed as internal `observerId` or repository-level `canEdit` metadata.

@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20G Owner/Admin Edit Design
+## Current State After Phase 20H Owner/Admin Edit RLS Plan
 
 Completed and verified:
 
@@ -62,6 +62,9 @@ Completed and verified:
 - 20F.5 observer display regression and non-admin contributor smoke documentation is complete. The user reported a non-admin Supabase account with `role = 'user'`, a profile row, and `display_name`; authenticated create worked with that account. Code/static checks confirmed observer display uses safe fallback, email-like values are suppressed, public reads remain approved-only, and owner/admin edit is still not implemented.
 - 20G owner/admin observation edit design is complete in `docs/architecture/owner-admin-observation-edit-design.md`. It recommends owner/admin edit for text/classification/date/location/coordinates/description only, keeps status admin-only, keeps observer/image fields non-editable, excludes image replacement from the MVP, and defers SQL/RLS and UI implementation to later phases.
 - 20G does not implement owner edit UI, admin edit UI, public sign-up, display-name setup, SQL/RLS application, package changes, or new dependencies.
+- 20H owner/admin observation edit DB/RLS plan is complete in `docs/architecture/owner-admin-observation-edit-rls-plan.md`. It recommends repository payload whitelisting plus DB-level column grants/RLS and a protected-field trigger draft, with RPC left as a fallback if the grant/RLS model is not robust enough.
+- 20H SQL draft is stored only at `docs/architecture/sql-drafts/0004_owner_admin_observation_edit_draft.sql`. It was not applied to Supabase and was not promoted into `supabase/migrations/`.
+- 20H does not implement repository update methods, edit UI, image replacement, SQL/RLS application, package changes, or new dependencies.
 - General public flow is normal: home, guide, observation list, detail modal, upload screen, static fallback, and Kakao map when configured.
 
 ## Next Starting Point
@@ -69,14 +72,14 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-20H owner/admin edit DB/RLS plan
+20H.5 owner/admin edit SQL draft apply-readiness review
 ```
 
 Recommended sequence:
 
-1. Start 20H owner/admin edit DB/RLS implementation plan or migration candidate.
-2. Decide whether owner updates use column grants plus RLS or a stricter owner-update RPC.
-3. Keep owner/admin edit UI implementation deferred until repository/RLS design is accepted.
+1. Start 20H.5 owner/admin edit SQL draft apply-readiness review.
+2. Decide whether the 0004 draft should be promoted to `supabase/migrations/0004_owner_admin_observation_edit.sql`.
+3. Keep repository update methods and edit UI implementation deferred until the 0004 SQL approach is accepted.
 4. If launch needs field-by-field evidence for a non-admin row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
 5. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
 6. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
@@ -97,7 +100,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20G owner/admin observation edit design is complete. Codex did not implement edit UI or apply SQL/RLS. The next recommended step is 20H owner/admin edit DB/RLS implementation plan or migration candidate. Owner edit and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H owner/admin observation edit DB/RLS plan is complete. The 0004 SQL draft is in docs/architecture/sql-drafts only and was not applied or promoted to supabase/migrations. The next recommended step is 20H.5 SQL draft apply-readiness review. Repository update methods, edit UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Current Stack
@@ -425,6 +428,7 @@ npm.cmd audit --audit-level=high
 - Phase 20F: Observer display implemented in public observation cards and detail modal.
 - Phase 20F.5: Observer display regression and non-admin contributor smoke results documented.
 - Phase 20G: Owner/admin observation edit design completed.
+- Phase 20H: Owner/admin observation edit DB/RLS plan and SQL draft completed; SQL was not applied.
 
 ## Review Checklist Before Final Response
 
