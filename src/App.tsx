@@ -4,13 +4,15 @@ import { Navbar } from './components/Navbar';
 import { AppRoutes } from './components/AppRoutes';
 import { ObservationDetail } from './components/ObservationDetail';
 import { activeAuthRepository, getConfiguredAuthRepositoryKind } from './repositories/authRepositoryProvider';
-import { activeObservationRepository } from './repositories/observationRepositoryProvider';
+import { activeAdminObservationRepository } from './repositories/adminObservationRepositoryProvider';
+import { activeObservationRepository, getConfiguredObservationRepositoryKind } from './repositories/observationRepositoryProvider';
 import { countUniqueSpecies } from './utils/observationStats';
 import type { AuthSessionState } from './repositories/authRepository';
-import type { Observation, PageId } from './types';
+import type { Observation, OwnerObservationUpdateInput, PageId } from './types';
 
 const ADMIN_HASH = '#admin';
 const PUBLIC_AUTH_CONFIGURED = getConfiguredAuthRepositoryKind() === 'supabase';
+const IS_SUPABASE_OBSERVATION_REPOSITORY = getConfiguredObservationRepositoryKind() === 'supabase';
 const PUBLIC_AUTH_SESSION_ERROR = '로그인 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.';
 const PUBLIC_AUTH_SIGN_IN_ERROR = '로그인에 실패했습니다. 계정 정보를 확인해 주세요.';
 const PUBLIC_AUTH_SIGN_OUT_ERROR = '로그아웃에 실패했습니다. 잠시 후 다시 시도해 주세요.';
@@ -165,6 +167,27 @@ export default function App() {
     });
   }, []);
 
+  const handleObservationUpdated = useCallback(async (id: string, input: OwnerObservationUpdateInput) => {
+    const updatedObservation = publicAuthState.isAdmin
+      ? await activeAdminObservationRepository.updateObservationAsAdmin(id, input)
+      : await activeObservationRepository.updateOwnObservation(id, input);
+
+    setObservations((currentObservations) => {
+      const nextObservations = currentObservations.map((currentObservation) => {
+        return currentObservation.id === updatedObservation.id ? updatedObservation : currentObservation;
+      });
+
+      setUniqueSpeciesCount(countUniqueSpecies(nextObservations));
+      return nextObservations;
+    });
+
+    setSelectedObservation((currentObservation) => {
+      return currentObservation?.id === updatedObservation.id ? updatedObservation : currentObservation;
+    });
+
+    return updatedObservation;
+  }, [publicAuthState.isAdmin]);
+
   const handlePublicSignIn = useCallback(async (email: string, password: string) => {
     if (!PUBLIC_AUTH_CONFIGURED) {
       setPublicAuthError('현재 환경에는 공개 로그인 설정이 없습니다.');
@@ -206,6 +229,14 @@ export default function App() {
   }, []);
 
   const publicAuthDisplayName = publicAuthState.profile?.displayName?.trim() || '사용자';
+  const canEditSelectedObservation = Boolean(
+    selectedObservation
+      && publicAuthState.user
+      && (
+        selectedObservation.observerId === publicAuthState.user.id
+        || (publicAuthState.isAdmin && IS_SUPABASE_OBSERVATION_REPOSITORY)
+      ),
+  );
 
   return (
     <div className="relative min-h-screen bg-white" id="app-root">
@@ -254,7 +285,14 @@ export default function App() {
       </main>
 
       <AnimatePresence>
-        {selectedObservation && <ObservationDetail observation={selectedObservation} onClose={() => setSelectedObservation(null)} />}
+        {selectedObservation && (
+          <ObservationDetail
+            observation={selectedObservation}
+            canEdit={canEditSelectedObservation}
+            onClose={() => setSelectedObservation(null)}
+            onUpdateObservation={handleObservationUpdated}
+          />
+        )}
       </AnimatePresence>
     </div>
   );

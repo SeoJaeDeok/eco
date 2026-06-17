@@ -479,3 +479,72 @@ Still out of scope after 20I:
 - image replacement
 - additional SQL/RLS application
 - admin route exposure in `Navbar`
+
+## 20J Edit UI Implementation Result
+
+Phase 20J implemented the first owner/admin edit UI in the public observation detail modal.
+
+Implemented:
+
+- Added internal `Observation.observerId` mapping for permission checks only.
+- Added an edit affordance inside `ObservationDetail`.
+- Kept observation cards unchanged.
+- Showed the edit affordance only to:
+  - the signed-in owner, where `observerId` matches the current auth user id
+  - a signed-in admin in Supabase observation repository mode
+- Added a compact detail-modal edit form for only the MVP content fields:
+  - `name`
+  - `scientificName`
+  - `taxon`
+  - `location`
+  - `date`
+  - `description`
+  - `coords`
+- Wired owner saves to `ObservationRepository.updateOwnObservation`.
+- Wired admin saves to `AdminObservationRepository.updateObservationAsAdmin`.
+- On success, the selected detail and public observation list state are updated from the returned repository row.
+
+Still excluded:
+
+- `status` edit UI
+- observer field edit UI
+- image replacement
+- image path/metadata edit UI
+- card/list edit buttons
+- additional SQL/RLS application
+- admin route exposure in `Navbar`
+
+20K should run owner/non-owner/admin smoke and public visibility regression before treating the edit workflow as fully verified.
+
+## 20K Smoke/Regression Preflight
+
+Status: PARTIAL.
+
+20K static/build preflight completed without marking the live edit workflow as fully verified:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed.
+- `git diff --check` passed, with line-ending warnings only.
+- `http://localhost:3000/` returned HTTP 200 from the running local dev server.
+- The edit form/header path does not expose `status`, observer, image, `image_url`, or timestamp fields.
+- The owner/admin update mapper still sends only content/date/location/coordinate fields.
+- UI components and `App.tsx` do not call the Supabase client directly.
+- `Navbar` still does not expose the admin route.
+- Package files and Supabase migration files were not changed.
+
+Live smoke remains required before treating owner/admin edit as verified:
+
+- owner A allowed-field edit and DB row invariant checks
+- non-owner B hidden affordance and update denial
+- anonymous no-edit affordance
+- admin content edit
+- public pending/rejected invisibility through the live UI/query
+- console/log secret check during live browser interaction
+
+User-reported prerequisites remain:
+
+- owner A ordinary account is ready and has an approved row.
+- admin account is ready.
+- 0004 is applied in dev/local Supabase.
+- production remains unchanged.
+- non-owner B readiness is not confirmed.

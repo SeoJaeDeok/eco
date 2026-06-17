@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20I owner/admin observation update repository methods.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20J owner/admin observation edit UI and the partial 20K edit smoke preflight.
 
 Read this together with:
 
@@ -84,6 +84,8 @@ Read this together with:
 - 20H.6 owner/admin observation edit 0004 manual apply result documentation
 - 20H.7 owner/admin edit trigger and public visibility confirmation documentation
 - 20I owner/admin observation update repository methods
+- 20J owner/admin observation edit UI
+- 20K owner/admin observation edit smoke/regression preflight is partially documented; live owner/non-owner/admin update smoke remains pending.
 
 ## Verified Current State
 
@@ -419,7 +421,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20I owner/admin observation update repository methods are complete. Repository update payloads are content-only and exclude status/image/observer fields. The expected 0004 update triggers are connected in dev/local Supabase, production was not changed, and Codex did not apply SQL. Rejected visibility was corrected to hidden; pending visibility still needs clarification if it was actually visible. Edit UI is not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20J owner/admin observation edit UI is implemented in the public detail modal. 20K static/build preflight passed, but live owner/non-owner/admin edit smoke still needs credentials and browser/manual verification. Repository update payloads are content-only and exclude status/image/observer fields. The expected 0004 update triggers are connected in dev/local Supabase, production was not changed, and Codex did not apply SQL. Rejected visibility was corrected to hidden.
 ```
 
 ## Recommended Phase 16 Direction
@@ -1318,17 +1320,121 @@ Not implemented in 20I:
 
 Recommended next phase:
 
-1. Start 20J edit UI implementation only after accepting the repository method contract.
-2. In 20J, keep edit affordances hidden from anon/non-owner users and keep admin UI under hidden `/#admin`.
-3. Recheck/clarify pending public visibility before or during 20J if the 20H.7 pending result remains ambiguous.
-4. Run full owner/non-owner/admin update smoke in 20K after UI paths exist.
+1. 20J was later implemented below.
+2. Run full owner/non-owner/admin update smoke in 20K now that UI paths exist.
+3. Recheck public pending/rejected invisibility during 20K.
+
+### 20J: Owner/Admin Observation Edit UI
+
+Implemented as a scoped public detail-modal edit phase:
+
+- Added internal `Observation.observerId` mapping for permission checks only.
+- Added owner/admin edit affordance inside the public observation detail modal.
+- Kept observation cards unchanged; no card-level edit button was added.
+- Edit affordance is visible only when:
+  - the signed-in user owns the approved observation, or
+  - the signed-in user is an admin and the active observation repository is Supabase.
+- Added a compact detail-modal edit form with only allowed fields:
+  - `name`
+  - `scientificName`
+  - `taxon`
+  - `location`
+  - `date`
+  - `description`
+  - `coords`
+- Owner updates call `ObservationRepository.updateOwnObservation`.
+- Admin updates call `AdminObservationRepository.updateObservationAsAdmin` through a lazy repository provider.
+- Successful updates replace the matching public list item, refresh the selected detail state, and recalculate unique species count.
+- The hidden admin page now uses the admin repository provider boundary for admin observation actions.
+
+Protected fields remain excluded from 20J edit UI and update inputs:
+
+- `status`
+- `observer_id`
+- `observer_display_name`
+- `image_url`
+- `image_path`
+- `image_mime_type`
+- `image_size_bytes`
+- `created_at`
+- `updated_at`
+
+Not implemented in 20J:
+
+- image replacement
+- status edit UI
+- observer edit UI
+- image metadata edit UI
+- card/list edit button
+- owner/non-owner/admin live update smoke
+- additional Supabase SQL/RLS application
+- admin route exposure in `Navbar`
+
+Recommended next phase:
+
+1. Run 20K owner/non-owner/admin edit smoke and regression.
+2. Verify owner can update allowed fields and cannot access protected fields through UI.
+3. Verify anonymous and authenticated non-owner users do not see edit affordances.
+4. Verify signed-in admin can update from detail without exposing admin in `Navbar`.
+5. Verify pending/rejected rows remain hidden from public list/detail.
+
+### 20K: Owner/Admin Observation Edit Smoke And Regression
+
+Status: PARTIAL.
+
+Preconditions recorded without exposing credentials or secrets:
+
+- Owner A ordinary account ready: yes, user-reported from earlier non-admin contributor setup.
+- Owner A approved row exists: yes, user-reported from the earlier 20E non-admin create smoke.
+- Non-owner B ordinary account ready: not confirmed in this session.
+- Admin account ready: yes, user-reported existing hidden-admin account.
+- 0004 migration applied in dev/local Supabase: yes, user-reported and documented in 20H.6/20H.7.
+- Production Supabase apply: no.
+- Login credentials were not available to Codex and were not requested or printed.
+
+Verification completed in this session:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed.
+- `git diff --check` passed, with line-ending warnings only.
+- `http://localhost:3000/` returned HTTP 200 from the currently running local dev server.
+- Static edit-form check found no `status`, observer, image, `image_url`, or timestamp fields in the detail edit form/header path.
+- Static update-payload check confirmed `mapOwnerObservationUpdateInputToUpdateRow` returns only `name`, `scientific_name`, `taxon`, `location`, `observed_date`, `description`, `latitude`, and `longitude`.
+- Static UI boundary check found no Supabase client calls in `src/components` or `src/App.tsx`.
+- Static Navbar check found no admin route exposure.
+- Package files and `supabase/migrations` are unchanged by the 20J/20K working tree.
+
+Verification not completed in this session:
+
+- In-app browser automation was unavailable.
+- Owner A live allowed-field edit was not run.
+- Owner A DB row post-update checks were not run.
+- Non-owner B hidden edit affordance and update denial were not run.
+- Admin live content edit was not run.
+- Malicious protected-field DB update attempts were not run.
+- Public pending/rejected UI visibility was not rerun through a browser in this session.
+
+Public visibility interpretation:
+
+- Repository code still reads public list/detail through `status = 'approved'`.
+- Rejected public visibility was corrected to hidden in the user report.
+- Pending public visibility still needs a live public UI/query rerun before 20K can be marked PASS.
+
+Recommended next phase:
+
+1. Complete live 20K manual/browser smoke with owner A, non-owner B, and admin credentials.
+2. Verify owner allowed-field update and DB row invariants after save.
+3. Verify anon and non-owner users do not see edit affordances.
+4. Verify admin can update content without exposing admin in `Navbar`.
+5. Rerun public pending/rejected invisibility checks in the same Supabase environment.
+6. If those pass, proceed to commit/push the 20J implementation plus 20K verification notes.
 
 ## Missing Features
 
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
 - Public self-sign-up and display-name setup UI
-- Owner/admin edit UI workflow for submitted observations
+- Full live owner/non-owner/admin edit smoke/regression for submitted observations
 - Reject note
 - Audit log
 - Bulk approval

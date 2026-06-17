@@ -3,7 +3,7 @@ import { AdminLoginForm } from './AdminLoginForm';
 import { AdminObservationReviewPanel } from './AdminObservationReviewPanel';
 import { AdminPendingList } from './AdminPendingList';
 import { AdminSessionPanel } from './AdminSessionPanel';
-import { supabaseAdminObservationRepository } from '../../repositories/supabase/supabaseAdminObservationRepository';
+import { activeAdminObservationRepository } from '../../repositories/adminObservationRepositoryProvider';
 import { supabaseAuthRepository } from '../../repositories/supabase/supabaseAuthRepository';
 import type { AuthSessionState } from '../../repositories/authRepository';
 import type { Observation } from '../../types';
@@ -39,7 +39,7 @@ export const AdminPage = () => {
     try {
       setIsLoadingPending(true);
       setPendingError(null);
-      const nextPendingObservations = await supabaseAdminObservationRepository.listPendingObservations();
+      const nextPendingObservations = await activeAdminObservationRepository.listPendingObservations();
 
       setPendingObservations(nextPendingObservations);
       setSelectedObservation((currentSelection) => {
@@ -136,7 +136,7 @@ export const AdminPage = () => {
     try {
       setActionInProgressId(observation.id);
       setActionError(null);
-      await supabaseAdminObservationRepository.approveObservation(observation.id);
+      await activeAdminObservationRepository.approveObservation(observation.id);
       await loadPendingObservations();
     } catch {
       setActionError('승인 처리에 실패했습니다. 관리자 권한과 RLS 정책을 확인해 주세요.');
@@ -149,7 +149,7 @@ export const AdminPage = () => {
     try {
       setActionInProgressId(observation.id);
       setActionError(null);
-      await supabaseAdminObservationRepository.rejectObservation(observation.id);
+      await activeAdminObservationRepository.rejectObservation(observation.id);
       await loadPendingObservations();
     } catch {
       setActionError('거절 처리에 실패했습니다. 관리자 권한과 RLS 정책을 확인해 주세요.');

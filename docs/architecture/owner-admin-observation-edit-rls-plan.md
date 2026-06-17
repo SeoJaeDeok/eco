@@ -16,7 +16,7 @@ Scope:
 
 Implementation boundaries:
 
-- Edit UI starts no earlier than 20J.
+- Edit UI started in 20J after repository update methods were accepted.
 - Repository update methods start no earlier than 20I.
 - Apply-ready migration promotion and manual Supabase application require separate approval.
 - Public reads must remain approved-only.
@@ -589,10 +589,9 @@ Minimum 20K verification:
 4. 20H.7: trigger confirmation and public visibility check documentation.
 5. Recheck/fix public pending/rejected visibility if the reported `yes` means the rows were actually visible.
 6. 20I: repository update methods and mapper/type changes.
-7. Recheck pending public visibility before or during 20J if the 20H.7 pending result remains ambiguous.
-8. 20J: edit UI implementation.
-9. 20K: owner/admin edit smoke and regression.
-10. 20L: optional image replacement design, only if separately needed.
+7. 20J: edit UI implementation.
+8. 20K: owner/admin edit smoke and regression, including pending/rejected public invisibility.
+9. 20L: optional image replacement design, only if separately needed.
 
 ## Explicit Non-Scope
 
@@ -613,9 +612,77 @@ Minimum 20K verification:
 - admin route exposure in `Navbar`
 - public exposure of pending/rejected observations
 
-## Remaining Decisions Before 20J
+## Remaining Decisions Before 20K
 
-- Resolve the 20H.7 pending visibility clarification before implementing edit UI.
-- Owner/non-owner/admin update attempts remain for 20K UI/regression unless a separate repository-level smoke is requested first.
-- Decide whether the domain model should expose internal `observerId` or use repository-level permission metadata for edit buttons in 20J.
+- Recheck pending/rejected public invisibility during 20K smoke.
+- Owner/non-owner/admin update attempts remain for 20K UI/regression.
+- 20J chose internal `observerId` for permission checks only; do not render it as public UI copy.
 - Keep RPC as fallback only if repository/update smoke shows the hybrid trigger/RLS/grant model is not sufficient.
+
+## 20J Edit UI Implementation Result
+
+Status: implemented; live owner/non-owner/admin smoke remains for 20K.
+
+20J chose the pragmatic internal-owner-id approach:
+
+- `Observation.observerId` is mapped from `observer_id`.
+- `observerId` is used only for permission checks.
+- `observerId` is not rendered as public UI copy.
+
+Edit affordance and update paths:
+
+- Public detail modal shows edit only for the signed-in owner or signed-in admin.
+- Owner update calls `ObservationRepository.updateOwnObservation`.
+- Admin update calls `AdminObservationRepository.updateObservationAsAdmin`.
+- The admin update path is reached through a lazy repository provider and does not expose Supabase client calls in UI components.
+
+Field-level UI boundary:
+
+- The edit form exposes only `name`, `scientificName`, `taxon`, `location`, `date`, `description`, and `coords`.
+- The edit form does not expose `status`, observer fields, image fields, `image_url`, or timestamp fields.
+- Image replacement remains out of scope.
+
+20K verification must still prove:
+
+- owner allowed-field update works
+- owner protected-field update remains impossible through UI/payload
+- non-owner and anonymous users cannot edit
+- admin content update works
+- pending/rejected rows remain hidden from public list/detail
+- no signed/public/blob/data URL is stored by update paths
+
+## 20K Smoke/Regression Preflight
+
+Status: PARTIAL.
+
+20K static/build preflight completed:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed.
+- `git diff --check` passed, with line-ending warnings only.
+- Local root HTTP check returned 200 at `http://localhost:3000/`.
+- Static edit UI check found no protected fields in the detail edit form/header path.
+- Static mapper check confirmed owner/admin content update payloads exclude `status`, observer fields, image fields, `image_url`, `created_at`, and `updated_at`.
+- Static UI boundary check found no Supabase client calls from `src/components` or `src/App.tsx`.
+- Static Navbar check found no admin route exposure.
+- Package files and Supabase migrations were not changed.
+
+20K live checks remain pending because Codex did not have login credentials and in-app browser automation was unavailable:
+
+- owner A allowed-field edit
+- owner A DB row invariant checks after save
+- non-owner B edit affordance/update denial
+- anonymous no-edit affordance in a browser
+- admin content edit
+- malicious protected-field update attempts
+- public pending/rejected invisibility through the live UI/query
+- console/log secret check during browser interaction
+
+Precondition state for the remaining live smoke:
+
+- owner A ordinary account ready: yes, user-reported.
+- owner A approved row: yes, user-reported.
+- non-owner B ordinary account ready: not confirmed.
+- admin account ready: yes, user-reported.
+- 0004 dev/local apply: yes, user-reported.
+- production apply: no.
