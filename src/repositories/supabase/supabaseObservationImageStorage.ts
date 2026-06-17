@@ -1,17 +1,15 @@
+import {
+  MAX_OBSERVATION_IMAGE_SIZE_MB,
+  MAX_OBSERVATION_IMAGE_SIZE_BYTES,
+  OBSERVATION_IMAGE_EXTENSIONS_BY_MIME_TYPE,
+  type AllowedObservationImageMimeType,
+  isAllowedObservationImageMimeType,
+} from '../../constants/upload';
 import { getSupabaseClient } from './supabaseClient';
 
 const OBSERVATION_IMAGE_BUCKET_ENV_KEY = 'VITE_SUPABASE_STORAGE_BUCKET';
 const DEFAULT_OBSERVATION_IMAGE_BUCKET = 'observation-images';
-const MAX_OBSERVATION_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_SIGNED_URL_EXPIRES_IN_SECONDS = 10 * 60;
-
-const ALLOWED_IMAGE_EXTENSIONS_BY_MIME_TYPE = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-} as const;
-
-type AllowedObservationImageMimeType = keyof typeof ALLOWED_IMAGE_EXTENSIONS_BY_MIME_TYPE;
 
 type ViteImportMeta = ImportMeta & {
   env: Record<string, string | undefined>;
@@ -40,10 +38,6 @@ const getObservationImageBucket = () => {
   );
 };
 
-const isAllowedObservationImageMimeType = (mimeType: string): mimeType is AllowedObservationImageMimeType => {
-  return Object.prototype.hasOwnProperty.call(ALLOWED_IMAGE_EXTENSIONS_BY_MIME_TYPE, mimeType);
-};
-
 const createUuid = () => {
   const globalCrypto = globalThis.crypto;
 
@@ -68,7 +62,7 @@ const getValidatedObservationImageMimeType = (file: File): AllowedObservationIma
 
 const validateObservationImageSize = (file: File) => {
   if (file.size > MAX_OBSERVATION_IMAGE_SIZE_BYTES) {
-    throw createStorageError('Observation image is larger than the 5 MB limit.');
+    throw createStorageError(`Observation image is larger than the ${MAX_OBSERVATION_IMAGE_SIZE_MB} MB limit.`);
   }
 };
 
@@ -77,7 +71,7 @@ const createObservationImagePath = (
   ownerId?: string,
 ) => {
   const randomId = createUuid();
-  const extension = ALLOWED_IMAGE_EXTENSIONS_BY_MIME_TYPE[mimeType];
+  const extension = OBSERVATION_IMAGE_EXTENSIONS_BY_MIME_TYPE[mimeType];
 
   if (ownerId) {
     return `observations/${ownerId}/${randomId}.${extension}`;

@@ -12,6 +12,7 @@ interface ObservationDetailProps {
   canEdit?: boolean;
   onClose: () => void;
   onUpdateObservation?: (id: string, input: OwnerObservationUpdateInput) => Promise<Observation>;
+  onImageLoadError?: (observation: Observation) => void;
 }
 
 export const ObservationDetail = ({
@@ -19,6 +20,7 @@ export const ObservationDetail = ({
   canEdit = false,
   onClose,
   onUpdateObservation,
+  onImageLoadError,
 }: ObservationDetailProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
@@ -62,7 +64,7 @@ export const ObservationDetail = ({
           onStartEdit={() => setIsEditing(true)}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <ObservationDetailImage observation={observation} />
+          <ObservationDetailImage observation={observation} onImageLoadError={onImageLoadError} />
           <div className="text-left space-y-6">
             {isEditing ? (
               <ObservationDetailEditForm

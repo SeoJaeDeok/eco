@@ -1,11 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { AppRoutes } from './components/AppRoutes';
 import { ObservationDetail } from './components/ObservationDetail';
+import type { PublicSignUpResult } from './components/auth/PublicLoginPanel';
 import { activeAuthRepository, getConfiguredAuthRepositoryKind } from './repositories/authRepositoryProvider';
 import { activeAdminObservationRepository } from './repositories/adminObservationRepositoryProvider';
 import { activeObservationRepository, getConfiguredObservationRepositoryKind } from './repositories/observationRepositoryProvider';
+import {
+  invalidateObservationImageCache,
+  prefetchObservationImage,
+  prefetchObservationImages,
+  withCachedObservationImageUrl,
+} from './utils/observationImagePrefetch';
 import { countUniqueSpecies } from './utils/observationStats';
 import type { AuthSessionState } from './repositories/authRepository';
 import type { Observation, OwnerObservationUpdateInput, PageId } from './types';
@@ -13,6 +20,10 @@ import type { Observation, OwnerObservationUpdateInput, PageId } from './types';
 const ADMIN_HASH = '#admin';
 const PUBLIC_AUTH_CONFIGURED = getConfiguredAuthRepositoryKind() === 'supabase';
 const IS_SUPABASE_OBSERVATION_REPOSITORY = getConfiguredObservationRepositoryKind() === 'supabase';
+const PUBLIC_AUTH_SIGN_UP_ERROR = '회원가입을 완료하지 못했습니다. 입력한 정보와 계정 상태를 확인해 주세요.';
+const PUBLIC_AUTH_SIGN_UP_SUCCESS_NOTICE = '회원가입이 완료되었습니다. 바로 관찰 기록을 등록할 수 있습니다.';
+const PUBLIC_AUTH_SIGN_UP_CONFIRMATION_NOTICE = '회원가입 요청이 접수되었습니다. 이메일 확인을 완료한 뒤 로그인해 주세요.';
+const PUBLIC_AUTH_PROFILE_SETUP_NOTICE = '회원가입은 접수되었지만 관찰자 프로필 준비가 필요합니다. 관리자에게 프로필 설정을 요청해 주세요.';
 const PUBLIC_AUTH_SESSION_ERROR = '로그인 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.';
 const PUBLIC_AUTH_SIGN_IN_ERROR = '로그인에 실패했습니다. 계정 정보를 확인해 주세요.';
 const PUBLIC_AUTH_SIGN_OUT_ERROR = '로그아웃에 실패했습니다. 잠시 후 다시 시도해 주세요.';
@@ -41,8 +52,11 @@ export default function App() {
   const [publicAuthState, setPublicAuthState] = useState<AuthSessionState>(() => createEmptyAuthSessionState());
   const [isCheckingPublicAuth, setIsCheckingPublicAuth] = useState(true);
   const [isSigningInPublic, setIsSigningInPublic] = useState(false);
+  const [isSigningUpPublic, setIsSigningUpPublic] = useState(false);
   const [isSigningOutPublic, setIsSigningOutPublic] = useState(false);
   const [publicAuthError, setPublicAuthError] = useState<string | null>(null);
+  const [publicAuthNotice, setPublicAuthNotice] = useState<string | null>(null);
+  const imageRefreshRetryKeysRef = useRef(new Set<string>());
 
   useEffect(() => {
     let isCurrent = true;
@@ -59,6 +73,7 @@ export default function App() {
         if (!isCurrent) return;
         setObservations(nextObservations);
         setUniqueSpeciesCount(nextUniqueSpeciesCount);
+        void prefetchObservationImages(nextObservations);
       } catch {
         if (!isCurrent) return;
         setObservationLoadError('관찰 데이터를 불러오지 못했습니다.');
@@ -83,6 +98,7 @@ export default function App() {
       try {
         setIsCheckingPublicAuth(true);
         setPublicAuthError(null);
+        setPublicAuthNotice(null);
         const nextSessionState = await activeAuthRepository.getSessionState();
 
         if (!isCurrent) return;
@@ -137,14 +153,18 @@ export default function App() {
   };
 
   const handleSelectObservation = useCallback((observation: Observation) => {
-    setSelectedObservation(observation);
+    const cachedObservation = withCachedObservationImageUrl(observation);
+    setSelectedObservation(cachedObservation);
+    void prefetchObservationImage(cachedObservation).catch(() => undefined);
 
     void activeObservationRepository.getObservationById(observation.id)
       .then((refreshedObservation) => {
         if (!refreshedObservation) return;
+        const nextObservation = withCachedObservationImageUrl(refreshedObservation);
+        void prefetchObservationImage(nextObservation).catch(() => undefined);
 
         setSelectedObservation((currentObservation) => {
-          return currentObservation?.id === observation.id ? refreshedObservation : currentObservation;
+          return currentObservation?.id === observation.id ? nextObservation : currentObservation;
         });
       })
       .catch(() => {
@@ -152,10 +172,40 @@ export default function App() {
       });
   }, []);
 
+  const handleSelectedObservationImageError = useCallback((observation: Observation) => {
+    const retryKey = `${observation.id}:${observation.imagePath ?? 'legacy-image-url'}`;
+
+    if (imageRefreshRetryKeysRef.current.has(retryKey)) {
+      return;
+    }
+
+    imageRefreshRetryKeysRef.current.add(retryKey);
+    invalidateObservationImageCache(observation);
+
+    void activeObservationRepository.getObservationById(observation.id)
+      .then((refreshedObservation) => {
+        if (!refreshedObservation) return;
+
+        setSelectedObservation((currentObservation) => {
+          if (currentObservation?.id !== observation.id) {
+            return currentObservation;
+          }
+
+          void prefetchObservationImage(refreshedObservation).catch(() => undefined);
+          return refreshedObservation;
+        });
+      })
+      .catch(() => {
+        // The placeholder remains visible if the repository cannot refresh the runtime URL.
+      });
+  }, []);
+
   const handleObservationCreated = useCallback((observation: Observation) => {
     if (observation.status !== 'approved') {
       return;
     }
+
+    void prefetchObservationImage(observation).catch(() => undefined);
 
     setObservations((currentObservations) => {
       const nextObservations = [
@@ -171,6 +221,8 @@ export default function App() {
     const updatedObservation = publicAuthState.isAdmin
       ? await activeAdminObservationRepository.updateObservationAsAdmin(id, input)
       : await activeObservationRepository.updateOwnObservation(id, input);
+
+    void prefetchObservationImage(updatedObservation).catch(() => undefined);
 
     setObservations((currentObservations) => {
       const nextObservations = currentObservations.map((currentObservation) => {
@@ -197,6 +249,7 @@ export default function App() {
     try {
       setIsSigningInPublic(true);
       setPublicAuthError(null);
+      setPublicAuthNotice(null);
       const nextSessionState = await activeAuthRepository.signInWithPassword(email, password);
       setPublicAuthState(nextSessionState);
 
@@ -215,10 +268,56 @@ export default function App() {
     }
   }, []);
 
+  const handlePublicSignUp = useCallback(async (
+    email: string,
+    password: string,
+    displayName: string,
+  ): Promise<PublicSignUpResult> => {
+    if (!PUBLIC_AUTH_CONFIGURED) {
+      setPublicAuthError('현재 환경에는 공개 회원가입 설정이 없습니다.');
+      setPublicAuthNotice(null);
+      return 'failed';
+    }
+
+    try {
+      setIsSigningUpPublic(true);
+      setPublicAuthError(null);
+      setPublicAuthNotice(null);
+      const result = await activeAuthRepository.signUpWithPassword({ email, password, displayName });
+      setPublicAuthState(result.sessionState);
+
+      if (result.requiresEmailConfirmation) {
+        setPublicAuthNotice(PUBLIC_AUTH_SIGN_UP_CONFIRMATION_NOTICE);
+        return 'confirmation-required';
+      }
+
+      if (result.profileSetupRequired) {
+        setPublicAuthNotice(PUBLIC_AUTH_PROFILE_SETUP_NOTICE);
+        return 'profile-setup-required';
+      }
+
+      if (!result.sessionState.user) {
+        setPublicAuthError(PUBLIC_AUTH_SIGN_UP_ERROR);
+        return 'failed';
+      }
+
+      setPublicAuthNotice(PUBLIC_AUTH_SIGN_UP_SUCCESS_NOTICE);
+      return 'signed-in';
+    } catch {
+      setPublicAuthState(createEmptyAuthSessionState());
+      setPublicAuthError(PUBLIC_AUTH_SIGN_UP_ERROR);
+      setPublicAuthNotice(null);
+      return 'failed';
+    } finally {
+      setIsSigningUpPublic(false);
+    }
+  }, []);
+
   const handlePublicSignOut = useCallback(async () => {
     try {
       setIsSigningOutPublic(true);
       setPublicAuthError(null);
+      setPublicAuthNotice(null);
       await activeAuthRepository.signOut();
       setPublicAuthState(createEmptyAuthSessionState());
     } catch {
@@ -253,12 +352,15 @@ export default function App() {
         uniqueSpeciesCount={uniqueSpeciesCount}
         publicAuthDisplayName={publicAuthDisplayName}
         publicAuthError={publicAuthError}
+        publicAuthNotice={publicAuthNotice}
         isCheckingPublicAuth={isCheckingPublicAuth}
         isPublicAuthConfigured={PUBLIC_AUTH_CONFIGURED}
         isPublicUserSignedIn={Boolean(publicAuthState.user)}
         isSigningInPublic={isSigningInPublic}
+        isSigningUpPublic={isSigningUpPublic}
         isSigningOutPublic={isSigningOutPublic}
         onPublicSignIn={handlePublicSignIn}
+        onPublicSignUp={handlePublicSignUp}
         onPublicSignOut={handlePublicSignOut}
       />
 
@@ -269,6 +371,11 @@ export default function App() {
             {observationLoadError}
           </div>
         )}
+        {publicAuthNotice && publicAuthState.user && (
+          <div className="fixed left-1/2 top-24 z-50 -translate-x-1/2 border border-emerald-100 bg-white px-4 py-2 text-xs text-emerald-700 shadow-sm" role="status">
+            {publicAuthNotice}
+          </div>
+        )}
         <AppRoutes
           currentPage={currentPage}
           observations={observations}
@@ -276,11 +383,14 @@ export default function App() {
           isCheckingPublicAuth={isCheckingPublicAuth}
           isPublicAuthConfigured={PUBLIC_AUTH_CONFIGURED}
           publicAuthError={publicAuthError}
+          publicAuthNotice={publicAuthNotice}
           isSigningInPublic={isSigningInPublic}
+          isSigningUpPublic={isSigningUpPublic}
           onNavigate={navigate}
           onSelectObservation={handleSelectObservation}
           onObservationCreated={handleObservationCreated}
           onPublicSignIn={handlePublicSignIn}
+          onPublicSignUp={handlePublicSignUp}
         />
       </main>
 
@@ -291,6 +401,7 @@ export default function App() {
             canEdit={canEditSelectedObservation}
             onClose={() => setSelectedObservation(null)}
             onUpdateObservation={handleObservationUpdated}
+            onImageLoadError={handleSelectedObservationImageError}
           />
         )}
       </AnimatePresence>

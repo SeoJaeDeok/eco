@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X } from 'lucide-react';
-import { PublicLoginPanel } from './auth/PublicLoginPanel';
+import { PublicLoginPanel, type PublicSignUpResult } from './auth/PublicLoginPanel';
 import type { PageId } from '../types';
 
 interface NavbarProps {
@@ -10,12 +10,15 @@ interface NavbarProps {
   uniqueSpeciesCount?: number;
   publicAuthDisplayName: string;
   publicAuthError: string | null;
+  publicAuthNotice: string | null;
   isCheckingPublicAuth: boolean;
   isPublicAuthConfigured: boolean;
   isPublicUserSignedIn: boolean;
   isSigningInPublic: boolean;
+  isSigningUpPublic: boolean;
   isSigningOutPublic: boolean;
   onPublicSignIn: (email: string, password: string) => Promise<boolean>;
+  onPublicSignUp: (email: string, password: string, displayName: string) => Promise<PublicSignUpResult>;
   onPublicSignOut: () => Promise<void>;
 }
 
@@ -25,12 +28,15 @@ export const Navbar = ({
   uniqueSpeciesCount,
   publicAuthDisplayName,
   publicAuthError,
+  publicAuthNotice,
   isCheckingPublicAuth,
   isPublicAuthConfigured,
   isPublicUserSignedIn,
   isSigningInPublic,
+  isSigningUpPublic,
   isSigningOutPublic,
   onPublicSignIn,
+  onPublicSignUp,
   onPublicSignOut,
 }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,7 +62,7 @@ export const Navbar = ({
   const renderAuthControls = (isMobile = false) => {
     if (isCheckingPublicAuth) {
       return (
-        <span className={isMobile ? 'py-2 text-left text-xs text-zinc-400' : 'text-xs text-zinc-400'}>
+        <span className={isMobile ? 'block py-2 text-left text-xs text-zinc-400' : 'block truncate text-xs text-zinc-400'}>
           로그인 확인 중
         </span>
       );
@@ -64,13 +70,15 @@ export const Navbar = ({
 
     if (isPublicUserSignedIn) {
       return (
-        <div className={isMobile ? 'flex items-center justify-between gap-3 py-2' : 'flex items-center gap-3'}>
-          <span className="text-xs font-medium text-zinc-600">{publicAuthDisplayName}</span>
+        <div className={isMobile ? 'flex items-center justify-between gap-3 py-2' : 'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3'}>
+          <span className="truncate text-xs font-medium text-zinc-600" title={publicAuthDisplayName}>
+            {publicAuthDisplayName}
+          </span>
           <button
             type="button"
             onClick={handlePublicSignOut}
             disabled={isSigningOutPublic}
-            className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 transition-colors hover:text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
+            className="shrink-0 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 transition-colors hover:text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSigningOutPublic ? '로그아웃 중' : '로그아웃'}
           </button>
@@ -84,7 +92,7 @@ export const Navbar = ({
         onClick={handleToggleLogin}
         className={isMobile
           ? 'py-2 text-left text-xs font-semibold uppercase tracking-[0.16em] text-zinc-700 transition-colors hover:text-zinc-950'
-          : 'text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 transition-colors hover:text-zinc-950'}
+          : 'block w-full text-left text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 transition-colors hover:text-zinc-950'}
         aria-expanded={isLoginOpen}
         aria-controls="nav-public-login-panel"
       >
@@ -96,13 +104,14 @@ export const Navbar = ({
   return (
     <header className="fixed top-0 left-0 z-50 w-full border-b border-black bg-white/80 backdrop-blur-sm">
       <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6 md:px-10">
-        <div
+        <button
+          type="button"
           className="cursor-pointer text-[13px] font-medium tracking-[0.2em] transition-opacity hover:opacity-60"
           onClick={() => handleNavigate('home')}
           id="nav-logo"
         >
           KNU BIODIVERSITY
-        </div>
+        </button>
 
         <div className="hidden items-center gap-3 rounded-full border border-zinc-100 bg-zinc-50/70 px-3 py-1 lg:flex">
           <div className="flex items-center gap-1.5">
@@ -110,7 +119,9 @@ export const Navbar = ({
             <span className="font-mono text-[10px] font-semibold uppercase tracking-tighter text-zinc-700">정적 디자인 시안</span>
           </div>
           <span className="text-[9px] font-light opacity-20">|</span>
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-tighter text-zinc-700 opacity-60">{uniqueSpeciesCount ?? observationCount} SPECIES / {observationCount} RECORDS</span>
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-tighter text-zinc-700 opacity-60">
+            {uniqueSpeciesCount ?? observationCount} SPECIES / {observationCount} RECORDS
+          </span>
         </div>
 
         <nav className="hidden items-center gap-8 text-sm font-light md:flex">
@@ -120,7 +131,7 @@ export const Navbar = ({
             <button type="button" onClick={() => handleNavigate('map')} className="cursor-pointer opacity-60 transition-opacity hover:opacity-100" id="nav-map">생태지도</button>
             <button type="button" onClick={() => handleNavigate('upload')} className="border border-black bg-white px-4 py-2 text-xs font-medium uppercase tracking-widest text-black transition-all hover:bg-black hover:text-white" id="nav-upload">기록하기</button>
           </div>
-          <div className="border-l border-zinc-200 pl-5">
+          <div className="w-44 min-w-44 max-w-44 border-l border-zinc-200 pl-5">
             {renderAuthControls()}
           </div>
         </nav>
@@ -139,9 +150,12 @@ export const Navbar = ({
             >
               <PublicLoginPanel
                 errorMessage={publicAuthError}
+                noticeMessage={publicAuthNotice}
                 isAuthConfigured={isPublicAuthConfigured}
-                isSubmitting={isSigningInPublic}
-                onSubmit={onPublicSignIn}
+                isSigningIn={isSigningInPublic}
+                isSigningUp={isSigningUpPublic}
+                onSignIn={onPublicSignIn}
+                onSignUp={onPublicSignUp}
                 onCancel={() => setIsLoginOpen(false)}
                 id="nav-public-login-panel"
               />

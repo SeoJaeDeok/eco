@@ -6,6 +6,7 @@ import { MapPage } from './MapPage';
 import { ObservationListPage } from './ObservationListPage';
 import { UploadMockPage } from './UploadMockPage';
 import { UploadLoginGate } from './auth/UploadLoginGate';
+import type { PublicSignUpResult } from './auth/PublicLoginPanel';
 import type { AuthSessionState } from '../repositories/authRepository';
 import type { Observation, PageId } from '../types';
 
@@ -18,11 +19,14 @@ interface AppRoutesProps {
   isCheckingPublicAuth: boolean;
   isPublicAuthConfigured: boolean;
   publicAuthError: string | null;
+  publicAuthNotice: string | null;
   isSigningInPublic: boolean;
+  isSigningUpPublic: boolean;
   onNavigate: (page: PageId) => void;
   onSelectObservation: (obs: Observation) => void;
   onObservationCreated: (observation: Observation) => void;
   onPublicSignIn: (email: string, password: string) => Promise<boolean>;
+  onPublicSignUp: (email: string, password: string, displayName: string) => Promise<PublicSignUpResult>;
 }
 
 export const AppRoutes = ({
@@ -32,11 +36,14 @@ export const AppRoutes = ({
   isCheckingPublicAuth,
   isPublicAuthConfigured,
   publicAuthError,
+  publicAuthNotice,
   isSigningInPublic,
+  isSigningUpPublic,
   onNavigate,
   onSelectObservation,
   onObservationCreated,
   onPublicSignIn,
+  onPublicSignUp,
 }: AppRoutesProps) => {
   const isPublicUserSignedIn = Boolean(publicAuthState.user);
 
@@ -69,10 +76,13 @@ export const AppRoutes = ({
           ) : (
             <UploadLoginGate
               errorMessage={publicAuthError}
+              noticeMessage={publicAuthNotice}
               isAuthConfigured={isPublicAuthConfigured}
               isCheckingAuth={isCheckingPublicAuth}
               isSigningIn={isSigningInPublic}
+              isSigningUp={isSigningUpPublic}
               onSignIn={onPublicSignIn}
+              onSignUp={onPublicSignUp}
               onNavigateHome={() => onNavigate('observations')}
             />
           )}

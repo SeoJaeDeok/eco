@@ -1,4 +1,9 @@
 import { useState, type ChangeEvent } from 'react';
+import {
+  MAX_OBSERVATION_IMAGE_SIZE_MB,
+  MAX_OBSERVATION_IMAGE_SIZE_BYTES,
+  isAllowedObservationImageMimeType,
+} from '../constants/upload';
 import { createDefaultUploadFormValues, createImagePreviewUrl, createObservationInputFromForm } from '../features/upload/uploadForm';
 import { activeObservationRepository, getConfiguredObservationRepositoryKind } from '../repositories/observationRepositoryProvider';
 import { validateObservationInput } from '../utils/observationValidation';
@@ -22,6 +27,9 @@ const MOCK_UPLOAD_ALERT_MESSAGE = '현재 파일은 디자인 시안이라 저�
 const REQUIRED_UPLOAD_ALERT_MESSAGE = '필수 항목을 입력하고 지도에서 관찰 위치를 선택해 주세요.';
 const UPLOAD_FAILURE_ALERT_MESSAGE = '관찰 기록 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.';
 
+const UNSUPPORTED_IMAGE_TYPE_ALERT_MESSAGE = '사진은 JPG, PNG, WebP 형식만 업로드할 수 있습니다.';
+const OVERSIZED_IMAGE_ALERT_MESSAGE = `사진은 ${MAX_OBSERVATION_IMAGE_SIZE_MB}MB 이하만 업로드할 수 있습니다.`;
+
 export const UploadMockPage = ({
   onCancel,
   createObservation = activeObservationRepository.createObservation,
@@ -34,6 +42,19 @@ export const UploadMockPage = ({
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
+
+    if (!isAllowedObservationImageMimeType(file.type)) {
+      e.target.value = '';
+      alert(UNSUPPORTED_IMAGE_TYPE_ALERT_MESSAGE);
+      return;
+    }
+
+    if (file.size > MAX_OBSERVATION_IMAGE_SIZE_BYTES) {
+      e.target.value = '';
+      alert(OVERSIZED_IMAGE_ALERT_MESSAGE);
+      return;
+    }
+
     const imagePreviewUrl = await createImagePreviewUrl(file);
     setFormData((current) => ({ ...current, imageFile: file, imagePreviewUrl }));
   };

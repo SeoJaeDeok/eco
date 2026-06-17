@@ -1,20 +1,26 @@
-import { PublicLoginPanel } from './PublicLoginPanel';
+import { PublicLoginPanel, type PublicSignUpResult } from './PublicLoginPanel';
 
 interface UploadLoginGateProps {
   errorMessage: string | null;
+  noticeMessage: string | null;
   isAuthConfigured: boolean;
   isCheckingAuth: boolean;
   isSigningIn: boolean;
+  isSigningUp: boolean;
   onSignIn: (email: string, password: string) => Promise<boolean>;
+  onSignUp: (email: string, password: string, displayName: string) => Promise<PublicSignUpResult>;
   onNavigateHome: () => void;
 }
 
 export const UploadLoginGate = ({
   errorMessage,
+  noticeMessage,
   isAuthConfigured,
   isCheckingAuth,
   isSigningIn,
+  isSigningUp,
   onSignIn,
+  onSignUp,
   onNavigateHome,
 }: UploadLoginGateProps) => {
   return (
@@ -42,9 +48,12 @@ export const UploadLoginGate = ({
         ) : (
           <PublicLoginPanel
             errorMessage={errorMessage}
+            noticeMessage={noticeMessage}
             isAuthConfigured={isAuthConfigured}
-            isSubmitting={isSigningIn}
-            onSubmit={onSignIn}
+            isSigningIn={isSigningIn}
+            isSigningUp={isSigningUp}
+            onSignIn={onSignIn}
+            onSignUp={onSignUp}
             id="upload-public-login-panel"
           />
         )}

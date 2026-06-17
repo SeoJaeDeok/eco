@@ -35,6 +35,9 @@ const unavailableAuthRepository: AuthRepository = {
   async signInWithPassword() {
     throw createUnavailableAuthError();
   },
+  async signUpWithPassword() {
+    throw createUnavailableAuthError();
+  },
   async signOut() {
     return undefined;
   },
@@ -65,6 +68,10 @@ const lazySupabaseAuthRepository: AuthRepository = {
   async signInWithPassword(email, password) {
     const repository = await loadSupabaseAuthRepository();
     return repository.signInWithPassword(email, password);
+  },
+  async signUpWithPassword(input) {
+    const repository = await loadSupabaseAuthRepository();
+    return repository.signUpWithPassword(input);
   },
   async signOut() {
     const repository = await loadSupabaseAuthRepository();

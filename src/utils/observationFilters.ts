@@ -1,5 +1,5 @@
 import { ALL_TAXON_FILTER, type TaxonFilter } from '../constants/taxon';
-import type { Observation } from '../types';
+import type { Observation, Taxon } from '../types';
 
 export type ImageFilter = 'all' | 'with-image' | 'without-image';
 export type ObservationSortKey = 'newest' | 'oldest' | 'name';
@@ -14,8 +14,42 @@ export interface FilterAndSortObservationsOptions extends FilterObservationsOpti
   sortKey: ObservationSortKey;
 }
 
+export interface FilterMapObservationsOptions {
+  selectedTaxa: readonly Taxon[];
+  searchQuery: string;
+  selectedSpeciesKey?: string | null;
+}
+
+export interface ObservationSpeciesGroup {
+  key: string;
+  name: string;
+  scientificName: string;
+  count: number;
+}
+
 export const hasObservationImage = (observation: Observation) => {
   return Boolean(observation.imageUrl.trim());
+};
+
+const normalizeSearchText = (value: string) => {
+  return value.toLowerCase().trim().replace(/\s+/g, ' ');
+};
+
+export const getObservationSpeciesKey = (observation: Pick<Observation, 'name' | 'scientificName'>) => {
+  return `${normalizeSearchText(observation.name)}|${normalizeSearchText(observation.scientificName)}`;
+};
+
+export const matchesObservationSearchQuery = (observation: Observation, searchQuery: string) => {
+  const q = normalizeSearchText(searchQuery);
+
+  if (!q) {
+    return true;
+  }
+
+  return normalizeSearchText(observation.name).includes(q)
+    || normalizeSearchText(observation.scientificName).includes(q)
+    || normalizeSearchText(observation.location).includes(q)
+    || normalizeSearchText(observation.description).includes(q);
 };
 
 export const filterObservations = (
@@ -29,13 +63,7 @@ export const filterObservations = (
   }
 
   if (searchQuery.trim()) {
-    const q = searchQuery.toLowerCase().trim();
-    result = result.filter((obs) =>
-      obs.name.toLowerCase().includes(q)
-      || obs.scientificName.toLowerCase().includes(q)
-      || obs.location.toLowerCase().includes(q)
-      || obs.description.toLowerCase().includes(q),
-    );
+    result = result.filter((obs) => matchesObservationSearchQuery(obs, searchQuery));
   }
 
   if (imageFilter !== 'all') {
@@ -73,4 +101,48 @@ export const filterAndSortObservations = (
 
 export const countObservationsByTaxon = (observations: Observation[], taxon: TaxonFilter) => {
   return observations.filter((obs) => taxon === ALL_TAXON_FILTER || obs.taxon === taxon).length;
+};
+
+export const filterMapObservations = (
+  observations: Observation[],
+  { selectedTaxa, searchQuery, selectedSpeciesKey }: FilterMapObservationsOptions,
+) => {
+  return observations.filter((observation) => {
+    const matchesTaxon = selectedTaxa.length === 0 || selectedTaxa.includes(observation.taxon);
+    const matchesSpecies = selectedSpeciesKey
+      ? getObservationSpeciesKey(observation) === selectedSpeciesKey
+      : matchesObservationSearchQuery(observation, searchQuery);
+
+    return matchesTaxon && matchesSpecies;
+  });
+};
+
+export const getObservationSpeciesGroups = (
+  observations: Observation[],
+  searchQuery = '',
+): ObservationSpeciesGroup[] => {
+  const groupsByKey = new Map<string, ObservationSpeciesGroup>();
+
+  observations.forEach((observation) => {
+    if (!matchesObservationSearchQuery(observation, searchQuery)) {
+      return;
+    }
+
+    const key = getObservationSpeciesKey(observation);
+    const existingGroup = groupsByKey.get(key);
+
+    if (existingGroup) {
+      existingGroup.count += 1;
+      return;
+    }
+
+    groupsByKey.set(key, {
+      key,
+      name: observation.name,
+      scientificName: observation.scientificName,
+      count: 1,
+    });
+  });
+
+  return [...groupsByKey.values()].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 };

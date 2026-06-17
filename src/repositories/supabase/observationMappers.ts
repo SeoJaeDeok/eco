@@ -46,6 +46,7 @@ export const mapObservationRowToObservation = (
       lng: row.longitude,
     },
     imageUrl: resolveObservationImageUrl(row, displayFields),
+    ...(row.image_path ? { imagePath: row.image_path } : {}),
     ...(row.observer_id ? { observerId: row.observer_id } : {}),
     ...(observerDisplayName ? { observerDisplayName } : {}),
     status: row.status,

@@ -1,10 +1,13 @@
 import type {
+  AuthSignUpResult,
   AuthRepository,
   AuthSessionState,
   AuthUser,
+  SignUpWithPasswordInput,
   UserProfile,
   UserRole,
 } from '../authRepository';
+import { normalizeObserverDisplayName } from '../../utils/observerDisplay';
 import { getSupabaseClient } from './supabaseClient';
 
 const PROFILES_TABLE = 'profiles';
@@ -54,10 +57,12 @@ const mapProfileRow = (row: SupabaseProfileRow): UserProfile => {
     throw new Error('Invalid profile role returned from Supabase.');
   }
 
+  const displayName = normalizeObserverDisplayName(row.display_name);
+
   return {
     id: row.id,
     role: row.role,
-    ...(row.display_name?.trim() ? { displayName: row.display_name.trim() } : {}),
+    ...(displayName ? { displayName } : {}),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -70,6 +75,48 @@ const createSessionState = (user: AuthUser | null, profile: UserProfile | null):
     isAdmin: profile?.role === 'admin',
   };
 };
+
+const createEmptySignUpResult = (
+  options: Pick<AuthSignUpResult, 'requiresEmailConfirmation' | 'profileSetupRequired'>,
+): AuthSignUpResult => {
+  return {
+    sessionState: createSessionState(null, null),
+    ...options,
+  };
+};
+
+const loadProfileForUserId = async (userId: string) => {
+  const { data, error } = await getSupabaseClient()
+    .from(PROFILES_TABLE)
+    .select('id, role, display_name, created_at, updated_at')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    throw createAuthRepositoryError('Failed to get the current user profile from Supabase.', error);
+  }
+
+  return data ? mapProfileRow(data as SupabaseProfileRow) : null;
+};
+
+const updateCurrentProfileDisplayName = async (userId: string, displayName: string) => {
+  const { data, error } = await getSupabaseClient()
+    .from(PROFILES_TABLE)
+    .update({ display_name: displayName })
+    .eq('id', userId)
+    .select('id, role, display_name, created_at, updated_at')
+    .maybeSingle();
+
+  if (error) {
+    throw createAuthRepositoryError('Failed to update the current user display name in Supabase.', error);
+  }
+
+  return data ? mapProfileRow(data as SupabaseProfileRow) : null;
+};
+
+const createSignUpMetadata = (displayName: string) => ({
+  display_name: displayName,
+});
 
 export const supabaseAuthRepository: AuthRepository = {
   async getCurrentUser() {
@@ -93,17 +140,7 @@ export const supabaseAuthRepository: AuthRepository = {
       return null;
     }
 
-    const { data, error } = await getSupabaseClient()
-      .from(PROFILES_TABLE)
-      .select('id, role, display_name, created_at, updated_at')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (error) {
-      throw createAuthRepositoryError('Failed to get the current user profile from Supabase.', error);
-    }
-
-    return data ? mapProfileRow(data as SupabaseProfileRow) : null;
+    return loadProfileForUserId(user.id);
   },
 
   async getSessionState() {
@@ -130,6 +167,54 @@ export const supabaseAuthRepository: AuthRepository = {
     }
 
     return this.getSessionState();
+  },
+
+  async signUpWithPassword(input: SignUpWithPasswordInput) {
+    const displayName = normalizeObserverDisplayName(input.displayName);
+
+    if (!displayName) {
+      throw createAuthRepositoryError('A safe public display name is required for signup.', new Error('Invalid display name.'));
+    }
+
+    const { data, error } = await getSupabaseClient().auth.signUp({
+      email: input.email,
+      password: input.password,
+      options: {
+        data: createSignUpMetadata(displayName),
+      },
+    });
+
+    if (error) {
+      throw createAuthRepositoryError('Failed to sign up with Supabase password auth.', error);
+    }
+
+    if (!data.session || !data.user) {
+      return createEmptySignUpResult({
+        requiresEmailConfirmation: true,
+        profileSetupRequired: false,
+      });
+    }
+
+    const user = mapAuthUser(data.user);
+    let profile = await loadProfileForUserId(user.id);
+
+    if (!profile) {
+      await getSupabaseClient().auth.signOut();
+      return createEmptySignUpResult({
+        requiresEmailConfirmation: false,
+        profileSetupRequired: true,
+      });
+    }
+
+    if (profile.displayName !== displayName) {
+      profile = await updateCurrentProfileDisplayName(user.id, displayName) ?? profile;
+    }
+
+    return {
+      sessionState: createSessionState(user, profile),
+      requiresEmailConfirmation: false,
+      profileSetupRequired: false,
+    };
   },
 
   async signOut() {

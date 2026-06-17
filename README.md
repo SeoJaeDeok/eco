@@ -43,6 +43,8 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Owner/admin observation edit smoke: 20K live owner/non-owner/admin edit smoke passed by user manual verification; malicious direct protected-field update attempts remain optional hardening
 - Phase 20 history archive: completed in `docs/eco/phase-history/phase-20.md`
 - Project working guide: documented in `docs/eco/project-working-guide.md`
+- Phase 21 public UX stabilization: Navbar auth slot stabilization, public signup UI through `AuthRepository`, signed-image prefetch/retry, 20 MB app-side upload validation, map search/multi-taxon filtering, and taxonomy design docs are implemented. Live browser/account smoke is PARTIAL because browser automation and test credentials were unavailable in the implementation session.
+- Public signup profile setup: draft-only profile auto-create SQL is documented in `docs/architecture/sql-drafts/0005_public_signup_profile_draft.sql`; it was not promoted to `supabase/migrations/` and was not applied by Codex.
 
 ## Implemented Features
 
@@ -53,6 +55,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Observation detail modal
 - Upload screen
 - Supabase authenticated approved observation submit
+- Public signup/login/logout UI
 - Supabase Storage image upload for authenticated public submissions
 - Public approved observation read
 - Runtime signed image display for approved public observations
@@ -90,6 +93,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 20I owner/admin observation update repository methods
 - Phase 20J owner/admin observation edit UI
 - Phase 20K owner/admin edit live smoke/regression documentation
+- Phase 21 public UX stabilization implementation and taxonomy design documentation
 
 Approved observations should appear in the public list. Pending and rejected observations must not appear in the public list/detail; 20K manual smoke verified pending/rejected public invisibility.
 
@@ -230,12 +234,16 @@ Supabase setup is documented in:
 - `docs/architecture/public-user-contribution-rls-plan.md`
 - `docs/architecture/owner-admin-observation-edit-design.md`
 - `docs/architecture/owner-admin-observation-edit-rls-plan.md`
+- `docs/architecture/public-signup-profile-setup-plan.md`
+- `docs/architecture/taxonomy-resolution-design.md`
+- `docs/architecture/taxonomy-tree-visualization-design.md`
 - `supabase/migrations/0003_public_user_contribution.sql`
 - `supabase/migrations/0004_owner_admin_observation_edit.sql`
 - `supabase/migrations/0001_create_observation_schema.sql`
 - `supabase/migrations/0002_create_observation_storage.sql`
 - `docs/architecture/sql-drafts/0003_public_user_contribution_draft.sql`
 - `docs/architecture/sql-drafts/0004_owner_admin_observation_edit_draft.sql`
+- `docs/architecture/sql-drafts/0005_public_signup_profile_draft.sql`
 
 Admin approval flow is documented in:
 
@@ -250,7 +258,7 @@ Admin approval flow is documented in:
 - Audit log
 - Bulk approval
 - Admin menu in `Navbar`
-- Public self-sign-up and display-name setup UI
+- Public signup profile auto-create SQL application and live signup/account smoke
 - User account management UI
 - Spam protection, rate limit, or CAPTCHA
 - PWA/app packaging

@@ -78,6 +78,12 @@ The current app can run with mock data by default or Supabase when explicitly co
 
 Image upload and signed URL display are implemented in Supabase mode after the manually applied Storage setup. The current schema still has nullable `observations.image_url` as a legacy field, but new Storage uploads write `observations.image_path`, `image_mime_type`, and `image_size_bytes`. Supabase repository mappers use runtime signed URLs as display-only `Observation.imageUrl` values when `image_path` is present.
 
+Phase 21D client-side update:
+
+- App-side image selection and Supabase upload-helper validation now use a named 20 MB constant.
+- Unlimited upload remains intentionally unsupported because of abuse, cost, network reliability, and backend limits.
+- Existing Storage bucket/project settings and the 0002 SQL candidate still document a 5 MB backend limit. Do not claim live Supabase accepts files above the backend-configured limit until a separate approved Storage/DB alignment phase updates and verifies bucket limits, DB constraints, and monitoring thresholds.
+
 The requested files `src/repositories/supabase/supabaseObservationTypes.ts` and `src/repositories/supabase/supabaseObservationMappers.ts` do not exist in the current repository. The current files are:
 
 ```text
