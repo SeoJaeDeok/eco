@@ -1,6 +1,10 @@
 import type { AdminObservationRepository } from '../adminObservationRepository';
 import type { ObservationDbRow } from './observationDbTypes';
-import { mapObservationRowToObservation, mapObservationRowsToObservations } from './observationMappers';
+import {
+  mapObservationRowToObservation,
+  mapObservationRowsToObservations,
+  mapOwnerObservationUpdateInputToUpdateRow,
+} from './observationMappers';
 import { resolveObservationImageSignedUrl } from './supabaseObservationImageStorage';
 import { getSupabaseClient } from './supabaseClient';
 
@@ -96,5 +100,21 @@ export const supabaseAdminObservationRepository: AdminObservationRepository = {
     }
 
     return mapRequiredObservationRow(data as ObservationDbRow | null, `Rejected observation "${id}" was not returned from Supabase.`);
+  },
+
+  async updateObservationAsAdmin(id, input) {
+    const updateRow = mapOwnerObservationUpdateInputToUpdateRow(input);
+    const { data, error } = await getSupabaseClient()
+      .from(OBSERVATIONS_TABLE)
+      .update(updateRow)
+      .eq('id', id)
+      .select('*')
+      .single();
+
+    if (error) {
+      throw createAdminRepositoryError(`Failed to update observation "${id}" as admin in Supabase.`, error);
+    }
+
+    return mapRequiredObservationRow(data as ObservationDbRow | null, `Updated observation "${id}" was not returned from Supabase.`);
   },
 };

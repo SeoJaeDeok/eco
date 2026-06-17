@@ -1,6 +1,6 @@
-import type { CreateObservationInput, Observation } from '../../types';
+import type { CreateObservationInput, Observation, OwnerObservationUpdateInput } from '../../types';
 import { normalizeObserverDisplayName } from '../../utils/observerDisplay';
-import type { ObservationDbRow, ObservationInsertRow } from './observationDbTypes';
+import type { ObservationContentUpdateRow, ObservationDbRow, ObservationInsertRow } from './observationDbTypes';
 
 interface ObservationImageInsertFields {
   path: string;
@@ -82,5 +82,20 @@ export const mapCreateObservationInputToInsertRow = (
         image_size_bytes: imageFields.sizeBytes,
       }
       : {}),
+  };
+};
+
+export const mapOwnerObservationUpdateInputToUpdateRow = (
+  input: OwnerObservationUpdateInput,
+): ObservationContentUpdateRow => {
+  return {
+    name: input.name,
+    scientific_name: nullableText(input.scientificName),
+    taxon: input.taxon,
+    location: input.location,
+    observed_date: input.date,
+    description: nullableText(input.description),
+    latitude: input.coords.lat,
+    longitude: input.coords.lng,
   };
 };

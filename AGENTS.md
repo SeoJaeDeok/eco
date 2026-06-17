@@ -8,7 +8,7 @@ The project began as a design-only starter. It now has a Supabase-backed observa
 
 Keep the existing Korean UI copy, calm academic design tone, static map fallback, and small-step implementation style unless the user explicitly asks for a change.
 
-## Current State After Phase 20H.7 Owner/Admin Edit Trigger And Visibility Documentation
+## Current State After Phase 20I Owner/Admin Observation Update Repository Methods
 
 Completed and verified:
 
@@ -68,32 +68,35 @@ Completed and verified:
 - 20H.5 owner/admin observation edit SQL apply-readiness review is complete. The hybrid repository whitelist + column grants + owner/admin RLS + protected-field trigger strategy is accepted as the initial apply-ready direction, with RPC kept as fallback.
 - 20H.5 added `supabase/migrations/0004_owner_admin_observation_edit.sql` as an apply-ready migration candidate. Codex did not apply it to Supabase.
 - 20H.5 does not implement repository update methods, edit UI, image replacement, package changes, or new dependencies.
-- 20H.6 manual apply result documentation is complete. The user manually applied 0004 in dev/local Supabase with no reported errors, production was not changed, and Codex did not apply SQL/RLS. Trigger presence still needs read-only SQL Editor confirmation before 20I.
+- 20H.6 manual apply result documentation is complete. The user manually applied 0004 in dev/local Supabase with no reported errors, production was not changed, and Codex did not apply SQL/RLS. Trigger presence was later confirmed in 20H.7.
 - 20H.6 does not implement repository update methods, edit UI, image replacement, package changes, or new dependencies.
 - 20H.7 trigger and public visibility confirmation documentation is complete. The expected `observations_guard_edit_fields` and `observations_set_updated_at` `BEFORE UPDATE` triggers are connected to `public.observations`.
-- 20H.7 records public approved list loading as passed, but pending/rejected were reported as visible in public list/detail. Treat this as a public visibility blocker to clarify or fix before 20I. Codex did not apply SQL/RLS.
+- 20H.7 records public approved list loading as passed and rejected visibility as corrected to hidden. Pending visibility still needs clarification if it was actually visible. Codex did not apply SQL/RLS.
 - 20H.7 does not implement repository update methods, edit UI, image replacement, package changes, or new dependencies.
-- General public routes still load, but 20H.7 reported a pending/rejected public visibility blocker that must be clarified before owner/admin edit work continues.
+- 20I owner/admin observation update repository methods are complete. Owner/admin content update contracts and Supabase payload mappers include only text/classification/date/location/coordinates/description fields and exclude status, observer, image, `image_url`, and timestamp fields.
+- 20I adds `ObservationRepository.updateOwnObservation`, `AdminObservationRepository.updateObservationAsAdmin`, Supabase implementations, and mock in-memory owner update behavior. It does not add edit UI, image replacement, package changes, new dependencies, or additional SQL/RLS.
+- General public routes still load, and public read methods remain approved-only in repository code. Pending visibility from 20H.7 still needs clarification if it was actually visible before edit UI work continues.
 
 ## Next Starting Point
 
 The next recommended step starts at:
 
 ```text
-Clarify public visibility, then 20I repository update methods
+20J edit UI after repository methods
 ```
 
 Recommended sequence:
 
-1. Clarify whether the 20H.7 `pending/rejected visible: yes` result means the rows were actually visible in public list/detail.
-2. If pending/rejected are actually visible, run a focused public visibility investigation/fix before owner/admin edit work.
-3. If public visibility is corrected to pending/rejected hidden, start 20I repository update methods.
-4. Keep edit UI implementation deferred until repository update methods are accepted.
-5. Run owner/non-owner/admin update probes in 20K after repository and UI paths exist.
-6. If launch needs field-by-field evidence for a non-admin row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
-7. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
-8. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
-9. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
+1. Start 20J edit UI implementation only after accepting the repository method contract.
+2. Keep edit affordances hidden from anonymous users and authenticated non-owners.
+3. Keep admin edit UI inside hidden `/#admin`; do not expose admin in `Navbar`.
+4. Keep image replacement out of scope.
+5. Recheck/clarify pending public visibility before or during 20J if the 20H.7 pending result remains ambiguous.
+6. Run owner/non-owner/admin update probes in 20K after repository and UI paths exist.
+7. If launch needs field-by-field evidence for a non-admin row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
+8. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
+9. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
+10. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
 
 ## New Session Entry Checklist
 
@@ -110,7 +113,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H.7 owner/admin edit trigger and visibility documentation is complete. The expected 0004 triggers are connected in dev/local Supabase, production was not changed, and Codex did not apply SQL/RLS. Pending/rejected were reported as visible in public list/detail; clarify or fix that public visibility blocker before 20I repository update methods. Edit UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20I owner/admin observation update repository methods are complete. Update payloads are content-only and exclude status/image/observer fields. Edit UI is not implemented yet. The next recommended step is 20J edit UI implementation, with pending public visibility recheck if the 20H.7 pending result remains ambiguous.
 ```
 
 ## Current Stack
@@ -441,7 +444,8 @@ npm.cmd audit --audit-level=high
 - Phase 20H: Owner/admin observation edit DB/RLS plan and SQL draft completed; SQL was not applied.
 - Phase 20H.5: Owner/admin edit SQL apply-readiness review completed and 0004 migration candidate added; SQL was not applied.
 - Phase 20H.6: Owner/admin edit 0004 manual dev/local apply result documented; Codex did not apply SQL.
-- Phase 20H.7: Owner/admin edit trigger confirmation documented; pending/rejected public visibility was reported as visible and remains a blocker to clarify/fix before 20I.
+- Phase 20H.7: Owner/admin edit trigger confirmation documented; rejected visibility was corrected to hidden and pending visibility still needs clarification if it was actually visible.
+- Phase 20I: Owner/admin observation update repository methods implemented without edit UI or additional SQL/RLS.
 
 ## Review Checklist Before Final Response
 

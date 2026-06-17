@@ -5,6 +5,7 @@ import type { ObservationRepository } from '../observationRepository';
 import type { ObservationDbRow } from './observationDbTypes';
 import {
   mapCreateObservationInputToInsertRow,
+  mapOwnerObservationUpdateInputToUpdateRow,
   mapObservationRowToObservation,
   mapObservationRowsToObservations,
 } from './observationMappers';
@@ -39,6 +40,17 @@ const createImageDisplayFieldsById = async (rows: ObservationDbRow[]) => {
 const mapObservationRowWithSignedImageUrl = async (row: ObservationDbRow) => {
   const signedImageUrl = await resolveObservationImageSignedUrl(row.image_path);
   return mapObservationRowToObservation(row, signedImageUrl ? { imageUrl: signedImageUrl } : undefined);
+};
+
+const requireCurrentUserId = async () => {
+  const client = getSupabaseClient();
+  const { data, error } = await client.auth.getUser();
+
+  if (error || !data.user) {
+    throw createRepositoryError('Observation updates require a signed-in user.', error);
+  }
+
+  return data.user.id;
 };
 
 const getCurrentContributor = async () => {
@@ -122,6 +134,26 @@ export const supabaseObservationRepository: ObservationRepository = {
     if (error) {
       // TODO: Define manual cleanup for uploaded orphan images if this insert fails.
       throw createRepositoryError('Failed to create approved observation in Supabase.', error);
+    }
+
+    return mapObservationRowWithSignedImageUrl(data as ObservationDbRow);
+  },
+
+  async updateOwnObservation(id, input) {
+    const currentUserId = await requireCurrentUserId();
+
+    const updateRow = mapOwnerObservationUpdateInputToUpdateRow(input);
+    const { data, error } = await getSupabaseClient()
+      .from(OBSERVATIONS_TABLE)
+      .update(updateRow)
+      .eq('id', id)
+      .eq('status', 'approved')
+      .eq('observer_id', currentUserId)
+      .select('*')
+      .single();
+
+    if (error) {
+      throw createRepositoryError(`Failed to update owned approved observation "${id}" in Supabase.`, error);
     }
 
     return mapObservationRowWithSignedImageUrl(data as ObservationDbRow);

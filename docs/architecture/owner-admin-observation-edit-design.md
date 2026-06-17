@@ -453,9 +453,29 @@ The user also reported:
 
 - public approved list loads: pass.
 - pending visible in public list/detail: yes.
-- rejected visible in public list/detail: yes.
+- rejected visible in public list/detail: corrected to no.
 - console/log secret exposure: pass.
 
-This is recorded as a PARTIAL/FAIL visibility result, not a public visibility PASS. Pending/rejected rows may exist in the database, but they must not appear in public list/detail UI or public repository reads.
+This is recorded as a PARTIAL visibility result, not a public visibility PASS. Pending/rejected rows may exist in the database, but they must not appear in public list/detail UI or public repository reads. Rejected visibility was corrected to hidden; pending visibility still needs clarification because it was not explicitly corrected in the 20I prompt.
 
-Before 20I repository update methods proceed against this environment, clarify whether "yes" means the check was performed or the rows were actually visible. If rows were actually visible, run a focused public visibility investigation/fix before owner/admin edit implementation.
+Before edit UI implementation proceeds against this environment, clarify whether pending "yes" means the check was performed or the row was actually visible. If pending rows were actually visible, run a focused public visibility investigation/fix before owner/admin edit UI implementation.
+
+## 20I Repository Update Methods Result
+
+Phase 20I added repository update methods without adding edit UI:
+
+- `ObservationRepository.updateOwnObservation(id, input)` for signed-in owner content updates.
+- `AdminObservationRepository.updateObservationAsAdmin(id, input)` for admin content updates.
+- `OwnerObservationUpdateInput` and `AdminObservationUpdateInput` contain only content/location/date/taxon/description/coordinate fields.
+- Supabase owner/admin update payloads are built through a whitelist mapper.
+- Mock owner update uses an in-memory overlay and does not mutate `sampleObservations`.
+- Public read methods remain approved-only.
+
+Still out of scope after 20I:
+
+- edit buttons
+- edit forms
+- owner/admin live update smoke
+- image replacement
+- additional SQL/RLS application
+- admin route exposure in `Navbar`

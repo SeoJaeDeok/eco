@@ -31,6 +31,10 @@ const lazySupabaseObservationRepository: ObservationRepository = {
     const repository = await loadSupabaseObservationRepository();
     return repository.createObservation(input);
   },
+  async updateOwnObservation(id, input) {
+    const repository = await loadSupabaseObservationRepository();
+    return repository.updateOwnObservation(id, input);
+  },
 };
 
 export const resolveObservationRepositoryKind = (value?: string): ObservationRepositoryKind => {

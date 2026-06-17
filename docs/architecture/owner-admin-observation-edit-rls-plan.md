@@ -326,7 +326,7 @@ Remaining apply validation:
 
 ## 20H.7 Trigger And Public Visibility Confirmation
 
-Status: PARTIAL, with one public visibility blocker reported.
+Status: PARTIAL, with pending visibility still requiring clarification.
 
 Codex did not run SQL or apply additional RLS changes in 20H.7. This section records user-reported checks only.
 
@@ -347,23 +347,22 @@ Public visibility confirmation:
 
 - Public approved list loads: pass.
 - Pending visible in public list/detail: reported `yes`.
-- Rejected visible in public list/detail: reported `yes`.
+- Rejected visible in public list/detail: corrected to `no`.
 - Console/log secret exposure: pass.
 
 Interpretation:
 
 - The trigger connection check passed.
-- The reported pending/rejected public visibility result is not acceptable for the project security model.
-- Pending/rejected rows may exist in the database, but they must not be visible in public list/detail UI or public repository reads.
-- Because the user reported pending/rejected as visible in public list/detail, 20H.7 public visibility is recorded as FAIL/PARTIAL, not PASS.
-- Do not start owner/admin edit repository implementation against this environment until the public visibility result is clarified and corrected.
+- The rejected visibility correction satisfies the rejected-row public visibility check.
+- The pending visibility report still needs clarification because pending rows may exist in the database but must not be visible in public list/detail UI or public repository reads.
+- Because pending was reported as visible in public list/detail and was not corrected in the 20I prompt, 20H.7 public visibility remains PARTIAL, not PASS.
 
 Remaining validation:
 
-- Recheck whether the reported `yes` means "check performed" or "actually visible".
-- If pending/rejected were actually visible, run a focused public visibility investigation before 20I.
+- Recheck whether pending `yes` means "check performed" or "actually visible".
+- If pending rows are actually visible, run a focused public visibility investigation before edit UI implementation.
 - Confirm the public repository still queries only `status = 'approved'`.
-- Confirm no public detail path can load pending/rejected rows by id.
+- Confirm no public detail path can load pending rows by id.
 - Actual owner allowed-field update has not been tested.
 - Actual owner protected-field update denial has not been tested.
 - Actual non-owner update denial has not been tested.
@@ -467,6 +466,73 @@ updateObservationStatusAsAdmin(id: string, status: AdminObservationStatusUpdate)
 - Mock repository should either return an updated in-memory copy for the current session or clearly document non-persistence.
 - After update, refresh through repository reads so signed image URLs stay runtime-only.
 
+## 20I Repository Update Method Result
+
+Status: implemented.
+
+Repository contract changes:
+
+- Added `OwnerObservationUpdateInput` with only content/location fields:
+  - `name`
+  - `scientificName`
+  - `taxon`
+  - `location`
+  - `date`
+  - `description`
+  - `coords`
+- Added `AdminObservationUpdateInput` as the admin content-update contract using the same allowed field shape.
+- Added `ObservationRepository.updateOwnObservation(id, input)`.
+- Added `AdminObservationRepository.updateObservationAsAdmin(id, input)`.
+
+Supabase public repository behavior:
+
+- `updateOwnObservation` requires a signed-in Supabase user.
+- The update payload is created through a whitelist mapper.
+- The owner update payload includes only:
+  - `name`
+  - `scientific_name`
+  - `taxon`
+  - `location`
+  - `observed_date`
+  - `description`
+  - `latitude`
+  - `longitude`
+- The owner update query keeps `status = 'approved'` and `observer_id = current auth user` as row filters.
+- The method returns the updated row mapped through the existing signed-image runtime mapping path.
+- Public list/detail reads still filter `status = 'approved'`.
+
+Supabase admin repository behavior:
+
+- `updateObservationAsAdmin` uses the same content-only whitelist mapper.
+- Existing `approveObservation` and `rejectObservation` remain the status-specific admin methods.
+- Admin content update does not include status, image, observer, `image_url`, `created_at`, or `updated_at` fields.
+
+Mock repository behavior:
+
+- `updateOwnObservation` is implemented with an in-memory overlay.
+- `sampleObservations` is not mutated.
+- Mock updates persist only for the current app session.
+
+Protected fields excluded from 20I update inputs and payloads:
+
+- `status`
+- `observer_id`
+- `observer_display_name`
+- `image_url`
+- `image_path`
+- `image_mime_type`
+- `image_size_bytes`
+- `created_at`
+- `updated_at`
+
+Not implemented in 20I:
+
+- edit buttons
+- edit form UI
+- image replacement
+- owner/admin live update smoke
+- additional Supabase SQL/RLS
+
 ## UI Implementation Plan
 
 20J should add edit affordances only after 20I repository behavior is accepted.
@@ -487,7 +553,7 @@ Recommended UI direction:
   - changes could not be saved
 - Mobile layout must keep action buttons visible and avoid modal overflow.
 
-Because the current public domain model does not expose `observer_id`, 20I/20J must decide whether to add an internal `observerId?: string` field or a repository-provided `canEdit`/permission field. The value must never be shown as public UI copy.
+Because the current public domain model does not expose `observer_id`, 20J must decide whether to add internal permission metadata such as `canEdit` or a non-rendered owner identifier. The value must never be shown as public UI copy.
 
 ## Verification Plan
 
@@ -522,10 +588,11 @@ Minimum 20K verification:
 3. 20H.6: manual dev/local apply result documentation.
 4. 20H.7: trigger confirmation and public visibility check documentation.
 5. Recheck/fix public pending/rejected visibility if the reported `yes` means the rows were actually visible.
-6. 20I: repository update methods and mapper/type changes after public visibility is safe.
-7. 20J: edit UI implementation.
-8. 20K: owner/admin edit smoke and regression.
-9. 20L: optional image replacement design, only if separately needed.
+6. 20I: repository update methods and mapper/type changes.
+7. Recheck pending public visibility before or during 20J if the 20H.7 pending result remains ambiguous.
+8. 20J: edit UI implementation.
+9. 20K: owner/admin edit smoke and regression.
+10. 20L: optional image replacement design, only if separately needed.
 
 ## Explicit Non-Scope
 
@@ -546,10 +613,9 @@ Minimum 20K verification:
 - admin route exposure in `Navbar`
 - public exposure of pending/rejected observations
 
-## Remaining Decisions Before 20I
+## Remaining Decisions Before 20J
 
-- Resolve the 20H.7 pending/rejected public visibility report before implementing edit repository methods.
-- Decide whether 20I should include direct repository-level probe helpers or leave all update attempts for 20K UI/regression.
-- Decide whether the domain model should expose internal `observerId` or use repository-level permission metadata for edit buttons.
-- Decide mock repository update behavior for local UX testing.
+- Resolve the 20H.7 pending visibility clarification before implementing edit UI.
+- Owner/non-owner/admin update attempts remain for 20K UI/regression unless a separate repository-level smoke is requested first.
+- Decide whether the domain model should expose internal `observerId` or use repository-level permission metadata for edit buttons in 20J.
 - Keep RPC as fallback only if repository/update smoke shows the hybrid trigger/RLS/grant model is not sufficient.

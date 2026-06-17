@@ -40,21 +40,13 @@ export interface ObservationInsertRow {
   observer_display_name?: string;
 }
 
-export type ObservationUpdateRow = Partial<
-  Pick<
-    ObservationDbRow,
-    | 'name'
-    | 'scientific_name'
-    | 'taxon'
-    | 'location'
-    | 'observed_date'
-    | 'description'
-    | 'latitude'
-    | 'longitude'
-    | 'image_url'
-    | 'image_path'
-    | 'image_mime_type'
-    | 'image_size_bytes'
-    | 'status'
-  >
->;
+export interface ObservationContentUpdateRow {
+  name: string;
+  scientific_name: string | null;
+  taxon: Taxon;
+  location: string;
+  observed_date: string;
+  description: string | null;
+  latitude: number;
+  longitude: number;
+}

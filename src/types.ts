@@ -34,6 +34,18 @@ export interface CreateObservationInput {
   imagePreviewUrl?: string;
 }
 
+export interface OwnerObservationUpdateInput {
+  name: string;
+  scientificName?: string;
+  taxon: Taxon;
+  location: string;
+  date: string;
+  description?: string;
+  coords: Coordinates;
+}
+
+export type AdminObservationUpdateInput = OwnerObservationUpdateInput;
+
 export interface CreateObservationFormValues {
   name: string;
   scientificName: string;
