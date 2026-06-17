@@ -579,7 +579,7 @@ Status: implemented in app/UI code.
 - add dependencies
 - change Kakao Map code
 
-## Remaining Decisions Before 20H.5/20I
+## Remaining Decisions Before 20I
 
 - Decide whether owner updates can be protected safely with column grants plus RLS, or whether an owner-update RPC is required.
 - Decide whether the current 0003 `status` update grant needs to be split before owner edit ships.
@@ -595,10 +595,16 @@ Phase 20H moved the owner/admin edit RLS discussion into:
 - `docs/architecture/owner-admin-observation-edit-rls-plan.md`
 - `docs/architecture/sql-drafts/0004_owner_admin_observation_edit_draft.sql`
 
-The 20H recommendation is a hybrid field-protection model: repository payload whitelist plus column-level update grants, owner/admin RLS, and a protected-field trigger. The draft stays in `docs/architecture/sql-drafts/`; it was not applied to Supabase and was not promoted into `supabase/migrations/`.
+The 20H recommendation is a hybrid field-protection model: repository payload whitelist plus column-level update grants, owner/admin RLS, and a protected-field trigger. The 20H draft stayed in `docs/architecture/sql-drafts/` until the 20H.5 apply-readiness review.
 
-Remaining before 20H.5/20I:
+20H.5 result:
 
-- Decide whether to accept the trigger-guard approach or move to an owner-update RPC.
-- Decide whether to promote the 0004 draft to an apply-ready migration.
+- The hybrid strategy was accepted as the initial apply-ready direction.
+- `supabase/migrations/0004_owner_admin_observation_edit.sql` was added as an apply-ready migration candidate.
+- The SQL was not applied to Supabase by Codex.
+- RPC remains a fallback if the trigger/RLS/grant model is not sufficient after manual apply/smoke testing.
+
+Remaining before 20I:
+
+- Manually apply and verify `supabase/migrations/0004_owner_admin_observation_edit.sql` in dev/local Supabase after approval.
 - Decide whether edit permission data is exposed as internal `observerId` or repository-level `canEdit` metadata.

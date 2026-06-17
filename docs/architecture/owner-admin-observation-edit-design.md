@@ -411,3 +411,13 @@ Phase 20H completed the DB/RLS implementation plan and draft-only SQL in:
 20H recommends a hybrid model: repository payload whitelist plus column-level grants, owner/admin RLS, and a protected-field trigger. RPC remains a fallback if the grant/RLS/trigger approach is not accepted in the 20H.5 apply-readiness review.
 
 The 0004 SQL draft was not applied to Supabase and was not placed in `supabase/migrations/`.
+
+## 20H.5 Apply-Readiness Result
+
+Phase 20H.5 accepted the hybrid trigger/RLS/grant model for a dev/local apply-ready migration candidate:
+
+- `supabase/migrations/0004_owner_admin_observation_edit.sql`
+
+Codex did not apply the SQL. The next step is manual dev/local apply and verification before 20I repository update methods.
+
+RPC remains a fallback if the trigger/RLS/grant approach fails apply-readiness or smoke testing.

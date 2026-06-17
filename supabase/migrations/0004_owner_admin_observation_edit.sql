@@ -1,31 +1,29 @@
--- DRAFT ONLY, NOT APPLIED.
--- Do not run without explicit approval and a 20H.5 apply-readiness review.
+-- Owner/admin observation edit DB/RLS apply-ready migration candidate.
+-- MANUAL APPLY REQUIRED. NOT AUTO-APPLIED BY THIS SESSION.
 --
--- Purpose:
--- - Draft owner/admin observation edit DB/RLS field protection.
--- - Keep public reads approved-only.
--- - Keep pending/rejected observations hidden from public list/detail.
+-- This file was promoted from the reviewed phase 20H SQL draft during 20H.5.
+-- Codex did not apply this SQL to any Supabase project.
+--
+-- Apply only after:
+-- - 20H.5 apply-readiness review is accepted.
+-- - A dev/local Supabase manual apply window is approved.
+-- - Owner, non-owner, and admin test accounts are ready.
+-- - The manual checklist in docs/architecture/owner-admin-observation-edit-rls-plan.md is followed.
+--
+-- Goals:
+-- - Keep public observation reads approved-only.
+-- - Allow owner updates only on own approved observation content/location fields.
+-- - Preserve admin update authorization through public.is_admin().
+-- - Prevent owner changes to status, observer fields, image fields, image_url, and created_at.
 -- - Keep image replacement out of scope.
--- - Keep signed/public/blob/data URLs out of image_url.
 --
--- Placement:
--- - This file intentionally lives in docs/architecture/sql-drafts/.
--- - 20H.5 promoted an apply-ready migration candidate to
---   supabase/migrations/0004_owner_admin_observation_edit.sql.
--- - Keep this file as the historical draft source.
---
--- Assumptions:
--- - 0001_create_observation_schema.sql exists.
--- - 0002_create_observation_storage.sql exists.
--- - 0003_public_user_contribution.sql has been reviewed/applied before this
---   draft is promoted.
--- - public.set_updated_at() already exists and observations_set_updated_at
---   already maintains public.observations.updated_at.
---
--- Security notes:
--- - No service-role key is required or allowed in frontend code.
--- - Admin authorization continues to use public.is_admin().
--- - Owner authorization uses observations.observer_id = auth.uid().
+-- Non-goals:
+-- - No edit UI implementation.
+-- - No repository update implementation.
+-- - No image replacement workflow.
+-- - No Storage object update/delete policy.
+-- - No service-role key usage.
+-- - No rollback SQL in this migration file; rollback must be separately reviewed.
 
 begin;
 
@@ -65,8 +63,8 @@ grant update (
 -- ---------------------------------------------------------------------------
 -- Protected field guard
 -- ---------------------------------------------------------------------------
--- This trigger is a defense-in-depth guard for field-level invariants that RLS
--- alone cannot express. It is intentionally conservative for the MVP.
+-- Defense-in-depth guard for field-level invariants that RLS alone cannot
+-- express. It is intentionally conservative for the MVP.
 
 create or replace function public.guard_observation_edit_fields()
 returns trigger
@@ -129,6 +127,8 @@ begin
 end;
 $$;
 
+revoke all on function public.guard_observation_edit_fields() from public;
+
 drop trigger if exists observations_guard_edit_fields on public.observations;
 create trigger observations_guard_edit_fields
 before update on public.observations
@@ -186,13 +186,3 @@ with check (
 -- separately and re-verify public visibility invariants.
 
 commit;
-
--- ---------------------------------------------------------------------------
--- Rollback considerations, draft only
--- ---------------------------------------------------------------------------
--- If this draft is later promoted and applied, rollback should be a separate
--- reviewed migration. At minimum it would need to:
--- - drop trigger observations_guard_edit_fields on public.observations
--- - drop function public.guard_observation_edit_fields()
--- - restore the previously approved grants/policies
--- - re-run public approved-only and pending/rejected invisibility checks

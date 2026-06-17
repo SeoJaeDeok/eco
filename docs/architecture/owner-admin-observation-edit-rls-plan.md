@@ -200,6 +200,90 @@ The draft includes:
 
 No `supabase/migrations/0004...` file is created in 20H.
 
+## 20H.5 Apply-Readiness Review
+
+Status: completed.
+
+20H.5 reviewed the 0004 draft and accepted the hybrid field-protection strategy as the apply-ready candidate for dev/local manual testing:
+
+- repository payload whitelist
+- column-level `UPDATE` grants
+- owner update RLS
+- admin update RLS using `public.is_admin()`
+- protected-field trigger guard
+- RPC kept as a fallback, not the first implementation path
+
+The reviewed apply-ready migration candidate is:
+
+- `supabase/migrations/0004_owner_admin_observation_edit.sql`
+
+Codex did not apply this SQL to Supabase.
+
+### Trigger/RPC/Column-Grant Decision
+
+Decision: use the hybrid trigger/RLS/grant model first.
+
+Rationale:
+
+- Repository whitelist alone is not enough because clients can bypass UI code.
+- Column grants prevent writes to observer/image fields but cannot distinguish owner/admin app roles because Supabase uses the shared `authenticated` database role.
+- RLS provides row-level owner/admin boundaries.
+- The trigger provides old/new field invariants for status, observer fields, image fields, `image_url`, and `created_at`.
+- RPC is more restrictive but introduces a new function API and potential `security definer` review burden; keep it as fallback if 20K smoke shows the hybrid model is too hard to validate.
+
+### Apply-Ready Migration Notes
+
+The apply-ready candidate differs from the draft in these ways:
+
+- It lives in `supabase/migrations/0004_owner_admin_observation_edit.sql`.
+- Its header says manual apply is required and this session did not apply it.
+- It keeps rollback notes out of the migration body and leaves rollback as a separately reviewed operation.
+- It revokes direct execution on `public.guard_observation_edit_fields()` from `public`; the function is intended to run as a trigger, not as a frontend-callable function.
+
+## Manual Apply Checklist
+
+Apply only in a dev/local Supabase project first.
+
+Before applying:
+
+- Prepare owner A as a non-admin authenticated user.
+- Prepare non-owner B as a non-admin authenticated user.
+- Prepare an admin authenticated user.
+- Confirm owner A has an approved row created through the 20E path.
+- Record current observation status counts.
+- Confirm public approved-only baseline.
+- Confirm pending visible count is 0 for public reads.
+- Confirm rejected visible count is 0 for public reads.
+- Confirm there are no unexpected non-null or URL-like `image_url` values that would block admin updates under the `image_url is null` guard.
+- Confirm no `supabase/migrations/0004...` has already been applied in the target environment.
+
+After applying:
+
+- Confirm policy list includes public approved-only select, owner update, and admin update.
+- Confirm trigger `observations_guard_edit_fields` exists.
+- Confirm function `public.guard_observation_edit_fields()` exists.
+- Owner A can update allowed fields on their approved row.
+- Owner A cannot update `status`.
+- Owner A cannot update `image_path`.
+- Owner A cannot update `image_mime_type`.
+- Owner A cannot update `image_size_bytes`.
+- Owner A cannot update `image_url`.
+- Owner A cannot update `observer_id`.
+- Owner A cannot update `observer_display_name`.
+- Non-owner B cannot update owner A's row.
+- Anonymous users cannot update observations.
+- Admin can update allowed content fields.
+- Admin can update `status` through the admin path.
+- Updated approved row remains approved and visible in public list/detail.
+- Pending/rejected observations remain hidden from public list/detail.
+- No email, token, key, or password appears in UI or console logs.
+
+Rollback considerations:
+
+- Do not run ad hoc rollback during the 20H.5 review.
+- If rollback is needed after a future manual apply, draft a separate reviewed rollback migration.
+- At minimum rollback review must cover dropping `observations_guard_edit_fields`, dropping `public.guard_observation_edit_fields()`, restoring previous grants/policies, and re-running public visibility checks.
+
 ## Legacy Rows
 
 Existing rows with `observer_id is null`:
@@ -304,11 +388,12 @@ Minimum 20K verification:
 ## Rollout Sequence
 
 1. 20H: DB/RLS plan and SQL draft only.
-2. 20H.5: SQL draft apply-readiness review.
-3. 20I: repository update methods and mapper/type changes.
-4. 20J: edit UI implementation.
-5. 20K: owner/admin edit smoke and regression.
-6. 20L: optional image replacement design, only if separately needed.
+2. 20H.5: SQL draft apply-readiness review and apply-ready migration candidate.
+3. Manual apply of `supabase/migrations/0004_owner_admin_observation_edit.sql` in dev/local Supabase after explicit approval.
+4. 20I: repository update methods and mapper/type changes.
+5. 20J: edit UI implementation.
+6. 20K: owner/admin edit smoke and regression.
+7. 20L: optional image replacement design, only if separately needed.
 
 ## Explicit Non-Scope
 
@@ -329,10 +414,10 @@ Minimum 20K verification:
 - admin route exposure in `Navbar`
 - public exposure of pending/rejected observations
 
-## Remaining Decisions Before 20H.5/20I
+## Remaining Decisions Before 20I
 
-- Confirm whether the trigger-guard approach is accepted, or whether owner edit should use an RPC from the start.
-- Decide whether admin status updates can continue through direct table update with trigger/RLS guards.
+- Apply `supabase/migrations/0004_owner_admin_observation_edit.sql` manually in dev/local Supabase after approval.
+- Confirm owner/non-owner/admin update probes pass after the manual apply.
 - Decide whether the domain model should expose internal `observerId` or use repository-level permission metadata for edit buttons.
 - Decide mock repository update behavior for local UX testing.
-- Decide whether 20H.5 should promote the SQL draft to `supabase/migrations/0004_owner_admin_observation_edit.sql`.
+- Keep RPC as fallback only if manual apply or 20K smoke shows the hybrid trigger/RLS/grant model is not sufficient.
