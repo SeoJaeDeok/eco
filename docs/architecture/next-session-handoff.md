@@ -20,6 +20,7 @@ Read this together with:
 - `docs/architecture/phase-19-product-feature-prioritization.md`
 - `docs/architecture/owner-admin-observation-edit-design.md`
 - `docs/architecture/owner-admin-observation-edit-rls-plan.md`
+- `docs/eco/project-working-guide.md`
 - `docs/eco/phase-history/index.md`
 
 ## Current Completed Phases
@@ -67,7 +68,8 @@ Read this together with:
 - 19A next product feature prioritization
 - 19B public observation list filter/search UX improvement
 - 19C public observation list filter/search regression verification
-- Phase history archive for phases 1 through 19, plus a reusable bilingual phase template
+- Phase history archive for phases 1 through 20, plus a reusable bilingual phase template
+- Project working guide for source-of-truth hierarchy, phase workflow, feature triage, verification, and commit/push routine
 - 20A public Navbar alignment fix
 - 20B public user auth/contribution design
 - 20C public user contribution DB/RLS migration draft
@@ -421,7 +423,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20K owner/admin edit live smoke passed by user manual verification. Phase 20 core feature set is complete, and the next recommended step is writing docs/eco/phase-history/phase-20.md. Repository update payloads are content-only and exclude status/image/observer fields. The expected 0004 update triggers are connected in dev/local Supabase, production was not changed, and Codex did not apply SQL.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/eco/project-working-guide.md. Do not modify code yet. Phase 20 core feature set and Phase 20 history archive are complete. Repository update payloads are content-only and exclude status/image/observer fields. The expected 0004 update triggers are connected in dev/local Supabase, production was not changed, and Codex did not apply SQL. The next step is choosing the Phase 21/product polish direction.
 ```
 
 ## Recommended Phase 16 Direction
@@ -1371,7 +1373,7 @@ Not implemented in 20J:
 Recommended next phase:
 
 1. 20K passed by user manual verification.
-2. Write the Phase 20 history archive entry.
+2. Phase 20 history archive was completed after this checkpoint.
 3. Keep malicious direct protected-field update attempts as an optional hardening check.
 
 ### 20K: Owner/Admin Observation Edit Smoke And Regression
@@ -1427,8 +1429,9 @@ Recommended next phase:
 
 1. Phase 20 history archive entry is now recorded in `docs/eco/phase-history/phase-20.md`.
 2. `docs/eco/phase-history/index.md` now includes the Phase 20 row.
-3. Next work can choose the Phase 21/product polish direction.
-4. Optionally run malicious direct protected-field update attempts later as a hardening check.
+3. Project working guide is now recorded in `docs/eco/project-working-guide.md`.
+4. Next work can choose the Phase 21/product polish direction.
+5. Optionally run malicious direct protected-field update attempts later as a hardening check.
 
 ## Missing Features
 

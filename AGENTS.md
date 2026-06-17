@@ -81,6 +81,8 @@ Completed and verified:
 - 20K owner/admin edit live smoke/regression is complete. The user verified owner allowed-field edit, detail/list refresh, protected fields hidden in UI, DB protected fields unchanged, non-owner edit hidden/denied, anonymous edit hidden, admin edit, admin route hidden from `Navbar`, updated approved row public visibility, pending/rejected public invisibility, no URL-like `image_url`, and console/log secret checks.
 - Malicious direct protected-field update attempts were not separately run and remain an optional hardening check.
 - Phase 20 core feature set is complete: public login/upload gate, authenticated approved contribution, safe observer display, owner/admin content edit, and owner/admin edit smoke are implemented or documented.
+- Phase 20 history archive is complete in `docs/eco/phase-history/phase-20.md`.
+- Project working guide is documented in `docs/eco/project-working-guide.md`.
 - General public routes still load, and public read methods remain approved-only in repository code. Pending/rejected rows must remain hidden from public list/detail.
 
 ## Next Starting Point
@@ -88,17 +90,18 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-Phase 20 history archive
+Phase 21/product polish decision point
 ```
 
 Recommended sequence:
 
-1. Add the Phase 20 history archive entry in `docs/eco/phase-history/phase-20.md`.
-2. Update `docs/eco/phase-history/index.md` after the Phase 20 entry is written.
-3. Keep malicious direct protected-field update attempts as an optional hardening check, not as a blocker for the recorded 20K PASS.
-4. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
-5. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
-6. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
+1. Use `docs/eco/project-working-guide.md` for the working process and source-of-truth hierarchy.
+2. Choose the next Phase 21/product polish direction before implementation.
+3. Candidate directions include deployment/domain readiness, upload UX polish, admin review UX polish, map-list sync, content expansion, and operations hardening follow-up.
+4. Keep malicious direct protected-field update attempts as an optional hardening check, not as a blocker for the recorded 20K PASS.
+5. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
+6. Start a separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
+7. Continue monitoring rejected/orphan image cleanup and anonymous upload thresholds.
 
 ## New Session Entry Checklist
 
@@ -107,15 +110,16 @@ At the beginning of a new Codex session:
 1. Read `AGENTS.md`.
 2. Read `README.md`.
 3. Read `docs/architecture/next-session-handoff.md`.
-4. Run `git status --short --branch`.
-5. Confirm `.env.local` is not tracked.
-6. Do not modify code yet.
-7. First report the current state summary and the intended next step.
+4. Read `docs/eco/project-working-guide.md` when the session needs workflow or phase-process guidance.
+5. Run `git status --short --branch`.
+6. Confirm `.env.local` is not tracked.
+7. Do not modify code yet.
+8. First report the current state summary and the intended next step.
 
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20K owner/admin edit live smoke passed by user manual verification. Phase 20 core feature set is complete, and the next recommended step is writing `docs/eco/phase-history/phase-20.md`.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/eco/project-working-guide.md. Do not modify code yet. Phase 20 core feature set and Phase 20 history archive are complete. The next step is choosing the Phase 21/product polish direction.
 ```
 
 ## Current Stack
@@ -450,6 +454,7 @@ npm.cmd audit --audit-level=high
 - Phase 20I: Owner/admin observation update repository methods implemented without edit UI or additional SQL/RLS.
 - Phase 20J: Owner/admin observation edit UI implemented in the public detail modal without image replacement or additional SQL/RLS.
 - Phase 20K: Owner/admin edit live smoke/regression passed by user manual verification; malicious direct protected-field update attempts remain optional hardening.
+- Phase 20 history archive: Phase 20 record added to `docs/eco/phase-history/phase-20.md`.
 
 ## Review Checklist Before Final Response
 

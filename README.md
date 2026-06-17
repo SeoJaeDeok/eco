@@ -41,6 +41,8 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Owner/admin observation update repositories: implemented in phase 20I with content-only owner/admin update methods and protected fields excluded from update payloads
 - Owner/admin observation edit UI: implemented in phase 20J inside the public observation detail modal for signed-in owners/admins, with content-only fields and no image replacement
 - Owner/admin observation edit smoke: 20K live owner/non-owner/admin edit smoke passed by user manual verification; malicious direct protected-field update attempts remain optional hardening
+- Phase 20 history archive: completed in `docs/eco/phase-history/phase-20.md`
+- Project working guide: documented in `docs/eco/project-working-guide.md`
 
 ## Implemented Features
 
@@ -204,6 +206,9 @@ docs/architecture/
 docs/eco/phase-history/
   Concise bilingual completed-phase history archive and template for future phase records.
 
+docs/eco/project-working-guide.md
+  Operating guide for new sessions, phase workflow, verification, and commit/push process.
+
 docs/adr/
   Architecture decision records.
 ```
@@ -254,8 +259,8 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Write the Phase 20 history archive entry in `docs/eco/phase-history/phase-20.md`.
-2. Update `docs/eco/phase-history/index.md` after the Phase 20 entry is written.
+1. Choose the next Phase 21/product polish direction before implementation.
+2. Candidate next directions: deployment/domain readiness, upload UX polish, admin review UX polish, map-list sync, content expansion, or operations hardening follow-up.
 3. Keep malicious direct protected-field update attempts as an optional hardening check.
 4. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
 5. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
@@ -265,5 +270,5 @@ Recommended next phase:
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20K owner/admin edit live smoke passed by user manual verification. Phase 20 core feature set is complete, and the next recommended step is writing docs/eco/phase-history/phase-20.md.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/eco/project-working-guide.md. Do not modify code yet. Phase 20 core feature set and Phase 20 history archive are complete. The next step is choosing the Phase 21/product polish direction.
 ```

@@ -21,9 +21,10 @@ This archive is intentionally split into one Markdown file per phase. That struc
 - Use this index to find the phase file you need.
 - Use each phase file for historical context, not for current runtime configuration.
 - Check `docs/architecture/next-session-handoff.md` before starting new work.
+- Use `docs/eco/project-working-guide.md` for the project workflow and decision process.
 - When facts are not explicitly recorded in project docs or commits, phase files say so instead of guessing.
 
-**한국어:** 필요한 phase 파일을 찾을 때는 이 index를 사용하되, 실제 다음 작업 전에는 `next-session-handoff.md`를 먼저 확인합니다. 문서나 커밋으로 확인되지 않은 내용은 추정하지 않고 명시적으로 불확실하다고 적습니다.
+**한국어:** 필요한 phase 파일을 찾을 때는 이 index를 사용하되, 실제 다음 작업 전에는 `next-session-handoff.md`를 먼저 확인합니다. 작업 방식과 의사결정 흐름은 `docs/eco/project-working-guide.md`를 참고하고, 문서나 커밋으로 확인되지 않은 내용은 추정하지 않고 명시적으로 불확실하다고 적습니다.
 
 ## Phase Files
 
