@@ -440,4 +440,22 @@ Recorded result:
 - trigger presence was not checked in the provided screenshot set and remains a read-only SQL Editor TODO.
 - actual owner/non-owner/admin update attempts are not yet run because repository update methods and edit UI are not implemented.
 
-20I can proceed to repository update methods after confirming trigger presence and preserving the same non-scope boundaries: no image replacement, no admin Navbar exposure, and no public pending/rejected visibility.
+20I can proceed to repository update methods only after trigger presence is confirmed and public pending/rejected visibility is safe. The same non-scope boundaries remain: no image replacement, no admin Navbar exposure, and no public pending/rejected visibility.
+
+## 20H.7 Trigger And Visibility Result
+
+The user confirmed both expected `public.observations` update triggers are connected:
+
+- `observations_guard_edit_fields`, `BEFORE UPDATE`.
+- `observations_set_updated_at`, `BEFORE UPDATE`.
+
+The user also reported:
+
+- public approved list loads: pass.
+- pending visible in public list/detail: yes.
+- rejected visible in public list/detail: yes.
+- console/log secret exposure: pass.
+
+This is recorded as a PARTIAL/FAIL visibility result, not a public visibility PASS. Pending/rejected rows may exist in the database, but they must not appear in public list/detail UI or public repository reads.
+
+Before 20I repository update methods proceed against this environment, clarify whether "yes" means the check was performed or the rows were actually visible. If rows were actually visible, run a focused public visibility investigation/fix before owner/admin edit implementation.

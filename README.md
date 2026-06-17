@@ -36,7 +36,8 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Owner/admin observation edit design: completed in phase 20G in `docs/architecture/owner-admin-observation-edit-design.md`; edit UI and SQL/RLS application are not implemented
 - Owner/admin observation edit RLS plan: completed in phase 20H in `docs/architecture/owner-admin-observation-edit-rls-plan.md`; SQL draft is in `docs/architecture/sql-drafts/0004_owner_admin_observation_edit_draft.sql` only and was not applied
 - Owner/admin observation edit SQL readiness: completed in phase 20H.5; apply-ready candidate `supabase/migrations/0004_owner_admin_observation_edit.sql` was added but not applied by Codex
-- Owner/admin observation edit manual apply result: documented in phase 20H.6; the user manually applied 0004 in dev/local Supabase, production was not changed, and trigger presence remains a read-only SQL Editor TODO before 20I
+- Owner/admin observation edit manual apply result: documented in phase 20H.6; the user manually applied 0004 in dev/local Supabase and production was not changed
+- Owner/admin observation edit trigger/visibility check: documented in phase 20H.7; expected 0004 triggers are connected, but pending/rejected were reported as visible in public list/detail and must be clarified or fixed before 20I
 
 ## Implemented Features
 
@@ -80,8 +81,9 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 20H owner/admin observation edit DB/RLS plan and SQL draft
 - Phase 20H.5 owner/admin observation edit SQL apply-readiness review
 - Phase 20H.6 owner/admin edit 0004 manual apply result documentation
+- Phase 20H.7 owner/admin edit trigger and public visibility documentation
 
-Approved observations appear in the public list. Pending and rejected observations do not appear in the public list.
+Approved observations should appear in the public list. Pending and rejected observations must not appear in the public list/detail; 20H.7 recorded a user-reported visibility blocker that needs clarification or a fix before 20I.
 
 ## Admin Access
 
@@ -247,18 +249,19 @@ Admin approval flow is documented in:
 
 Recommended next phase:
 
-1. Confirm protected-field and `updated_at` trigger presence with the read-only trigger query in `docs/architecture/owner-admin-observation-edit-rls-plan.md`.
-2. Start 20I repository update methods after trigger presence is confirmed.
-3. Keep owner/admin edit UI deferred until repository update methods are accepted.
-4. Run owner/non-owner/admin update probes in 20K after repository and UI paths exist.
-5. If launch needs field-level evidence for the non-admin contributor row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
-6. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
-7. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
-8. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
-9. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
+1. Clarify whether the 20H.7 `pending/rejected visible: yes` result means the rows were actually visible in public list/detail.
+2. If pending/rejected are actually visible, run a focused public visibility investigation/fix before owner/admin edit work.
+3. If public visibility is corrected to pending/rejected hidden, start 20I repository update methods.
+4. Keep owner/admin edit UI deferred until repository update methods are accepted.
+5. Run owner/non-owner/admin update probes in 20K after repository and UI paths exist.
+6. If launch needs field-level evidence for the non-admin contributor row, recheck `status`, `observer_id`, safe `observer_display_name`, image metadata, and URL-like `image_url` before edit implementation.
+7. 18F: CAPTCHA/rate-limit implementation design only if monitoring thresholds are exceeded or launch risk changes.
+8. Separately approved cleanup implementation phase only after phase-label confirmation and the 18E safety preconditions are met.
+9. Re-run Kakao map fallback/regression checks after future map provider, layout, Kakao app/domain, or repository visibility changes.
+10. Re-run the Storage smoke checklist after future Storage, RLS, admin review, or public detail changes.
 
 For a new Codex session, start with:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H.6 owner/admin edit 0004 manual apply result documentation is complete. The user manually applied 0004 in dev/local Supabase, production was not changed, and Codex did not apply SQL/RLS. The next recommended step is read-only trigger confirmation, then 20I repository update methods. Edit UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H.7 owner/admin edit trigger and visibility documentation is complete. The expected 0004 triggers are connected in dev/local Supabase, production was not changed, and Codex did not apply SQL/RLS. Pending/rejected were reported as visible in public list/detail; clarify or fix that public visibility blocker before 20I repository update methods. Edit UI, owner edit, and admin edit are not implemented yet.
 ```

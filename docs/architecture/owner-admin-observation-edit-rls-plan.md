@@ -324,6 +324,52 @@ Remaining apply validation:
 - Full public pending/rejected invisibility was not rerun in this 20H.6 screenshot set.
 - 20I repository update methods and 20J edit UI are still required before full owner/admin edit smoke can run through the app.
 
+## 20H.7 Trigger And Public Visibility Confirmation
+
+Status: PARTIAL, with one public visibility blocker reported.
+
+Codex did not run SQL or apply additional RLS changes in 20H.7. This section records user-reported checks only.
+
+Trigger confirmation:
+
+- Protected-field trigger connected to `public.observations`: yes.
+  - Trigger name: `observations_guard_edit_fields`.
+  - Event: `UPDATE`.
+  - Table: `observations`.
+  - Timing: `BEFORE`.
+- `updated_at` trigger connected to `public.observations`: yes.
+  - Trigger name: `observations_set_updated_at`.
+  - Event: `UPDATE`.
+  - Table: `observations`.
+  - Timing: `BEFORE`.
+
+Public visibility confirmation:
+
+- Public approved list loads: pass.
+- Pending visible in public list/detail: reported `yes`.
+- Rejected visible in public list/detail: reported `yes`.
+- Console/log secret exposure: pass.
+
+Interpretation:
+
+- The trigger connection check passed.
+- The reported pending/rejected public visibility result is not acceptable for the project security model.
+- Pending/rejected rows may exist in the database, but they must not be visible in public list/detail UI or public repository reads.
+- Because the user reported pending/rejected as visible in public list/detail, 20H.7 public visibility is recorded as FAIL/PARTIAL, not PASS.
+- Do not start owner/admin edit repository implementation against this environment until the public visibility result is clarified and corrected.
+
+Remaining validation:
+
+- Recheck whether the reported `yes` means "check performed" or "actually visible".
+- If pending/rejected were actually visible, run a focused public visibility investigation before 20I.
+- Confirm the public repository still queries only `status = 'approved'`.
+- Confirm no public detail path can load pending/rejected rows by id.
+- Actual owner allowed-field update has not been tested.
+- Actual owner protected-field update denial has not been tested.
+- Actual non-owner update denial has not been tested.
+- Actual anonymous update denial has not been tested.
+- Actual admin update has not been tested.
+
 ## Manual Apply Checklist
 
 Apply only in a dev/local Supabase project first.
@@ -474,11 +520,12 @@ Minimum 20K verification:
 1. 20H: DB/RLS plan and SQL draft only.
 2. 20H.5: SQL draft apply-readiness review and apply-ready migration candidate.
 3. 20H.6: manual dev/local apply result documentation.
-4. Confirm trigger presence with the read-only `information_schema.triggers` query above.
-5. 20I: repository update methods and mapper/type changes.
-6. 20J: edit UI implementation.
-7. 20K: owner/admin edit smoke and regression.
-8. 20L: optional image replacement design, only if separately needed.
+4. 20H.7: trigger confirmation and public visibility check documentation.
+5. Recheck/fix public pending/rejected visibility if the reported `yes` means the rows were actually visible.
+6. 20I: repository update methods and mapper/type changes after public visibility is safe.
+7. 20J: edit UI implementation.
+8. 20K: owner/admin edit smoke and regression.
+9. 20L: optional image replacement design, only if separately needed.
 
 ## Explicit Non-Scope
 
@@ -501,7 +548,7 @@ Minimum 20K verification:
 
 ## Remaining Decisions Before 20I
 
-- Confirm protected-field and `updated_at` triggers exist with the read-only trigger query.
+- Resolve the 20H.7 pending/rejected public visibility report before implementing edit repository methods.
 - Decide whether 20I should include direct repository-level probe helpers or leave all update attempts for 20K UI/regression.
 - Decide whether the domain model should expose internal `observerId` or use repository-level permission metadata for edit buttons.
 - Decide mock repository update behavior for local UX testing.

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20H.6 owner/admin observation edit manual apply result documentation.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20H.7 owner/admin edit trigger and public visibility confirmation documentation.
 
 Read this together with:
 
@@ -82,10 +82,11 @@ Read this together with:
 - 20H owner/admin observation edit DB/RLS plan and SQL draft
 - 20H.5 owner/admin observation edit SQL apply-readiness review and migration candidate
 - 20H.6 owner/admin observation edit 0004 manual apply result documentation
+- 20H.7 owner/admin edit trigger and public visibility confirmation documentation
 
 ## Verified Current State
 
-- Public flow is normal:
+- Public routes load, with a 20H.7 visibility blocker to clarify:
   - Home
   - Biodiversity guide
   - Observation list
@@ -417,7 +418,7 @@ docs/eco/phase-history/index.md
 Use this prompt to start the next session:
 
 ```text
-Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H.6 owner/admin edit 0004 manual apply result documentation is complete. The user manually applied 0004 in dev/local Supabase, production was not changed, and Codex did not apply SQL. Trigger presence still needs read-only SQL Editor confirmation before 20I repository update methods. Edit UI, owner edit, and admin edit are not implemented yet.
+Read AGENTS.md, README.md, and docs/architecture/next-session-handoff.md. Do not modify code yet. Phase 20H.7 owner/admin edit trigger and public visibility confirmation documentation is complete. The expected 0004 update triggers are connected in dev/local Supabase, production was not changed, and Codex did not apply SQL. Public approved list loading passed, but pending/rejected were reported as visible in public list/detail; treat that as a visibility blocker to clarify or fix before 20I repository update methods. Edit UI, owner edit, and admin edit are not implemented yet.
 ```
 
 ## Recommended Phase 16 Direction
@@ -1221,11 +1222,52 @@ order by trigger_name;
 
 Recommended next phase:
 
-1. Ask the user to run the read-only trigger query above and confirm the protected-field and `updated_at` triggers exist.
-2. Start 20I repository update methods after trigger presence is confirmed.
+1. Trigger presence was later confirmed in 20H.7 below.
+2. Public pending/rejected visibility now needs clarification or a fix before 20I.
 3. Keep owner/admin edit UI deferred until repository update methods are accepted.
 4. Keep image replacement out of scope.
 5. Run full owner/non-owner/admin update smoke in 20K after repository and UI paths exist.
+
+### 20H.7: Owner/Admin Edit Trigger And Public Visibility Confirmation
+
+Completed as documentation-only work from the user's manual checks.
+
+Trigger check result:
+
+- Protected-field trigger connected to `public.observations`: yes.
+  - Trigger name: `observations_guard_edit_fields`.
+  - Event: `UPDATE`.
+  - Table: `observations`.
+  - Timing: `BEFORE`.
+- `updated_at` trigger connected to `public.observations`: yes.
+  - Trigger name: `observations_set_updated_at`.
+  - Event: `UPDATE`.
+  - Table: `observations`.
+  - Timing: `BEFORE`.
+
+Public visibility result:
+
+- Public approved list loads: pass.
+- Pending visible in public list/detail: reported `yes`.
+- Rejected visible in public list/detail: reported `yes`.
+- Console/log secret exposure: pass.
+
+Interpretation:
+
+- Trigger confirmation is complete for the expected 0004 update triggers.
+- The pending/rejected visibility report is a blocker unless "yes" meant only that the check was performed.
+- The project invariant is unchanged: pending/rejected rows may exist in the DB, but public list/detail and public repository reads must not show them.
+- This public visibility result is therefore recorded as PARTIAL/FAIL, not PASS.
+- Codex did not apply SQL/RLS in this phase.
+- Repository update methods, edit UI, image replacement, and owner/non-owner/admin update attempts remain unimplemented/not run.
+
+Recommended next phase:
+
+1. Clarify or rerun the public visibility check before 20I.
+2. If pending/rejected are actually visible in public list/detail, run a focused visibility investigation/fix before owner/admin edit work.
+3. If the public visibility result is corrected to pending/rejected hidden, continue to 20I repository update methods.
+4. Keep owner/admin edit UI deferred until repository update methods are accepted.
+5. Keep image replacement out of scope.
 
 ## Missing Features
 
