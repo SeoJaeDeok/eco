@@ -43,7 +43,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Owner/admin observation edit smoke: 20K live owner/non-owner/admin edit smoke passed by user manual verification; malicious direct protected-field update attempts remain optional hardening
 - Phase 20 history archive: completed in `docs/eco/phase-history/phase-20.md`
 - Project working guide: documented in `docs/eco/project-working-guide.md`
-- Phase 21 public UX stabilization: Navbar auth slot stabilization, public signup UI through `AuthRepository`, signed-image prefetch/retry, 20 MB app-side upload validation, map search/multi-taxon filtering, and taxonomy design docs are implemented. Live browser/account smoke is PARTIAL because browser automation and test credentials were unavailable in the implementation session.
+- Phase 21 public UX stabilization: Navbar auth slot stabilization, public signup UI through `AuthRepository`, signed-image prefetch/retry, 20 MB app-side upload validation, map search/multi-taxon filtering, and taxonomy design docs are implemented. Phase 21.5 local browser smoke passed for signed-out public UX paths; live account/backend/Kakao checks remain PARTIAL.
 - Public signup profile setup: draft-only profile auto-create SQL is documented in `docs/architecture/sql-drafts/0005_public_signup_profile_draft.sql`; it was not promoted to `supabase/migrations/` and was not applied by Codex.
 
 ## Implemented Features
@@ -94,6 +94,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Phase 20J owner/admin observation edit UI
 - Phase 20K owner/admin edit live smoke/regression documentation
 - Phase 21 public UX stabilization implementation and taxonomy design documentation
+- Phase 21.5 public UX hardening and verification documentation
 
 Approved observations should appear in the public list. Pending and rejected observations must not appear in the public list/detail; 20K manual smoke verified pending/rejected public invisibility.
 

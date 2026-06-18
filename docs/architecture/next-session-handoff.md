@@ -71,7 +71,7 @@ Read this together with:
 - 19A next product feature prioritization
 - 19B public observation list filter/search UX improvement
 - 19C public observation list filter/search regression verification
-- Phase history archive for phases 1 through 20, plus a reusable bilingual phase template
+- Phase history archive for phases 1 through 21, plus a reusable bilingual phase template
 - Project working guide for source-of-truth hierarchy, phase workflow, feature triage, verification, and commit/push routine
 - 20A public Navbar alignment fix
 - 20B public user auth/contribution design
@@ -91,10 +91,17 @@ Read this together with:
 - 20I owner/admin observation update repository methods
 - 20J owner/admin observation edit UI
 - 20K owner/admin observation edit smoke/regression passed by user manual verification.
+- 21 full public UX stabilization implementation from `fd02f71`.
+- 21.5 public UX hardening and verification from `8046de9`.
 
 ## Phase 21 Current Session Result
 
-Status: implemented with automated/static verification; live browser/account smoke remains PARTIAL.
+Status: implemented and Phase 21.5-hardened. Local signed-out browser smoke passed for the main public UX paths; live account, backend upload-limit, owner/admin, and Kakao normal-key checks remain PARTIAL.
+
+Commit references:
+
+- Base full Phase 21 implementation: `fd02f71 feat: stabilize public UX for phase 21`.
+- Phase 21.5 code hardening: `8046de9 fix: harden phase 21 public UX edges`.
 
 Implemented in app code:
 
@@ -121,7 +128,7 @@ Implemented in app code:
   - Unlimited upload remains intentionally unsupported.
 - 21E map search/filter:
   - The map page now supports client-side species/common/scientific-name search.
-  - Species suggestions group approved observations by normalized common/scientific name.
+  - Species suggestions group approved observations by normalized scientific name when present, falling back to common name.
   - Clicking a species suggestion filters the map to all matching approved observations.
   - Taxon filters support multi-select and reset.
   - Filtering stays client-side over observations returned by the active approved-only public repository.
@@ -137,9 +144,17 @@ Signup/Profile DB note:
 - Added `docs/architecture/public-signup-profile-setup-plan.md`.
 - The draft was not promoted to `supabase/migrations/` and was not applied by Codex.
 
+Phase 21.5 hardening notes:
+
+- Invalid image selections now clear stale selected file/preview state.
+- Oversized image selection copy states both accepted formats and the 20 MB app-side limit.
+- Detail image load failure hides the failed source behind the stable placeholder while the one-time repository refresh path runs.
+- Map species grouping was tightened so records sharing a scientific name are grouped together even if common names differ.
+
 Verification recorded in this session:
 
-- `git status --short --branch` initially reported `main...origin/main`.
+- `git status --short --branch` on the Phase 21.5 branch reported `feature/phase-21-full-hardening`.
+- Branch checks confirmed `backup/phase-21-before-return-to-phase-20` at `fd02f71`, `main` at `4da595e`, and `feature/phase-21-sequential` at `30ecd0e`.
 - `git ls-files -- .env .env.local .env.production dist node_modules` returned no tracked entries.
 - `npm.cmd run typecheck`: pass.
 - `npm.cmd run build`: pass.
@@ -147,8 +162,9 @@ Verification recorded in this session:
 - Static source scan found no Supabase client calls in public UI components or `src/App.tsx`.
 - Static source scan found no admin route exposure in `Navbar`; `#admin` remains only in app routing.
 - `git diff --check`: pass with line-ending warnings only.
-- Browser automation smoke: PARTIAL, because the in-app browser surface was unavailable and the repo has no Playwright dependency. No browser dependency was added.
-- Live login/logout/signup, upload with real Supabase account, owner/admin edit, Kakao normal-key render, and DB row checks were not run in this session.
+- Browser automation smoke: local headless Chrome passed for signed-out Navbar, public login/signup mode rendering, password mismatch validation, email-like nickname rejection, upload gate, image card/detail/reopen display, map search, species suggestion click, single/multiple taxon filters, reset, empty state, and secret-like console pattern check.
+- Read-only public DB/browser probe saw 13 approved rows, 0 visible non-approved rows, 3 approved rows with `image_path`, and 0 persisted URL-like `image_url` values.
+- Live login/logout/signup, upload with real Supabase account, owner/admin edit, and Kakao normal-key render were not run in Phase 21.5.
 
 Boundary result:
 
@@ -164,7 +180,7 @@ Important remaining checks:
 1. Run live Supabase login/logout/signup with non-secret test credentials.
 2. If signup creates an active session without a profile row, review/apply the draft-only 0005 profile trigger in a separate approved DB phase.
 3. Re-run upload size smoke against the real backend before claiming Supabase accepts files above the backend-configured limit. Existing 0002 Storage docs and DB constraints still document a 5 MB backend limit.
-4. Run desktop/tablet/mobile browser checks for Navbar no-shift, map filters, upload gate, image prefetch, and static/Kakao fallback.
+4. Run desktop/tablet/mobile visual checks for Navbar no-shift, map filters, upload gate, image prefetch, and static/Kakao fallback.
 5. Re-run public pending/rejected invisibility checks against Supabase after any DB/profile/signup change.
 
 ## Verified Current State
@@ -1515,7 +1531,7 @@ Recommended next phase:
 
 - Naver Map, Leaflet, or MapLibre provider
 - Automated rejected/orphan image cleanup
-- Public self-sign-up and display-name setup UI
+- Public signup profile auto-create SQL application and live signup/account smoke
 - Reject note
 - Audit log
 - Bulk approval

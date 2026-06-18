@@ -83,6 +83,9 @@ Completed and verified:
 - Phase 20 core feature set is complete: public login/upload gate, authenticated approved contribution, safe observer display, owner/admin content edit, and owner/admin edit smoke are implemented or documented.
 - Phase 20 history archive is complete in `docs/eco/phase-history/phase-20.md`.
 - Project working guide is documented in `docs/eco/project-working-guide.md`.
+- Phase 21 full public UX stabilization is implemented from `fd02f71`: Navbar auth-slot stabilization, public signup, image prefetch/retry, 20 MB app-side upload validation, map search/multi-taxon filtering, and taxonomy design docs.
+- Phase 21.5 public UX hardening is implemented from `8046de9`: stale invalid image selections are cleared, failed detail images use the stable placeholder during one-time refresh, and map species grouping keys by scientific name when present.
+- Phase 21.5 local signed-out browser smoke passed for Navbar/login-signup/upload gate/image/map paths; live account, backend upload-limit, owner/admin, and Kakao normal-key checks remain PARTIAL.
 - General public routes still load, and public read methods remain approved-only in repository code. Pending/rejected rows must remain hidden from public list/detail.
 
 ## Next Starting Point
@@ -90,13 +93,13 @@ Completed and verified:
 The next recommended step starts at:
 
 ```text
-Phase 21/product polish decision point
+Post-Phase 21 product polish decision point
 ```
 
 Recommended sequence:
 
 1. Use `docs/eco/project-working-guide.md` for the working process and source-of-truth hierarchy.
-2. Choose the next Phase 21/product polish direction before implementation.
+2. Choose the next post-Phase 21/product polish direction before implementation.
 3. Candidate directions include deployment/domain readiness, upload UX polish, admin review UX polish, map-list sync, content expansion, and operations hardening follow-up.
 4. Keep malicious direct protected-field update attempts as an optional hardening check, not as a blocker for the recorded 20K PASS.
 5. Start 18F CAPTCHA/rate-limit design only if monitoring thresholds are exceeded or launch risk changes.
@@ -119,7 +122,7 @@ At the beginning of a new Codex session:
 Suggested new-session prompt:
 
 ```text
-Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/eco/project-working-guide.md. Do not modify code yet. Phase 20 core feature set and Phase 20 history archive are complete. The next step is choosing the Phase 21/product polish direction.
+Read AGENTS.md, README.md, docs/architecture/next-session-handoff.md, and docs/eco/project-working-guide.md. Do not modify code yet. Phase 21 and Phase 21.5 public UX stabilization/hardening are complete with partial live-account checks. The next step is choosing the post-Phase 21/product polish direction.
 ```
 
 ## Current Stack
@@ -455,6 +458,7 @@ npm.cmd audit --audit-level=high
 - Phase 20J: Owner/admin observation edit UI implemented in the public detail modal without image replacement or additional SQL/RLS.
 - Phase 20K: Owner/admin edit live smoke/regression passed by user manual verification; malicious direct protected-field update attempts remain optional hardening.
 - Phase 20 history archive: Phase 20 record added to `docs/eco/phase-history/phase-20.md`.
+- Phase 21: Public UX stabilization and taxonomy design completed with Phase 21.5 hardening verification; live account/backend/Kakao checks remain partial.
 
 ## Review Checklist Before Final Response
 
