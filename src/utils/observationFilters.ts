@@ -36,7 +36,11 @@ const normalizeSearchText = (value: string) => {
 };
 
 export const getObservationSpeciesKey = (observation: Pick<Observation, 'name' | 'scientificName'>) => {
-  return `${normalizeSearchText(observation.name)}|${normalizeSearchText(observation.scientificName)}`;
+  const scientificName = normalizeSearchText(observation.scientificName);
+
+  return scientificName
+    ? `scientific:${scientificName}`
+    : `name:${normalizeSearchText(observation.name)}`;
 };
 
 export const matchesObservationSearchQuery = (observation: Observation, searchQuery: string) => {
