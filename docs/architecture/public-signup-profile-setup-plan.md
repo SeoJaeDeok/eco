@@ -1,5 +1,13 @@
 # Public Signup Profile Setup Plan
 
+> Phase 22A note: this Phase 21 draft plan is now superseded for apply
+> readiness by
+> `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`
+> and the migration candidate
+> `supabase/migrations/0005_public_signup_profile_provisioning.sql`.
+> Keep `docs/architecture/sql-drafts/0005_public_signup_profile_draft.sql`
+> as historical draft context only; do not apply it directly.
+
 ## Purpose
 
 Phase 21B adds public signup UI through `AuthRepository`, but direct approved contribution still requires a matching `public.profiles` row because `observations.observer_id` references `public.profiles(id)`.

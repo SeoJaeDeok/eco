@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after phase 20K owner/admin edit smoke verification.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 22A signup profile provisioning preparation.
 
 Read this together with:
 
@@ -21,6 +21,7 @@ Read this together with:
 - `docs/architecture/owner-admin-observation-edit-design.md`
 - `docs/architecture/owner-admin-observation-edit-rls-plan.md`
 - `docs/architecture/public-signup-profile-setup-plan.md`
+- `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`
 - `docs/architecture/taxonomy-resolution-design.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/eco/project-working-guide.md`
@@ -93,6 +94,7 @@ Read this together with:
 - 20K owner/admin observation edit smoke/regression passed by user manual verification.
 - 21 full public UX stabilization implementation from `fd02f71`.
 - 21.5 public UX hardening and verification from `8046de9`, `e2dc23d`, and `6cada30`.
+- 22A signup profile provisioning apply-readiness prepared on `feature/phase-22-signup-profile-provisioning`.
 
 ## Phase 21 Current Session Result
 
@@ -188,6 +190,67 @@ Important remaining checks:
 3. Re-run upload size smoke against the real backend before claiming Supabase accepts files above the backend-configured limit. Existing 0002 Storage docs and DB constraints still document a 5 MB backend limit.
 4. Run desktop/tablet/mobile visual checks for Navbar no-shift, map filters, upload gate, image prefetch, and static/Kakao fallback.
 5. Re-run public pending/rejected invisibility checks against Supabase after any DB/profile/signup change.
+
+## Phase 22A Current Session Result
+
+Status: apply-ready migration candidate and manual-apply documentation prepared. The migration was not applied by Codex, no real test user was created, and no live signup was run.
+
+Commit/source references:
+
+- Phase 20 baseline: `4da595e docs: record owner edit smoke results`.
+- Phase 21 source commit: `1addd94 docs: record phase 21 verification results`.
+- Current working branch: `feature/phase-22-signup-profile-provisioning`.
+- Push status: not pushed.
+
+Implemented as migration/docs only:
+
+- Added `supabase/migrations/0005_public_signup_profile_provisioning.sql` as a manual-review migration candidate.
+- Added `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`.
+- Updated `docs/architecture/public-signup-profile-setup-plan.md` to mark the older draft as historical context.
+
+Schema findings recorded:
+
+- `public.profiles.id` is the profile primary key and references `auth.users(id)` with cascade delete.
+- `public.profiles.role` is constrained to `user` or `admin`, defaulting to `user`.
+- `public.profiles.display_name` is nullable and must be non-blank when present.
+- `public.observations.observer_id` is nullable and references `public.profiles(id)` with `on delete set null`.
+- Existing frontend roles do not have broad `public.profiles` insert access.
+
+Chosen strategy:
+
+- A narrowly scoped `auth.users` insert trigger provisions one matching `public.profiles` row.
+- Function: `public.provision_public_profile_for_new_auth_user()`.
+- Trigger: `auth_users_provision_public_profile`.
+- New rows always use `role = 'user'`.
+- The trigger reads only safe `display_name` metadata and never uses email as a public display-name fallback.
+- Existing profile rows are not overwritten because the insert uses `on conflict (id) do nothing`.
+
+Boundary result:
+
+- App code was not changed.
+- Package files were not changed.
+- Storage policies and bucket settings were not changed.
+- Kakao provider internals were not changed.
+- Admin UI/repository behavior was not changed.
+- Public approved-only observation visibility policies were not changed.
+- The migration candidate does not grant broad profile insert/update access.
+
+Manual next step:
+
+1. Review `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`.
+2. Run the documented read-only preflight queries in the intended dev/local Supabase environment.
+3. Stop if an existing signup/profile trigger is found.
+4. Manually apply `supabase/migrations/0005_public_signup_profile_provisioning.sql` only to the intended environment.
+5. Run the documented post-apply verification queries.
+6. Run Phase 22B live signup/contribution smoke with approved disposable credentials.
+
+Remaining Phase 22 risks:
+
+- Existing Auth users without profiles need a separate reviewed backfill decision.
+- Live signup and email-confirmation behavior remain not run.
+- New-user observation create after provisioning remains not run.
+- Owner/admin edit regression after applying the migration remains not run.
+- Production/domain smoke remains not run.
 
 ## Verified Current State
 
