@@ -84,7 +84,7 @@ Completed and verified:
 - Phase 20 history archive is complete in `docs/eco/phase-history/phase-20.md`.
 - Project working guide is documented in `docs/eco/project-working-guide.md`.
 - Phase 21 full public UX stabilization is implemented from `fd02f71`: Navbar auth-slot stabilization, public signup, image prefetch/retry, 20 MB app-side upload validation, map search/multi-taxon filtering, and taxonomy design docs.
-- Phase 21.5 public UX hardening is implemented from `8046de9`: stale invalid image selections are cleared, failed detail images use the stable placeholder during one-time refresh, and map species grouping keys by scientific name when present.
+- Phase 21.5 public UX hardening is implemented from `8046de9` and `6cada30`: stale invalid image selections are cleared, failed detail images use the stable placeholder during one-time refresh, map species grouping keys by scientific name when present, Navbar display-name output has an App-level safe fallback, and signed-image prefetch cache size is bounded.
 - Phase 21.5 local signed-out browser smoke passed for Navbar/login-signup/upload gate/image/map paths; live account, backend upload-limit, owner/admin, and Kakao normal-key checks remain PARTIAL.
 - General public routes still load, and public read methods remain approved-only in repository code. Pending/rejected rows must remain hidden from public list/detail.
 

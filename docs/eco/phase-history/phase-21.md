@@ -24,7 +24,9 @@ Verified with Phase 21.5 hardening checks. Live account, backend upload-limit, a
   - invalid image selections now clear stale selected image state;
   - oversized image copy states both accepted formats and the 20 MB app-side limit;
   - failed detail images show the stable placeholder while the one-time repository refresh path runs;
-  - map species grouping keys by scientific name when present, so matching scientific names group together.
+  - map species grouping keys by scientific name when present, so matching scientific names group together;
+  - Navbar display-name output uses the safe display-name helper at the App boundary;
+  - signed-image prefetch cache prunes expired entries and evicts oldest entries after a fixed cap.
 
 **한국어:** Phase 21A~21F 구현/설계에 더해 Phase 21.5에서 이미지 선택, 이미지 실패 표시, species grouping을 작게 보강했습니다.
 
@@ -54,6 +56,7 @@ Verified with Phase 21.5 hardening checks. Live account, backend upload-limit, a
 - Base full Phase 21 commit `fd02f71`: `npm.cmd run typecheck`, `npm.cmd run build`, and `git diff --check` passed in the implementation session.
 - Phase 21.5 branch setup confirmed `backup/phase-21-before-return-to-phase-20` still points to `fd02f71`, `main` still points to `4da595e`, and `feature/phase-21-sequential` still points to `30ecd0e`.
 - Phase 21.5 code hardening commit `8046de9`: `npm.cmd run typecheck`, `npm.cmd run build`, and `git diff --check` passed before commit.
+- Phase 21.5 follow-up code hardening commit `6cada30`: `npm.cmd run typecheck`, `npm.cmd run build`, text hygiene checks, and a secret-like worktree diff scan passed before commit.
 - Phase 21.5 headless local Chrome smoke passed for:
   - signed-out Navbar without admin exposure;
   - auth panel login/signup mode rendering;
@@ -97,13 +100,16 @@ Verified with Phase 21.5 hardening checks. Live account, backend upload-limit, a
 
 - `fd02f71 feat: stabilize public UX for phase 21`
 - `8046de9 fix: harden phase 21 public UX edges`
+- `e2dc23d docs: record phase 21 hardening verification`
+- `6cada30 fix: harden phase 21 public UX`
 
-**한국어:** Phase 21 전체 구현 base commit과 Phase 21.5 code hardening commit입니다.
+**한국어:** Phase 21 전체 구현 base commit과 Phase 21.5 code/docs hardening commit입니다.
 
 ## Notes
 
 - `feature/phase-21-full-hardening` was created from `fd02f71`; the preserved backup branch was not edited directly.
 - `feature/phase-21-sequential` remains separate and unchanged.
+- Phase 21.5 has not been pushed.
 - No package files, Supabase migrations/RLS, Storage policies, Kakao provider internals, or admin repository behavior changed in Phase 21.5.
 
-**한국어:** hardening branch는 `fd02f71`에서 분기했고, backup/sequential/main branch는 보존했습니다. Phase 21.5는 package, migration/RLS, Storage policy, Kakao provider, admin repository를 바꾸지 않았습니다.
+**한국어:** hardening branch는 `fd02f71`에서 분기했고, backup/sequential/main branch는 보존했습니다. Phase 21.5는 push하지 않았으며 package, migration/RLS, Storage policy, Kakao provider, admin repository를 바꾸지 않았습니다.

@@ -92,7 +92,7 @@ Read this together with:
 - 20J owner/admin observation edit UI
 - 20K owner/admin observation edit smoke/regression passed by user manual verification.
 - 21 full public UX stabilization implementation from `fd02f71`.
-- 21.5 public UX hardening and verification from `8046de9`.
+- 21.5 public UX hardening and verification from `8046de9`, `e2dc23d`, and `6cada30`.
 
 ## Phase 21 Current Session Result
 
@@ -102,6 +102,10 @@ Commit references:
 
 - Base full Phase 21 implementation: `fd02f71 feat: stabilize public UX for phase 21`.
 - Phase 21.5 code hardening: `8046de9 fix: harden phase 21 public UX edges`.
+- Phase 21.5 documentation closure: `e2dc23d docs: record phase 21 hardening verification`.
+- Phase 21.5 follow-up code hardening: `6cada30 fix: harden phase 21 public UX`.
+- Current working branch: `feature/phase-21-full-hardening`.
+- Push status: not pushed.
 
 Implemented in app code:
 
@@ -150,6 +154,8 @@ Phase 21.5 hardening notes:
 - Oversized image selection copy states both accepted formats and the 20 MB app-side limit.
 - Detail image load failure hides the failed source behind the stable placeholder while the one-time repository refresh path runs.
 - Map species grouping was tightened so records sharing a scientific name are grouped together even if common names differ.
+- Public Navbar display names now pass through the safe observer display-name normalizer at the App boundary before falling back to `사용자`.
+- Signed-image prefetch now prunes expired entries and evicts oldest entries after a fixed cache cap.
 
 Verification recorded in this session:
 

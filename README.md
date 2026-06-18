@@ -43,7 +43,7 @@ This repository started as a design-only starter and now has a Supabase-backed o
 - Owner/admin observation edit smoke: 20K live owner/non-owner/admin edit smoke passed by user manual verification; malicious direct protected-field update attempts remain optional hardening
 - Phase 20 history archive: completed in `docs/eco/phase-history/phase-20.md`
 - Project working guide: documented in `docs/eco/project-working-guide.md`
-- Phase 21 public UX stabilization: Navbar auth slot stabilization, public signup UI through `AuthRepository`, signed-image prefetch/retry, 20 MB app-side upload validation, map search/multi-taxon filtering, and taxonomy design docs are implemented. Phase 21.5 local browser smoke passed for signed-out public UX paths; live account/backend/Kakao checks remain PARTIAL.
+- Phase 21 public UX stabilization: Navbar auth slot stabilization, public signup UI through `AuthRepository`, signed-image prefetch/retry, 20 MB app-side upload validation, map search/multi-taxon filtering, and taxonomy design docs are implemented. Phase 21.5 local browser smoke passed for signed-out public UX paths, with additional safe display-name and bounded image-cache hardening; live account/backend/Kakao checks remain PARTIAL.
 - Public signup profile setup: draft-only profile auto-create SQL is documented in `docs/architecture/sql-drafts/0005_public_signup_profile_draft.sql`; it was not promoted to `supabase/migrations/` and was not applied by Codex.
 
 ## Implemented Features
