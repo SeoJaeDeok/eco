@@ -13,6 +13,7 @@ import {
   prefetchObservationImages,
   withCachedObservationImageUrl,
 } from './utils/observationImagePrefetch';
+import { normalizeObserverDisplayName } from './utils/observerDisplay';
 import { countUniqueSpecies } from './utils/observationStats';
 import type { AuthSessionState } from './repositories/authRepository';
 import type { Observation, OwnerObservationUpdateInput, PageId } from './types';
@@ -327,7 +328,7 @@ export default function App() {
     }
   }, []);
 
-  const publicAuthDisplayName = publicAuthState.profile?.displayName?.trim() || '사용자';
+  const publicAuthDisplayName = normalizeObserverDisplayName(publicAuthState.profile?.displayName) ?? '사용자';
   const canEditSelectedObservation = Boolean(
     selectedObservation
       && publicAuthState.user

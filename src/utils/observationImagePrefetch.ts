@@ -3,6 +3,7 @@ import type { Observation } from '../types';
 const PREFETCHED_IMAGE_TTL_MS = 9 * 60 * 1000;
 const DEFAULT_PREFETCH_LIMIT = 24;
 const DEFAULT_PREFETCH_CONCURRENCY = 4;
+const MAX_PREFETCH_CACHE_ENTRIES = 48;
 
 interface PrefetchedObservationImage {
   imageUrl: string;
@@ -18,6 +19,30 @@ const getObservationImageCacheKey = (observation: Pick<Observation, 'id' | 'imag
 
 const isUsablePrefetchEntry = (entry: PrefetchedObservationImage | undefined) => {
   return Boolean(entry && entry.expiresAt > Date.now());
+};
+
+const deleteExpiredPrefetchEntries = () => {
+  const now = Date.now();
+
+  prefetchedImagesByKey.forEach((entry, key) => {
+    if (entry.expiresAt <= now) {
+      prefetchedImagesByKey.delete(key);
+    }
+  });
+};
+
+const enforcePrefetchCacheLimit = () => {
+  deleteExpiredPrefetchEntries();
+
+  while (prefetchedImagesByKey.size > MAX_PREFETCH_CACHE_ENTRIES) {
+    const oldestCacheKey = prefetchedImagesByKey.keys().next().value;
+
+    if (!oldestCacheKey) {
+      return;
+    }
+
+    prefetchedImagesByKey.delete(oldestCacheKey);
+  }
 };
 
 const canPreloadImages = () => {
@@ -38,6 +63,7 @@ export const getCachedObservationImageUrl = (observation: Pick<Observation, 'id'
   const cacheKey = getObservationImageCacheKey(observation);
   if (!cacheKey) return undefined;
 
+  deleteExpiredPrefetchEntries();
   const cachedImage = prefetchedImagesByKey.get(cacheKey);
 
   if (!isUsablePrefetchEntry(cachedImage)) {
@@ -73,6 +99,10 @@ export const prefetchObservationImage = (observation: Observation) => {
     return cachedImage?.promise ?? Promise.resolve();
   }
 
+  if (cachedImage) {
+    prefetchedImagesByKey.delete(cacheKey);
+  }
+
   const expiresAt = Date.now() + PREFETCHED_IMAGE_TTL_MS;
   const promise = preloadImageUrl(observation.imageUrl)
     .catch((error: unknown) => {
@@ -85,6 +115,7 @@ export const prefetchObservationImage = (observation: Observation) => {
     expiresAt,
     promise,
   });
+  enforcePrefetchCacheLimit();
 
   return promise;
 };
