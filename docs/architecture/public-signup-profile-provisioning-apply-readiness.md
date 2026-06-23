@@ -81,6 +81,30 @@ The trigger inserts one `public.profiles` row with:
 - `role = 'user'`
 - `display_name = safe display_name metadata, or null`
 
+## 22A Manual Apply Correction
+
+The first manual apply attempt failed with:
+
+```text
+ERROR 42501: must be owner of relation users
+```
+
+The failed attempt was not accepted as a successful apply. The failure came from ownership-requiring statements against `auth.users`, especially a direct trigger drop and a trigger comment.
+
+The corrected migration:
+
+- does not run `drop trigger` on `auth.users`
+- does not run `comment on trigger` on `auth.users`
+- keeps the `SECURITY DEFINER` function
+- pins the function to `set search_path = ''`
+- creates the expected trigger only when it does not already exist
+- permits an existing expected trigger only when it points to `public.provision_public_profile_for_new_auth_user()`
+- stops with a clear exception if the expected trigger points to another function
+- does not alter ownership of `auth.users`
+- does not grant superuser or broad Auth-schema privileges
+
+한국어 요약: 첫 수동 적용은 `auth.users` trigger drop/comment 권한 문제로 실패했으며 성공 적용으로 인정하지 않습니다. 수정본은 trigger를 직접 삭제하거나 comment하지 않고, 기존 trigger가 있으면 expected function을 가리키는지 검증한 뒤 안전하게 진행합니다.
+
 ## Rejected Alternatives
 
 Client self-insert into `public.profiles` was rejected for the MVP because it would require opening profile insert grants/policies to frontend roles. That adds RLS complexity and makes signup success depend on a second client-side write.
@@ -92,7 +116,7 @@ The older draft SQL was not used as-is because it could update an existing profi
 ## Security Model
 
 - The function is `SECURITY DEFINER` because frontend roles should not receive broad profile insert privileges.
-- The function pins `search_path = public, pg_temp` and uses explicit schema names.
+- The function pins `search_path = ''` and uses explicit schema names for app tables.
 - The trigger never reads role/admin values from client metadata.
 - New profiles are always created with `role = 'user'`.
 - The trigger never uses the Auth email as a public display-name fallback.
@@ -130,7 +154,7 @@ on conflict (id) do nothing
 
 This prevents duplicate profile rows and avoids overwriting existing admin/user profile data.
 
-The migration also refuses to continue when it detects the older draft trigger name or another profile-related `auth.users` trigger. If such a trigger exists, stop and review compatibility before applying this migration.
+The migration also refuses to continue when it detects the older draft trigger name or another profile-related `auth.users` trigger. If the expected trigger name already exists, the corrected migration verifies that it points to the expected function. If it points elsewhere, the migration stops and requires manual review.
 
 ## Existing Users And Backfill
 
@@ -188,7 +212,7 @@ where trigger_info.tgrelid = 'auth.users'::regclass
 order by trigger_info.tgname;
 ```
 
-Stop before applying if an existing signup/profile trigger is present and has not been reviewed.
+Stop before applying if an existing signup/profile trigger is present and has not been reviewed. The expected trigger name `auth_users_provision_public_profile` is acceptable only when it already points to `public.provision_public_profile_for_new_auth_user()`.
 
 ### Users Without Profiles Count
 
@@ -276,10 +300,11 @@ order by grantee, column_name, privilege_type;
 1. Review `supabase/migrations/0005_public_signup_profile_provisioning.sql`.
 2. Run the pre-apply checks in the intended dev/local Supabase project.
 3. Stop if another signup/profile trigger already exists.
-4. Apply the migration only to the intended environment through the established Supabase migration workflow or SQL editor.
-5. Do not paste project URLs, keys, tokens, passwords, or test credentials into repository documentation.
-6. Record the apply result without secrets.
-7. Run the post-apply checks below.
+4. If `auth_users_provision_public_profile` already exists, confirm it points to `public.provision_public_profile_for_new_auth_user()`. The migration will also enforce this check.
+5. Apply the migration only to the intended environment through the established Supabase migration workflow or SQL editor.
+6. Do not paste project URLs, keys, tokens, passwords, or test credentials into repository documentation.
+7. Record the apply result without secrets.
+8. Run the post-apply checks below.
 
 Codex did not apply this migration.
 
@@ -300,18 +325,20 @@ where namespace_info.nspname = 'public'
   and function_info.proname = 'provision_public_profile_for_new_auth_user';
 ```
 
-### Trigger Existence
+### Trigger Existence And Function Target
 
 ```sql
 select
   trigger_info.tgname as trigger_name,
-  trigger_function.proname as function_name
+  trigger_function.oid::regprocedure as trigger_function
 from pg_trigger trigger_info
 join pg_proc trigger_function
   on trigger_function.oid = trigger_info.tgfoid
 where trigger_info.tgrelid = 'auth.users'::regclass
   and trigger_info.tgname = 'auth_users_provision_public_profile';
 ```
+
+Expected result: the trigger exists and `trigger_function` is `public.provision_public_profile_for_new_auth_user()`.
 
 ### Function Definition Review
 
@@ -344,12 +371,7 @@ Public observation behavior should still be verified after apply:
 
 ## Rollback Plan
 
-Rollback removes only Phase 22A objects:
-
-```sql
-drop trigger if exists auth_users_provision_public_profile on auth.users;
-drop function if exists public.provision_public_profile_for_new_auth_user();
-```
+Rollback removes only Phase 22A objects, but managing triggers on `auth.users` can require ownership-level privileges. Do not add automatic rollback SQL to this forward migration. If rollback is needed, prepare a separate reviewed rollback runbook and have an operator with appropriate Auth-table trigger privileges remove the trigger before dropping the function.
 
 Rollback must not:
 

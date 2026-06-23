@@ -58,6 +58,25 @@ begin
     from pg_trigger trigger_info
     join pg_proc trigger_function
       on trigger_function.oid = trigger_info.tgfoid
+    join pg_namespace trigger_function_schema
+      on trigger_function_schema.oid = trigger_function.pronamespace
+    where trigger_info.tgrelid = 'auth.users'::regclass
+      and trigger_info.tgname = 'auth_users_provision_public_profile'
+      and not trigger_info.tgisinternal
+      and not (
+        trigger_function_schema.nspname = 'public'
+        and trigger_function.proname = 'provision_public_profile_for_new_auth_user'
+        and pg_get_function_identity_arguments(trigger_function.oid) = ''
+      )
+  ) then
+    raise exception 'Existing auth_users_provision_public_profile trigger points to an unexpected function. Stop and review before applying Phase 22A.';
+  end if;
+
+  if exists (
+    select 1
+    from pg_trigger trigger_info
+    join pg_proc trigger_function
+      on trigger_function.oid = trigger_info.tgfoid
     where trigger_info.tgrelid = 'auth.users'::regclass
       and trigger_info.tgname <> 'auth_users_provision_public_profile'
       and not trigger_info.tgisinternal
@@ -74,7 +93,7 @@ create or replace function public.provision_public_profile_for_new_auth_user()
 returns trigger
 language plpgsql
 security definer
-set search_path = public, pg_temp
+set search_path = ''
 as $$
 declare
   raw_display_name text;
@@ -109,11 +128,33 @@ is 'Creates a public.profiles row for each new auth.users row without trusting c
 
 revoke all on function public.provision_public_profile_for_new_auth_user() from public;
 
-drop trigger if exists auth_users_provision_public_profile on auth.users;
-create trigger auth_users_provision_public_profile
-after insert on auth.users
-for each row
-execute function public.provision_public_profile_for_new_auth_user();
+do $$
+declare
+  expected_trigger_name constant name := 'auth_users_provision_public_profile';
+  expected_function regprocedure := 'public.provision_public_profile_for_new_auth_user()'::regprocedure;
+  existing_trigger_function regprocedure;
+begin
+  select trigger_info.tgfoid::regprocedure
+    into existing_trigger_function
+  from pg_trigger trigger_info
+  where trigger_info.tgrelid = 'auth.users'::regclass
+    and trigger_info.tgname = expected_trigger_name
+    and not trigger_info.tgisinternal;
 
-comment on trigger auth_users_provision_public_profile on auth.users
-is 'Phase 22A: provision a non-admin public.profiles row for new signup users.';
+  if existing_trigger_function is null then
+    execute $create_trigger$
+      create trigger auth_users_provision_public_profile
+      after insert on auth.users
+      for each row
+      execute function public.provision_public_profile_for_new_auth_user()
+    $create_trigger$;
+  elsif existing_trigger_function = expected_function then
+    null;
+  else
+    raise exception
+      'Existing auth.users trigger % points to %, expected %. Stop and review before applying Phase 22A.',
+      expected_trigger_name,
+      existing_trigger_function,
+      expected_function;
+  end if;
+end $$;

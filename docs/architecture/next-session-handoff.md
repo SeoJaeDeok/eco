@@ -239,10 +239,36 @@ Manual next step:
 
 1. Review `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`.
 2. Run the documented read-only preflight queries in the intended dev/local Supabase environment.
-3. Stop if an existing signup/profile trigger is found.
+3. Stop if an unexpected signup/profile trigger is found; an existing `auth_users_provision_public_profile` trigger is acceptable only when it points to `public.provision_public_profile_for_new_auth_user()`.
 4. Manually apply `supabase/migrations/0005_public_signup_profile_provisioning.sql` only to the intended environment.
 5. Run the documented post-apply verification queries.
 6. Run Phase 22B live signup/contribution smoke with approved disposable credentials.
+
+### Phase 22A Manual Apply Correction
+
+The first user-run manual apply attempt for `supabase/migrations/0005_public_signup_profile_provisioning.sql` failed and has not been accepted as a successful apply.
+
+Recorded failure:
+
+```text
+ERROR 42501: must be owner of relation users
+```
+
+Cause:
+
+- The previous migration candidate used ownership-requiring statements against `auth.users`.
+- The problematic statements were the direct `drop trigger if exists auth_users_provision_public_profile on auth.users` and the `comment on trigger ... on auth.users`.
+
+Corrected procedure:
+
+- The migration keeps `public.provision_public_profile_for_new_auth_user()` as a `SECURITY DEFINER` function.
+- The function now uses `set search_path = ''` with schema-qualified app table references.
+- The migration does not drop triggers on `auth.users`.
+- The migration does not comment on triggers on `auth.users`.
+- A safe preflight block allows creation when the expected trigger is absent.
+- If `auth_users_provision_public_profile` already exists, the migration verifies that it points to `public.provision_public_profile_for_new_auth_user()`.
+- If the existing expected trigger points elsewhere, the migration stops with a clear exception.
+- Codex did not apply SQL remotely.
 
 Remaining Phase 22 risks:
 
