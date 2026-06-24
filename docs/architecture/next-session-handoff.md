@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 23A deployment/domain readiness preparation.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 23 first Vercel production deployment.
 
 Read this together with:
 
@@ -103,6 +103,7 @@ Read this together with:
 - 22C Storage upload live smoke found and fixed a DB image-size constraint mismatch in development. Migration 0006 was manually applied, an approximately 9 MB upload passed end-to-end, and the one test orphan was manually cleaned.
 - 23A deployment/custom-domain readiness checklist prepared on `feature/phase-23-deployment-domain-readiness`; no deployment, merge, push, hosting project, DNS change, Supabase Auth setting change, Kakao setting change, or app/package/migration change was performed.
 - 23B Vercel deployment configuration started on `feature/phase-23b-vercel-first-deployment`; Vercel was selected as the first hosting provider and `vercel.json` was added for SPA fallback. No Vercel project, custom domain, DNS, Supabase Auth, or Kakao setting was changed.
+- 23 Vercel production deployment and smoke are closed. The GitHub repository is connected to Vercel, production deploys from `main`, the first HTTPS deployment loaded, public list/detail/image/refresh smoke passed, and custom-domain connection remains optional follow-up.
 
 ## Phase 21 Current Session Result
 
@@ -555,14 +556,16 @@ Recommended next phase:
 
 ## Phase 23B Current Session Result
 
-Status: Vercel deployment configuration prepared. Main integration and push may proceed only after final verification and remote branch safety checks pass.
+Status: Vercel configuration, main integration, normal push, and first production deployment smoke are complete for the recorded scope.
 
 Branch and source references:
 
 - Current branch: `feature/phase-23b-vercel-first-deployment`.
 - Source readiness commit: `aeb57d9 docs: prepare deployment and domain readiness`.
 - Selected hosting provider: Vercel.
-- Push status: check the final Phase 23B report for the actual push result.
+- Release commit before closeout: `3362bd2 chore: configure vercel spa deployment`.
+- Production branch: `main`.
+- Push status: `main` was pushed normally to `origin/main` in Phase 23B.
 
 Repository-side deployment configuration:
 
@@ -573,21 +576,61 @@ Repository-side deployment configuration:
 - No package file or dependency change was made.
 - No app behavior, migration, RLS, Storage policy, Supabase Auth, Kakao, Admin, or DNS setting was changed.
 
-Operator actions after push:
+Operator actions completed after push:
 
-1. Open Vercel in the browser.
-2. Import the GitHub repository.
-3. Select Vite/default static build settings unless Vercel detects otherwise:
-   - Build command: `npm.cmd run build` or Vercel's npm build equivalent.
-   - Output directory: `dist`.
-4. Enter only the required `VITE_*` environment variables in Vercel's project settings.
-5. Do not enter a Supabase service-role key.
-6. Create the first preview/production deployment.
-7. Run the production smoke checklist in `docs/architecture/deployment-domain-readiness.md`.
+1. Vercel repository import completed.
+2. Vite framework configuration completed.
+3. Required production `VITE_*` variables entered privately in Vercel.
+4. First Vercel Production deployment from `main` succeeded.
+5. Production smoke subset recorded below passed.
 
-Recommended next phase after push:
+Phase 23 closeout result:
 
-`Phase 23C - create the Vercel project, set environment variables, and run the first deployment smoke`
+- Vercel repository import completed by the operator.
+- Framework configured as Vite.
+- Required production `VITE_*` variables entered privately in Vercel.
+- Vercel Production deployment from `main` succeeded.
+- HTTPS deployment page loaded.
+- Public observation list loaded.
+- Existing observation detail opened.
+- Existing observation images loaded.
+- Browser refresh did not produce a 404.
+- Supabase production URL/redirect configuration was reviewed.
+- Kakao production web-domain configuration was reviewed.
+- The operator reported the tested deployment functions are working normally.
+- No actual deployment URL, Supabase value, Kakao key, token, email, password, or full SDK URL is recorded.
+
+Production checks not explicitly recorded:
+
+- Production login/logout.
+- Production signup/email confirmation.
+- Production owner edit.
+- Production admin smoke.
+- Production image upload.
+- Real Kakao production map render.
+- Separate custom-domain/DNS smoke.
+
+Future feature workflow:
+
+1. Update local `main`.
+2. Create a feature branch.
+3. Implement and verify locally.
+4. Push the feature branch for Preview when useful.
+5. Merge verified work into `main`.
+6. Push `main`.
+7. Vercel deploys Production automatically.
+
+Current operating notes:
+
+- Environment values are managed in Vercel, not Git.
+- Custom domain remains optional follow-up.
+- Automatic Storage compensating cleanup remains deferred.
+- The next product phase must be selected explicitly with the operator.
+- Do not prematurely assign Phase 24 to a feature until the operator selects it.
+
+Recommended next step:
+
+`Phase 23 is closed. Ask the operator to select the next feature or bug before starting Phase 24.`
 
 ## Verified Current State
 

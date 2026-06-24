@@ -8,8 +8,8 @@ English:
 
 - Phase 23A is a readiness and checklist phase only.
 - Phase 23B selected Vercel as the first hosting provider and added the repository-side SPA rewrite configuration.
-- No hosting project was created.
-- No deployment, merge, push, DNS change, Supabase Auth setting change, Kakao domain setting change, migration, RLS, Storage policy, package, or app-code change was performed.
+- Phase 23 closeout records the first successful Vercel production deployment and operator-confirmed public smoke result.
+- No DNS change, custom-domain connection, Supabase Auth setting change, Kakao setting change, migration, RLS, Storage policy, package, or app-code change was performed by Codex in this closeout.
 - Automatic compensating Storage cleanup remains deferred as a post-deployment operations-hardening task.
 
 한국어:
@@ -27,8 +27,9 @@ English:
 - Source commit: `9eb3394 docs: record image size alignment smoke`.
 - Readiness branch: `feature/phase-23-deployment-domain-readiness`.
 - Vercel configuration branch: `feature/phase-23b-vercel-first-deployment`.
-- Push status: not pushed.
-- Deployment status: not deployed.
+- Production branch: `main`.
+- Production deployment status: deployed through Vercel from `main`.
+- Custom domain status: not connected; optional follow-up.
 
 한국어:
 
@@ -82,6 +83,11 @@ Important notes:
 - A Supabase service-role key is not required and must not be used in frontend deployment settings.
 - Production values must be entered only in the hosting provider's environment settings, not committed to Git.
 
+Phase 23 production note:
+
+- The operator confirmed the required production `VITE_*` variables were entered privately in Vercel.
+- No environment values are recorded in this repository.
+
 ## Supabase Production-Domain Checklist
 
 English:
@@ -98,6 +104,11 @@ After the final HTTPS production origin is known, review these settings in the S
 8. Confirm no service-role key is needed in the hosting provider.
 9. Remember that profile provisioning triggers and migrations are database-side.
 10. Remember that approved-only public visibility is enforced by repository queries and Supabase RLS, not by the hosting provider.
+
+Phase 23 production note:
+
+- Supabase production URL and redirect configuration were reviewed by the operator.
+- No Supabase setting value or project-specific URL is recorded here.
 
 한국어:
 
@@ -127,6 +138,11 @@ Architecture confirmations:
 - Kakao loading remains behind the map provider boundary.
 - Static fallback remains available when the key is missing, invalid, or not allowed for the domain.
 
+Phase 23 production note:
+
+- Kakao production web-domain configuration was reviewed by the operator.
+- A real Kakao production map render smoke was not explicitly recorded in this closeout.
+
 한국어:
 
 - 실제 도메인을 정한 뒤 Kakao Developers에서 그 HTTPS 주소를 JavaScript/web domain으로 등록해야 합니다.
@@ -152,6 +168,18 @@ Useful if available:
 - Preview deployments.
 - Rollback to a previous deployment.
 
+Phase 23 production result:
+
+- Vercel repository import completed.
+- Framework was configured as Vite.
+- Vercel production deployment from `main` succeeded.
+- The HTTPS deployment page loaded.
+- The public observation list loaded.
+- Existing observation detail opened.
+- Existing observation images loaded.
+- Browser refresh did not produce a 404.
+- The operator reports the tested deployment functions are working normally.
+
 한국어:
 
 - 아직 호스팅 업체는 정하지 않았습니다.
@@ -172,6 +200,12 @@ English:
 8. Use the final HTTPS origin in Supabase and Kakao settings.
 9. Run production smoke only after DNS and HTTPS are active.
 
+Phase 23 status:
+
+- No separate custom domain was connected in this phase.
+- DNS was not changed in this phase.
+- Custom-domain connection remains an optional follow-up.
+
 한국어:
 
 1. 도메인을 직접 소유하거나 관리할 수 있어야 합니다.
@@ -188,8 +222,10 @@ Current audit result:
 - A later fast-forward integration should be possible if no newer `main` commits appear first.
 - No merge or push was performed in Phase 23A.
 - Phase 23B is allowed to fast-forward local `main` and push `main` only after all checks pass and the remote branch has no unexpected commits.
+- Phase 23B fast-forwarded `main` and pushed normally to `origin/main` at `3362bd2`.
+- Phase 23 closeout is documentation-only and may trigger another Vercel production build after its normal push to `main`.
 
-Prepared later commands, not run:
+Prepared integration commands used in Phase 23B:
 
 ```bash
 git switch main
@@ -211,6 +247,23 @@ Rules:
 ## Production Smoke Plan
 
 Record each future result as PASS, PARTIAL, or FAIL.
+
+Phase 23 recorded production smoke:
+
+- Vercel deployment successful: PASS.
+- HTTPS page load: PASS.
+- Public observation list load: PASS.
+- Existing detail open: PASS.
+- Existing image display: PASS.
+- Browser refresh without 404: PASS.
+- Supabase production URL/redirect configuration reviewed: PASS.
+- Kakao production web-domain configuration reviewed: PASS.
+- Production login/logout: PARTIAL / not explicitly recorded.
+- Production signup/email confirmation: PARTIAL / not explicitly recorded.
+- Production owner edit: PARTIAL / not explicitly recorded.
+- Production admin smoke: PARTIAL / not explicitly recorded.
+- Production image upload: PARTIAL / not explicitly recorded.
+- Real Kakao production map render: PARTIAL / not explicitly recorded.
 
 ### A. Basic Site
 
@@ -303,14 +356,14 @@ If deployment readiness remains the priority, schedule this after the first depl
 - 자동 orphan cleanup은 아직 없습니다.
 - 배포 준비를 먼저 진행할 수 있지만, 운영 안정화 과제로 계속 기록해야 합니다.
 
-## No-Deployment Status
+## Phase 23 Deployment Status
 
 - Hosting provider selected for the first deployment path: Vercel.
-- Hosting project created: no.
-- App deployed: no.
+- Hosting project created: yes, by the operator through Vercel.
+- App deployed: yes, initial Vercel production deployment succeeded.
 - Custom domain connected: no.
 - DNS changed: no.
-- Supabase Auth production URLs changed: no.
-- Kakao production domain changed: no.
-- Git merge performed: no.
-- Git push performed: no.
+- Supabase Auth production URL/redirect settings reviewed: yes.
+- Kakao production web-domain configuration reviewed: yes.
+- Git merge performed: yes, fast-forward integration into `main` in Phase 23B.
+- Git push performed: yes, normal push of `main` in Phase 23B.

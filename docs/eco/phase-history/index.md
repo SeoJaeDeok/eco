@@ -52,8 +52,9 @@ This archive is intentionally split into one Markdown file per phase. That struc
 | 20 | Public User Contribution And Owner Editing | Verified | Implemented public login/upload gate, authenticated approved contribution, safe observer display, owner/admin content editing, and live owner/non-owner/admin smoke while preserving approved-only public reads. | [phase-20.md](phase-20.md) |
 | 21 | Public UX Stabilization And Taxonomy Design | Verified with partial live checks | Implemented Navbar auth-slot stabilization, public signup, image prefetch/retry, 20 MB app-side upload validation, map search/multi-taxon filtering, taxonomy design docs, and Phase 21.5 hardening checks. | [phase-21.md](phase-21.md) |
 | 22 | Signup Profile Provisioning And Live Contribution Smoke | Verified with partial operational checks | Prepared and corrected signup profile provisioning migration 0005, verified live signup/profile/contribution/owner-edit flow, aligned the image-size DB check through 0006, and verified an approximately 9 MB Storage upload plus manual orphan cleanup while leaving near-20 MB/production checks partial. | [phase-22.md](phase-22.md) |
+| 23 | Vercel Deployment And Production Smoke | Verified with partial production regression checks | Prepared and deployed the Vite SPA through Vercel, configured SPA fallback, integrated the verified release into main, and verified the first HTTPS production deployment. | [phase-23.md](phase-23.md) |
 
-**한국어:** 위 표는 완료된 Phase 1~22의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 23 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
+**한국어:** 위 표는 완료된 Phase 1~23의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 24 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
 
 ## Adding A New Completed Phase
 
