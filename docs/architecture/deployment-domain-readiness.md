@@ -7,6 +7,7 @@
 English:
 
 - Phase 23A is a readiness and checklist phase only.
+- Phase 23B selected Vercel as the first hosting provider and added the repository-side SPA rewrite configuration.
 - No hosting project was created.
 - No deployment, merge, push, DNS change, Supabase Auth setting change, Kakao domain setting change, migration, RLS, Storage policy, package, or app-code change was performed.
 - Automatic compensating Storage cleanup remains deferred as a post-deployment operations-hardening task.
@@ -25,6 +26,7 @@ English:
 - Source branch before this readiness work: `feature/phase-22c-image-size-live-smoke`.
 - Source commit: `9eb3394 docs: record image size alignment smoke`.
 - Readiness branch: `feature/phase-23-deployment-domain-readiness`.
+- Vercel configuration branch: `feature/phase-23b-vercel-first-deployment`.
 - Push status: not pushed.
 - Deployment status: not deployed.
 
@@ -50,7 +52,7 @@ English:
 | SPA fallback | Configure unknown routes to serve `index.html` |
 | Admin route | `/#admin` is hash-based and does not need a separate server route |
 | Hard-coded localhost URLs | None found in production app code |
-| Hosting provider config | No provider-specific hosting config was found in the repository |
+| Hosting provider config | `vercel.json` added in Phase 23B for SPA fallback |
 
 한국어:
 
@@ -133,7 +135,7 @@ Architecture confirmations:
 
 ## Provider-Neutral Hosting Requirements
 
-The hosting provider is not selected yet.
+Phase 23B selected Vercel as the first hosting provider. The general requirements below still apply as a sanity checklist.
 
 Required:
 
@@ -185,12 +187,13 @@ Current audit result:
 - `main` is an ancestor of the deployment candidate history.
 - A later fast-forward integration should be possible if no newer `main` commits appear first.
 - No merge or push was performed in Phase 23A.
+- Phase 23B is allowed to fast-forward local `main` and push `main` only after all checks pass and the remote branch has no unexpected commits.
 
 Prepared later commands, not run:
 
 ```bash
 git switch main
-git merge --ff-only feature/phase-23-deployment-domain-readiness
+git merge --ff-only feature/phase-23b-vercel-first-deployment
 git push
 ```
 
@@ -302,7 +305,7 @@ If deployment readiness remains the priority, schedule this after the first depl
 
 ## No-Deployment Status
 
-- Hosting provider selected: no.
+- Hosting provider selected for the first deployment path: Vercel.
 - Hosting project created: no.
 - App deployed: no.
 - Custom domain connected: no.

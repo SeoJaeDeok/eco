@@ -102,6 +102,7 @@ Read this together with:
 - 22B signup profile provisioning live smoke completed on `feature/phase-22-signup-profile-live-smoke`.
 - 22C Storage upload live smoke found and fixed a DB image-size constraint mismatch in development. Migration 0006 was manually applied, an approximately 9 MB upload passed end-to-end, and the one test orphan was manually cleaned.
 - 23A deployment/custom-domain readiness checklist prepared on `feature/phase-23-deployment-domain-readiness`; no deployment, merge, push, hosting project, DNS change, Supabase Auth setting change, Kakao setting change, or app/package/migration change was performed.
+- 23B Vercel deployment configuration started on `feature/phase-23b-vercel-first-deployment`; Vercel was selected as the first hosting provider and `vercel.json` was added for SPA fallback. No Vercel project, custom domain, DNS, Supabase Auth, or Kakao setting was changed.
 
 ## Phase 21 Current Session Result
 
@@ -551,6 +552,42 @@ Current operator decision needed:
 Recommended next phase:
 
 `Phase 23B - select hosting provider, integrate the verified branch, and perform the first preview deployment`
+
+## Phase 23B Current Session Result
+
+Status: Vercel deployment configuration prepared. Main integration and push may proceed only after final verification and remote branch safety checks pass.
+
+Branch and source references:
+
+- Current branch: `feature/phase-23b-vercel-first-deployment`.
+- Source readiness commit: `aeb57d9 docs: prepare deployment and domain readiness`.
+- Selected hosting provider: Vercel.
+- Push status: check the final Phase 23B report for the actual push result.
+
+Repository-side deployment configuration:
+
+- Added `vercel.json` with a single SPA rewrite from `/(.*)` to `/index.html`.
+- The project remains Vite + React + TypeScript.
+- Production build command remains `npm.cmd run build`.
+- Build output directory remains `dist`.
+- No package file or dependency change was made.
+- No app behavior, migration, RLS, Storage policy, Supabase Auth, Kakao, Admin, or DNS setting was changed.
+
+Operator actions after push:
+
+1. Open Vercel in the browser.
+2. Import the GitHub repository.
+3. Select Vite/default static build settings unless Vercel detects otherwise:
+   - Build command: `npm.cmd run build` or Vercel's npm build equivalent.
+   - Output directory: `dist`.
+4. Enter only the required `VITE_*` environment variables in Vercel's project settings.
+5. Do not enter a Supabase service-role key.
+6. Create the first preview/production deployment.
+7. Run the production smoke checklist in `docs/architecture/deployment-domain-readiness.md`.
+
+Recommended next phase after push:
+
+`Phase 23C - create the Vercel project, set environment variables, and run the first deployment smoke`
 
 ## Verified Current State
 
