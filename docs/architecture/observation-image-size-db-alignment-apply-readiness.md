@@ -153,9 +153,20 @@ The UI must not expose backend internals, object paths, project URLs, keys, toke
 ## Status
 
 - Migration candidate prepared: yes.
+- Migration 0006 manually applied by the operator in the intended development environment: yes.
+- Post-apply DB constraint verification passed:
+  - `has_twenty_mib_limit = true`
+  - `still_has_five_mib_limit = false`
+- Approximately 9 MB live upload after applying 0006: pass.
+- Migration 0006 is now immutable; do not edit or reapply it.
+- Rollback was not run.
+- Production application was not separately verified.
+- Near-20 MB upload remains partial / not tested.
+- The current Storage-first create sequence can still leave an orphan object if DB insert fails after upload succeeds.
+- One test orphan from the pre-0006 failure was manually cleaned through the Storage Dashboard, not through SQL.
 - Remote SQL applied by Codex: no.
 - App code changed: no.
 - Package files changed: no.
 - RLS/policies changed: no.
 - Storage settings changed by Codex: no.
-- Repeated upload retry before applying `0006`: not recommended.
+- Repeated upload retry before applying `0006`: no longer relevant for development because 0006 has been applied and verified there.

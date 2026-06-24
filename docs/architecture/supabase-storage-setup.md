@@ -82,7 +82,17 @@ Phase 21D client-side update:
 
 - App-side image selection and Supabase upload-helper validation now use a named 20 MB constant.
 - Unlimited upload remains intentionally unsupported because of abuse, cost, network reliability, and backend limits.
-- Existing Storage bucket/project settings and the 0002 SQL candidate still document a 5 MB backend limit. Do not claim live Supabase accepts files above the backend-configured limit until a separate approved Storage/DB alignment phase updates and verifies bucket limits, DB constraints, and monitoring thresholds.
+- Historical 0002 setup text and SQL still document the original 5 MB backend limit.
+
+Phase 22C operational update:
+
+- The Supabase global Storage limit remained 50 MB.
+- The active observation image bucket limit was manually changed from 5 MB to 20 MB by the operator.
+- Allowed MIME types remained `image/jpeg`, `image/png`, and `image/webp`.
+- The bucket remained private.
+- Migration `0006_raise_observation_image_size_limit.sql` raised only `public.observations.observations_image_size_bytes_check` from `5242880` bytes to `20971520` bytes.
+- An approximately 9 MB live upload was verified end-to-end after the bucket and DB constraint alignment.
+- Near-20 MB upload remains untested and should not be claimed as verified.
 
 The requested files `src/repositories/supabase/supabaseObservationTypes.ts` and `src/repositories/supabase/supabaseObservationMappers.ts` do not exist in the current repository. The current files are:
 
@@ -91,7 +101,7 @@ src/repositories/supabase/observationDbTypes.ts
 src/repositories/supabase/observationMappers.ts
 ```
 
-## Storage Bucket Draft
+## Historical Storage Bucket Draft
 
 Bucket:
 
@@ -824,7 +834,7 @@ The MVP Storage flow currently relies on these controls:
 - The `observation-images` bucket is private.
 - Public uploads use an insert-only Storage policy.
 - Upload code uses `upsert: false`.
-- Bucket and client validation limit files to 5 MB.
+- Bucket and client validation now limit files to 20 MB after the Phase 22C operational alignment.
 - Bucket and client validation allow only `image/jpeg`, `image/png`, and `image/webp`.
 - Object paths are random and constrained to `pending/{client_generated_id}/{random_id}.{ext}`.
 - Public observation reads remain approved-only.
@@ -914,7 +924,7 @@ The MVP keeps public no-login reports, so anonymous image upload remains a risk:
 - Upload-before-insert can create orphan objects.
 - Repeated uploads can create review workload even when rows stay pending or rejected.
 
-Current mitigations are the private bucket, insert-only policy, no upsert, constrained path pattern, 5 MB limit, MIME restrictions, approved-only public reads, and signed URLs not being persisted.
+Current mitigations are the private bucket, insert-only policy, no upsert, constrained path pattern, 20 MB limit, MIME restrictions, approved-only public reads, and signed URLs not being persisted.
 
 Future hardening candidates:
 

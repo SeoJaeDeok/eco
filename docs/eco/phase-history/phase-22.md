@@ -2,7 +2,7 @@
 
 ## Status
 
-Verified for the core development/local signup profile provisioning and live contribution flow. Optional operational and multi-account regression checks remain partial.
+Verified for the core development/local signup profile provisioning, live contribution flow, and approximately 9 MB Storage upload above the former 5 MiB limit. Optional near-20 MB, production, and multi-account regression checks remain partial.
 
 **한국어:** 개발/로컬 환경의 핵심 signup profile provisioning, 관찰 등록, 작성자 수정, 비로그인 edit-hidden 흐름은 검증되었습니다. 운영성/다중 계정 회귀 검증 일부는 PARTIAL입니다.
 
@@ -23,8 +23,13 @@ Verified for the core development/local signup profile provisioning and live con
 - Phase 22B verified live signup/login, exactly one matching profile row, `role = 'user'`, and safe display name behavior.
 - Phase 22B verified authenticated approved observation creation, observer/profile relationship, public safe observer display, owner edit, and anonymous edit-hidden behavior.
 - Phase 22B documented remaining optional regression checks without changing app code, package files, migration SQL, RLS, Storage, Kakao, Auth repository, or admin repository behavior.
+- Phase 22C diagnosed a Storage/DB size mismatch: app validation and bucket settings allowed the approximately 9 MB image, but the DB check constraint still enforced `image_size_bytes <= 5242880`.
+- Phase 22C manually aligned the active observation bucket to 20 MB and manually applied migration 0006, changing only `public.observations.observations_image_size_bytes_check` to allow up to `20971520` bytes.
+- Phase 22C verified an approximately 9 MB end-to-end upload, public list/detail rendering, image metadata, observer relationship, URL-persistence rule, orphan detection, Dashboard-only orphan cleanup, and preservation of the successful image.
 
 **한국어:** 0005 migration 준비와 권한 오류 수정, 개발 환경 수동 적용, function/trigger 확인, 실제 가입/프로필/관찰/작성자 수정/비로그인 동작 검증을 기록했습니다.
+
+한국어 요약: Phase 22C에서는 5 MiB 초과 이미지 업로드 실패 원인이 DB check constraint 불일치임을 확인했고, bucket과 DB 제한을 20 MB/20 MiB 기준으로 맞춘 뒤 약 9 MB 실제 업로드, public 목록/상세 표시, DB/Storage 연결, URL 미저장 원칙, orphan 후보 수동 정리까지 확인했습니다.
 
 ## Key Files
 
@@ -32,6 +37,8 @@ Verified for the core development/local signup profile provisioning and live con
 - `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`
 - `docs/architecture/public-signup-profile-setup-plan.md`
 - `docs/architecture/public-signup-profile-live-smoke.md`
+- `docs/architecture/observation-image-size-db-alignment-apply-readiness.md`
+- `docs/architecture/observation-image-size-live-smoke.md`
 - `docs/architecture/next-session-handoff.md`
 - `src/components/auth/PublicLoginPanel.tsx`
 - `src/components/auth/UploadLoginGate.tsx`
@@ -80,6 +87,19 @@ Verified for the core development/local signup profile provisioning and live con
 - Edit button hidden after logout: pass.
 - Signed-out upload gate shown: pass.
 - Static owner update payload review excludes protected fields: pass.
+- Phase 22C post-apply DB constraint verification:
+  - `has_twenty_mib_limit = true`: pass.
+  - `still_has_five_mib_limit = false`: pass.
+- Approximately 9 MB upload above the former 5 MiB limit: pass.
+- Successful upload appeared in public list/detail and still rendered after reopening: pass.
+- DB/Storage relationship for the successful observation: pass.
+- Image metadata above 5 MiB and within 20 MiB: pass.
+- Allowed MIME type check: pass.
+- URL-like `image_url` persistence check: pass.
+- Exactly one likely orphan from the failed pre-0006 attempt was identified: pass.
+- The orphan was deleted through the Supabase Storage Dashboard, not through SQL: pass.
+- Post-delete recent unreferenced object counts returned 0: pass.
+- Successful observation image remained visible after cleanup: pass.
 
 **한국어:** 자동 명령과 수동 smoke 핵심 경로가 통과했습니다. 즉시 세션/이메일 확인 경로는 명시적으로 보고되지 않았기 때문에 PARTIAL입니다.
 
@@ -88,7 +108,9 @@ Verified for the core development/local signup profile provisioning and live con
 - Exact signup path, immediate session versus email confirmation, was not explicitly reported.
 - Second-account non-owner live denial remains PARTIAL.
 - Admin live edit regression remains PARTIAL.
-- Actual Supabase upload above the former 5 MB limit, optionally near 20 MB, remains PARTIAL.
+- Actual Supabase upload above the former 5 MiB limit is PASS for approximately 9 MB.
+- Near-20 MB upload remains PARTIAL / not tested.
+- Automatic compensating Storage cleanup for future DB-insert failures is not implemented.
 - Forced expired signed URL retry remains PARTIAL.
 - Production/domain smoke remains PARTIAL.
 - Existing Auth users without profiles still need a separate reviewed backfill decision if they matter operationally.
@@ -101,6 +123,8 @@ Verified for the core development/local signup profile provisioning and live con
 - `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`
 - `docs/architecture/public-signup-profile-setup-plan.md`
 - `docs/architecture/public-signup-profile-live-smoke.md`
+- `docs/architecture/observation-image-size-db-alignment-apply-readiness.md`
+- `docs/architecture/observation-image-size-live-smoke.md`
 - `docs/architecture/next-session-handoff.md`
 - `docs/eco/phase-history/index.md`
 
@@ -111,19 +135,24 @@ Verified for the core development/local signup profile provisioning and live con
 - `f15d136 docs: prepare signup profile provisioning migration`
 - `1c2ed84 fix: correct auth profile trigger migration permissions`
 - `docs: record signup profile provisioning smoke` on `feature/phase-22-signup-profile-live-smoke`
+- `8b928e7 fix: align observation image size constraint`
+- `docs: record image size alignment smoke`
 
 **한국어:** 0005 준비 commit, 권한 수정 commit, Phase 22B 문서 commit이 핵심 기록입니다.
 
 ## Notes
 
 - Codex did not apply remote SQL.
-- Codex did not push or merge Phase 22B.
+- Codex did not push or merge Phase 22B or Phase 22C.
 - Production was not changed.
-- App code, package files, RLS/policies, Storage settings, Kakao behavior, Auth repository boundary, and admin repository boundary were not changed during Phase 22B documentation closure.
+- App code, package files, RLS/policies, Storage policies, Kakao behavior, Auth repository boundary, and admin repository boundary were not changed during Phase 22B or Phase 22C documentation closure.
+- The operator manually changed the active observation image bucket limit from 5 MB to 20 MB in development during Phase 22C.
+- Migration 0006 is now immutable after manual development apply.
 - Public approved-only visibility remains required.
 - Pending/rejected public non-exposure remains required.
 - Email public display remains forbidden.
 - Signed/public/blob/data URL DB persistence remains forbidden.
 - Test email, password, UUID, project URL, key, token, and confirmation URL are intentionally not recorded.
+- Storage object names/paths from orphan cleanup are intentionally not recorded.
 
 **한국어:** 원격 SQL은 Codex가 실행하지 않았고 push/merge도 하지 않았습니다. 민감정보는 기록하지 않았으며 기존 public visibility와 URL persistence 원칙을 유지합니다.

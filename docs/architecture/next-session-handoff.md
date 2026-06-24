@@ -24,6 +24,7 @@ Read this together with:
 - `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`
 - `docs/architecture/public-signup-profile-live-smoke.md`
 - `docs/architecture/observation-image-size-db-alignment-apply-readiness.md`
+- `docs/architecture/observation-image-size-live-smoke.md`
 - `docs/architecture/taxonomy-resolution-design.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/eco/project-working-guide.md`
@@ -98,7 +99,7 @@ Read this together with:
 - 21.5 public UX hardening and verification from `8046de9`, `e2dc23d`, and `6cada30`.
 - 22A signup profile provisioning apply-readiness prepared on `feature/phase-22-signup-profile-provisioning`.
 - 22B signup profile provisioning live smoke completed on `feature/phase-22-signup-profile-live-smoke`.
-- 22C Storage upload live smoke found a DB image-size constraint mismatch, and `0006` was prepared as an apply-ready candidate on `feature/phase-22c-image-size-db-alignment`.
+- 22C Storage upload live smoke found and fixed a DB image-size constraint mismatch in development. Migration 0006 was manually applied, an approximately 9 MB upload passed end-to-end, and the one test orphan was manually cleaned.
 
 ## Phase 21 Current Session Result
 
@@ -414,6 +415,90 @@ Manual apply warning:
 Recommended next step:
 
 Apply `0006` manually in the intended development Supabase project, run the post-apply constraint verification from `docs/architecture/observation-image-size-db-alignment-apply-readiness.md`, then retry one 6-10 MB upload once.
+
+## Phase 22C Current Session Result
+
+Status: verified for an approximately 9 MB development/local Storage upload above the former 5 MiB limit. Near-20 MB upload and production/domain smoke remain PARTIAL.
+
+Branch and commit references:
+
+- Branch: `feature/phase-22c-image-size-live-smoke`.
+- Migration candidate commit: `8b928e7 fix: align observation image size constraint`.
+- Phase 22C documentation commit: `docs: record image size alignment smoke`.
+- Push status: not pushed.
+
+Operational changes confirmed by the operator:
+
+- Supabase global Storage limit remained 50 MB.
+- The active observation image bucket limit was manually changed from 5 MB to 20 MB.
+- Allowed MIME types remained `image/jpeg`, `image/png`, and `image/webp`.
+- The bucket remained private.
+- Migration `0006_raise_observation_image_size_limit.sql` was manually applied in the intended development Supabase project.
+- Migration 0006 is now immutable and must not be edited or reapplied.
+
+Initial failure and diagnosis:
+
+- An approximately 9 MB image passed app validation.
+- Storage upload succeeded.
+- Observation DB insert failed.
+- The observation did not appear in the public list.
+- The live DB constraint was confirmed as `image_size_bytes <= 5242880`.
+- One unreferenced Storage object remained after the failed DB insert.
+
+Fix and post-apply verification:
+
+- Migration 0006 changed only `public.observations.observations_image_size_bytes_check`.
+- Previous DB limit: `5242880`.
+- New DB limit: `20971520`.
+- No RLS, Storage policy, MIME rule, Auth, Admin, Kakao, package, app code, or URL-persistence rule changed.
+- `has_twenty_mib_limit = true`: PASS.
+- `still_has_five_mib_limit = false`: PASS.
+
+Successful live retry:
+
+- Test observation: `Phase22C 9MB 이미지 재시험`.
+- App accepted the approximately 9 MB image: PASS.
+- Observation submission succeeded: PASS.
+- Observation appeared in the public list: PASS.
+- Detail modal opened: PASS.
+- Image appeared in detail: PASS.
+- Image appeared after closing and reopening detail: PASS.
+- Safe nickname appeared: PASS.
+- Raw email did not appear publicly: PASS.
+
+DB/Storage verification:
+
+- Observation row found and unique by test name: PASS.
+- Observation status approved: PASS.
+- Observer profile relationship: PASS.
+- `image_path` present: PASS.
+- Image size above 5 MiB and within 20 MiB: PASS.
+- MIME type allowed: PASS.
+- Matching Storage object count is 1: PASS.
+- `image_url` remained null or non-URL: PASS.
+
+Orphan cleanup:
+
+- Exactly one likely orphan from the failed pre-0006 attempt was identified: PASS.
+- The operator deleted only that object through the Supabase Storage Dashboard.
+- Deletion was not performed through SQL.
+- Post-delete recent unreferenced object counts returned 0.
+- The successful observation image remained visible after cleanup: PASS.
+
+Remaining PARTIAL items:
+
+- Automatic compensating Storage cleanup is not implemented.
+- Near-20 MB upload remains untested.
+- Forced expired signed URL retry remains PARTIAL.
+- Optional second-account non-owner live denial remains PARTIAL.
+- Optional admin live edit regression remains PARTIAL.
+- Production/domain smoke remains PARTIAL.
+
+Recommended next phase:
+
+`Phase 23A - Compensating Storage Cleanup Design`
+
+Goal: when Storage upload succeeds but observation DB insert fails, remove only the just-uploaded object, preserve the original DB error, avoid deleting any pre-existing or referenced object, keep cleanup behind repository/helper boundaries, provide a safe fallback when cleanup itself fails, and improve the generic Korean error category without exposing backend details.
 
 ## Verified Current State
 
