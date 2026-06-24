@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 22A signup profile provisioning preparation.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 22B signup profile provisioning live smoke.
 
 Read this together with:
 
@@ -22,6 +22,7 @@ Read this together with:
 - `docs/architecture/owner-admin-observation-edit-rls-plan.md`
 - `docs/architecture/public-signup-profile-setup-plan.md`
 - `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`
+- `docs/architecture/public-signup-profile-live-smoke.md`
 - `docs/architecture/taxonomy-resolution-design.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/eco/project-working-guide.md`
@@ -72,7 +73,7 @@ Read this together with:
 - 19A next product feature prioritization
 - 19B public observation list filter/search UX improvement
 - 19C public observation list filter/search regression verification
-- Phase history archive for phases 1 through 21, plus a reusable bilingual phase template
+- Phase history archive for phases 1 through 22, plus a reusable bilingual phase template
 - Project working guide for source-of-truth hierarchy, phase workflow, feature triage, verification, and commit/push routine
 - 20A public Navbar alignment fix
 - 20B public user auth/contribution design
@@ -95,6 +96,7 @@ Read this together with:
 - 21 full public UX stabilization implementation from `fd02f71`.
 - 21.5 public UX hardening and verification from `8046de9`, `e2dc23d`, and `6cada30`.
 - 22A signup profile provisioning apply-readiness prepared on `feature/phase-22-signup-profile-provisioning`.
+- 22B signup profile provisioning live smoke completed on `feature/phase-22-signup-profile-live-smoke`.
 
 ## Phase 21 Current Session Result
 
@@ -235,14 +237,14 @@ Boundary result:
 - Public approved-only observation visibility policies were not changed.
 - The migration candidate does not grant broad profile insert/update access.
 
-Manual next step:
+Phase 22A manual sequence completed by Phase 22B:
 
-1. Review `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`.
-2. Run the documented read-only preflight queries in the intended dev/local Supabase environment.
-3. Stop if an unexpected signup/profile trigger is found; an existing `auth_users_provision_public_profile` trigger is acceptable only when it points to `public.provision_public_profile_for_new_auth_user()`.
-4. Manually apply `supabase/migrations/0005_public_signup_profile_provisioning.sql` only to the intended environment.
-5. Run the documented post-apply verification queries.
-6. Run Phase 22B live signup/contribution smoke with approved disposable credentials.
+1. `docs/architecture/public-signup-profile-provisioning-apply-readiness.md` was reviewed.
+2. The first manual apply attempt failed with an `auth.users` ownership error and was not accepted as successful.
+3. `1c2ed84 fix: correct auth profile trigger migration permissions` corrected the migration.
+4. The corrected `supabase/migrations/0005_public_signup_profile_provisioning.sql` was manually applied only to the intended development/local environment.
+5. Function and trigger post-apply verification passed.
+6. Phase 22B live signup/profile/contribution/owner-anonymous smoke passed for the core flow.
 
 ### Phase 22A Manual Apply Correction
 
@@ -270,13 +272,96 @@ Corrected procedure:
 - If the existing expected trigger points elsewhere, the migration stops with a clear exception.
 - Codex did not apply SQL remotely.
 
-Remaining Phase 22 risks:
+Remaining Phase 22 risks after Phase 22B:
 
 - Existing Auth users without profiles need a separate reviewed backfill decision.
-- Live signup and email-confirmation behavior remain not run.
-- New-user observation create after provisioning remains not run.
-- Owner/admin edit regression after applying the migration remains not run.
+- Exact signup path, immediate session versus email confirmation, was not explicitly reported.
+- Second-account non-owner live denial remains PARTIAL.
+- Admin live edit regression remains PARTIAL.
+- Actual Supabase upload above the former 5 MB limit, optionally near 20 MB, remains PARTIAL.
+- Forced expired signed URL retry remains PARTIAL.
 - Production/domain smoke remains not run.
+
+## Phase 22B Current Session Result
+
+Status: verified for the core development/local signup profile provisioning and live contribution flow. Optional operational and multi-account regression checks remain PARTIAL.
+
+Branch and commit references:
+
+- Working branch: `feature/phase-22-signup-profile-live-smoke`.
+- Migration preparation commit: `f15d136 docs: prepare signup profile provisioning migration`.
+- Migration permission correction commit: `1c2ed84 fix: correct auth profile trigger migration permissions`.
+- Phase 22B documentation commit: `docs: record signup profile provisioning smoke` on this branch.
+- Push status: not pushed.
+
+Manual migration and live smoke results:
+
+- Corrected migration 0005 was manually applied in the intended development/local Supabase environment by the operator.
+- Codex did not apply remote SQL.
+- Production was not changed.
+- Provisioning function exists: PASS.
+- Provisioning trigger exists: PASS.
+- Live signup/login completed: PASS.
+- Safe nickname shown in Navbar: PASS.
+- Raw email not shown publicly: PASS.
+- Signed-in upload form accessible: PASS.
+- Navbar movement not noticed: PASS.
+- Exact signup path, immediate session versus email confirmation: PARTIAL / not explicitly reported.
+- `public.profiles` verification for the new test user:
+  - Auth user found: PASS.
+  - Matching profile count equals 1: PASS.
+  - Profile role equals `user`: PASS.
+  - Display name matches the safe nickname: PASS.
+- Observation creation:
+  - Submission succeeded: PASS.
+  - New approved observation appeared in the public list: PASS.
+  - Detail modal opened: PASS.
+  - Safe nickname shown as observer: PASS.
+  - Raw email not shown publicly: PASS.
+  - Owner edit button visible while signed in as creator: PASS.
+- Observation relationship:
+  - Observation found: PASS.
+  - Observation status approved: PASS.
+  - `observer_id` matched the provisioned profile: PASS.
+  - `observer_display_name` matched the safe nickname: PASS.
+  - URL-like `image_url` count was 0: PASS.
+- Owner and anonymous behavior:
+  - Owner edit form opened and saved: PASS.
+  - Changed description remained visible after reopen: PASS.
+  - Safe nickname remained visible and raw email remained hidden: PASS.
+  - Logout succeeded: PASS.
+  - Observation remained publicly visible after logout: PASS.
+  - Edit button hidden after logout: PASS.
+  - Signed-out upload gate shown: PASS.
+
+Static protected-payload review:
+
+- Owner edit payload excludes `observer_id`, `status`, `role`, `created_at`, image path, image MIME metadata, image size metadata, and `image_url`: PASS.
+
+Boundary result:
+
+- App code was not changed.
+- Package files were not changed.
+- Migration SQL was not changed.
+- RLS/policies were not changed.
+- Storage settings were not changed.
+- Kakao behavior was not changed.
+- Auth repository boundary was not changed.
+- Admin repository boundary was not changed.
+- Public approved-only visibility remains the project invariant.
+- Signed/public/blob/data URL DB persistence remains forbidden.
+
+Remaining PARTIAL items:
+
+- Second-account non-owner live denial.
+- Admin live edit regression.
+- Actual Supabase upload above the former 5 MB limit, optionally near 20 MB.
+- Forced expired signed URL retry.
+- Production/domain smoke.
+
+Recommended next step:
+
+Phase 22C operational regression checks, limited to actual Supabase upload above the former 5 MB limit, forced expired signed URL retry, optional second-user non-owner denial, optional admin live edit regression, Kakao normal/no-key fallback if desired, and production/domain smoke only after explicit deployment approval.
 
 ## Verified Current State
 

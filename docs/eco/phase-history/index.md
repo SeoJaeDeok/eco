@@ -51,8 +51,9 @@ This archive is intentionally split into one Markdown file per phase. That struc
 | 19 | Public Observation List Filter/Search UX | Verified | Prioritized, implemented, and regression-verified client-side public list search, taxon/image filters, sorting, result counts, and empty state while preserving approved-only reads. | [phase-19.md](phase-19.md) |
 | 20 | Public User Contribution And Owner Editing | Verified | Implemented public login/upload gate, authenticated approved contribution, safe observer display, owner/admin content editing, and live owner/non-owner/admin smoke while preserving approved-only public reads. | [phase-20.md](phase-20.md) |
 | 21 | Public UX Stabilization And Taxonomy Design | Verified with partial live checks | Implemented Navbar auth-slot stabilization, public signup, image prefetch/retry, 20 MB app-side upload validation, map search/multi-taxon filtering, taxonomy design docs, and Phase 21.5 hardening checks. | [phase-21.md](phase-21.md) |
+| 22 | Signup Profile Provisioning And Live Contribution Smoke | Verified with partial operational checks | Prepared and corrected signup profile provisioning migration 0005, recorded manual development apply, and verified live signup/profile/contribution/owner-edit/anonymous-gate flow while leaving operational checks partial. | [phase-22.md](phase-22.md) |
 
-**한국어:** 위 표는 완료된 Phase 1~21의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 22 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
+**한국어:** 위 표는 완료된 Phase 1~22의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 23 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
 
 ## Adding A New Completed Phase
 

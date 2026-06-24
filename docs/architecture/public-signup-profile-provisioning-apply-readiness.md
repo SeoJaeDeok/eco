@@ -405,3 +405,32 @@ Use only approved disposable/test credentials and do not print them.
 9. Verify authenticated approved observation creation works with `observer_id = auth.uid()`.
 10. Verify public list/detail remain approved-only.
 11. Verify owner/admin edit behavior remains unchanged.
+
+## Phase 22B Live Smoke Result
+
+The corrected migration was manually applied to the intended development/local environment by the operator. Codex did not apply remote SQL.
+
+The first manual apply attempt failed with `ERROR 42501: must be owner of relation users` because ownership-requiring trigger statements targeted `auth.users`. The corrected migration from `1c2ed84 fix: correct auth profile trigger migration permissions` removed the direct trigger drop and trigger comment on `auth.users`, kept the `SECURITY DEFINER` function, pinned `set search_path = ''`, and added safe trigger preflight behavior.
+
+Recorded development/local result:
+
+- Corrected migration applied successfully after the permission fix.
+- Provisioning function verification: PASS.
+- Provisioning trigger verification: PASS.
+- Live signup/login: PASS.
+- Safe display name in public UI: PASS.
+- Raw email public non-exposure: PASS.
+- Exactly one matching `public.profiles` row for the test Auth user: PASS.
+- Profile role remained `user`: PASS.
+- Profile display name matched the safe nickname: PASS.
+- Authenticated approved observation creation: PASS.
+- Observation `observer_id` matched the provisioned profile: PASS.
+- Observation `observer_display_name` matched the safe nickname: PASS.
+- URL-like `image_url` persistence count was 0: PASS.
+- Owner edit and signed-out anonymous edit-hidden checks: PASS.
+
+The exact signup path, immediate session versus email confirmation, was not explicitly reported and remains PARTIAL. Second-account non-owner denial, admin live edit regression, actual upload above the former 5 MB limit, forced expired signed URL retry, and production/domain smoke were not exercised in Phase 22B.
+
+Migration 0005 is now treated as immutable. Do not edit, rerun, or rollback it casually. Any future database correction must be designed as a separately reviewed follow-up migration. Rollback was not run. Production application was not performed.
+
+한국어 요약: 수정된 0005는 개발 환경에 수동 적용되었고, function/trigger, signup/profile 생성, 관찰 생성, observer 연결, owner edit, 로그아웃 후 edit-hidden 흐름이 통과했습니다. 단, 정확한 signup 경로와 몇 가지 운영/회귀 검증은 PARTIAL로 남깁니다.
