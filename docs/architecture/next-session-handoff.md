@@ -23,6 +23,7 @@ Read this together with:
 - `docs/architecture/public-signup-profile-setup-plan.md`
 - `docs/architecture/public-signup-profile-provisioning-apply-readiness.md`
 - `docs/architecture/public-signup-profile-live-smoke.md`
+- `docs/architecture/observation-image-size-db-alignment-apply-readiness.md`
 - `docs/architecture/taxonomy-resolution-design.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/eco/project-working-guide.md`
@@ -97,6 +98,7 @@ Read this together with:
 - 21.5 public UX hardening and verification from `8046de9`, `e2dc23d`, and `6cada30`.
 - 22A signup profile provisioning apply-readiness prepared on `feature/phase-22-signup-profile-provisioning`.
 - 22B signup profile provisioning live smoke completed on `feature/phase-22-signup-profile-live-smoke`.
+- 22C Storage upload live smoke found a DB image-size constraint mismatch, and `0006` was prepared as an apply-ready candidate on `feature/phase-22c-image-size-db-alignment`.
 
 ## Phase 21 Current Session Result
 
@@ -362,6 +364,56 @@ Remaining PARTIAL items:
 Recommended next step:
 
 Phase 22C operational regression checks, limited to actual Supabase upload above the former 5 MB limit, forced expired signed URL retry, optional second-user non-owner denial, optional admin live edit regression, Kakao normal/no-key fallback if desired, and production/domain smoke only after explicit deployment approval.
+
+## Phase 22C-1 Current Session Result
+
+Status: DB alignment migration candidate prepared after live Storage upload diagnosis. Codex did not apply remote SQL and did not retry the upload.
+
+Branch and source:
+
+- Branch: `feature/phase-22c-image-size-db-alignment`.
+- Base/source commit: `b80c9fd docs: record signup profile provisioning smoke`.
+- Push status: not pushed.
+
+Confirmed live diagnosis:
+
+- App-side image limit is 20 MiB: `20 * 1024 * 1024 = 20971520` bytes.
+- Supabase global Storage limit was reported as 50 MB.
+- Observation image bucket limit was changed by the operator from 5 MB to 20 MB.
+- Allowed MIME types remain `image/jpeg`, `image/png`, and `image/webp`.
+- A roughly 9 MB supported image passed app validation and appeared in Supabase Storage.
+- The observation DB row was not created.
+- The public observation list did not show the failed observation.
+- The app showed the generic Korean create failure message.
+- Read-only live DB constraint check confirmed `observations_image_size_bytes_check` still included `image_size_bytes <= 5242880`.
+
+Implementation/documentation result:
+
+- Added migration candidate `supabase/migrations/0006_raise_observation_image_size_limit.sql`.
+- Added `docs/architecture/observation-image-size-db-alignment-apply-readiness.md`.
+- The migration changes only `public.observations.observations_image_size_bytes_check`.
+- Target DB limit is `20971520` bytes.
+- Constraint name remains `observations_image_size_bytes_check`.
+- `image_size_bytes IS NULL` remains allowed.
+- MIME checks, image metadata completeness checks, RLS, Storage policies, bucket settings, Auth, Admin, Kakao, owner/admin edit, image paths, and URL persistence rules were not changed.
+
+Repository/create-flow finding:
+
+- Supabase observation creation uploads the image to Storage first.
+- The observation DB row is inserted second.
+- If the DB insert fails after Storage upload succeeds, a Storage orphan object can remain.
+- Cleanup was not implemented in this phase.
+- Follow-up: design narrow compensating cleanup for the upload-success/DB-insert-failure path and consider safer user-facing error categories without exposing backend details.
+
+Manual apply warning:
+
+- Do not retry large-image upload before applying and verifying `0006`.
+- Do not delete the likely orphan Storage object until the failed observation row absence is confirmed and cleanup is reviewed.
+- Do not edit applied migrations. If another DB correction is needed, use a separately reviewed follow-up migration.
+
+Recommended next step:
+
+Apply `0006` manually in the intended development Supabase project, run the post-apply constraint verification from `docs/architecture/observation-image-size-db-alignment-apply-readiness.md`, then retry one 6-10 MB upload once.
 
 ## Verified Current State
 
