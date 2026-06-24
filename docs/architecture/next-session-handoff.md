@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 22B signup profile provisioning live smoke.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 23A deployment/domain readiness preparation.
 
 Read this together with:
 
@@ -25,6 +25,7 @@ Read this together with:
 - `docs/architecture/public-signup-profile-live-smoke.md`
 - `docs/architecture/observation-image-size-db-alignment-apply-readiness.md`
 - `docs/architecture/observation-image-size-live-smoke.md`
+- `docs/architecture/deployment-domain-readiness.md`
 - `docs/architecture/taxonomy-resolution-design.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/eco/project-working-guide.md`
@@ -100,6 +101,7 @@ Read this together with:
 - 22A signup profile provisioning apply-readiness prepared on `feature/phase-22-signup-profile-provisioning`.
 - 22B signup profile provisioning live smoke completed on `feature/phase-22-signup-profile-live-smoke`.
 - 22C Storage upload live smoke found and fixed a DB image-size constraint mismatch in development. Migration 0006 was manually applied, an approximately 9 MB upload passed end-to-end, and the one test orphan was manually cleaned.
+- 23A deployment/custom-domain readiness checklist prepared on `feature/phase-23-deployment-domain-readiness`; no deployment, merge, push, hosting project, DNS change, Supabase Auth setting change, Kakao setting change, or app/package/migration change was performed.
 
 ## Phase 21 Current Session Result
 
@@ -494,11 +496,61 @@ Remaining PARTIAL items:
 - Optional admin live edit regression remains PARTIAL.
 - Production/domain smoke remains PARTIAL.
 
+Priority update:
+
+- Automatic compensating Storage cleanup is still deferred as a post-deployment operations-hardening task.
+- The operator's current priority moved to deployment and custom-domain readiness.
+- If cleanup work is selected later, the goal remains: when Storage upload succeeds but observation DB insert fails, remove only the just-uploaded object, preserve the original DB error, avoid deleting any pre-existing or referenced object, keep cleanup behind repository/helper boundaries, provide a safe fallback when cleanup itself fails, and improve the generic Korean error category without exposing backend details.
+
+## Phase 23A Current Session Result
+
+Status: deployment and custom-domain readiness documentation prepared. The app was not deployed, no hosting project was created, no domain or DNS was connected, and no push or merge was performed.
+
+Branch and source references:
+
+- Current branch: `feature/phase-23-deployment-domain-readiness`.
+- Source deployment-candidate commit: `9eb3394 docs: record image size alignment smoke`.
+- Phase 22C completed at `9eb3394`.
+- Push status: not pushed.
+
+Readiness findings:
+
+- Framework/build tool: Vite + React + TypeScript.
+- Production build command: `npm.cmd run build`.
+- Build output directory: `dist`.
+- Local preview command: `npm.cmd run preview`.
+- The app is a static client-rendered SPA.
+- Hosting should serve unknown routes through `index.html`.
+- The hidden admin route is hash-based as `/#admin` and is still not exposed in `Navbar`.
+- No custom Vite `base` path is configured; plan for root-domain deployment unless this changes.
+- No provider-specific hosting config was found in the repository.
+- No hard-coded production `localhost` URL was found in app code.
+
+Environment variable inventory:
+
+- `VITE_OBSERVATION_REPOSITORY`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_STORAGE_BUCKET`
+- `VITE_KAKAO_MAP_JAVASCRIPT_KEY`
+
+Security notes:
+
+- Variable names only were documented; no values were copied from `.env.local`.
+- All `VITE_*` values remain browser-exposed.
+- No service-role key is required for frontend deployment.
+- Production values must be entered through the selected hosting provider's environment settings.
+
+Current operator decision needed:
+
+1. Select a hosting provider.
+2. Select the production domain.
+3. Decide whether the canonical public URL uses the root/apex domain or `www`.
+4. After the final HTTPS origin is known, review Supabase Auth redirect settings and Kakao allowed web domains.
+
 Recommended next phase:
 
-`Phase 23A - Compensating Storage Cleanup Design`
-
-Goal: when Storage upload succeeds but observation DB insert fails, remove only the just-uploaded object, preserve the original DB error, avoid deleting any pre-existing or referenced object, keep cleanup behind repository/helper boundaries, provide a safe fallback when cleanup itself fails, and improve the generic Korean error category without exposing backend details.
+`Phase 23B - select hosting provider, integrate the verified branch, and perform the first preview deployment`
 
 ## Verified Current State
 
