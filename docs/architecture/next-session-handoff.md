@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24C taxonomy schema live apply and compatibility verification work.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24D-1 taxonomy resolver foundation implementation work.
 
 Read this together with:
 
@@ -31,6 +31,7 @@ Read this together with:
 - `docs/architecture/taxonomy-api-probe-results.md`
 - `docs/architecture/taxonomy-schema-rls-apply-readiness.md`
 - `docs/architecture/taxonomy-schema-live-smoke.md`
+- `docs/architecture/taxonomy-resolver-implementation-readiness.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/eco/project-working-guide.md`
 - `docs/eco/phase-history/index.md`
@@ -111,6 +112,76 @@ Read this together with:
 - 24A taxonomy API validation and taxonomy integration design completed on `feature/phase-24a-taxonomy-api-design`; Phase 24 remains open and no app code, package files, migrations/RLS, Supabase function, Vercel config, production deployment, merge, or push was performed.
 - 24B taxonomy schema/RLS migration candidate prepared on `feature/phase-24b-taxonomy-schema-rls`; Phase 24 remains open and no app code, package files, Supabase function, Vercel config, production deployment, merge, or push was performed.
 - 24C taxonomy schema migration `0007` manually applied and verified on the Supabase database shared with Production; Phase 24 remains open and no app code, package files, Supabase function, Vercel config, production UI deployment, merge, or push was performed.
+- 24D-1 taxonomy resolver foundation implemented locally on `feature/phase-24d-taxonomy-resolver`; Phase 24 remains open, the Edge Function was not deployed, upload/edit UI was not integrated, observation taxonomy linkage was not written, and no push was performed.
+
+## Phase 24D-1 Current Session Result
+
+Status: local resolver foundation implemented. No remote deployment or UI integration occurred.
+
+Base state:
+
+- Phase 24A commit: `b74ca3a docs: validate taxonomy API integration plan`.
+- Phase 24B commit: `428a684 docs: prepare taxonomy schema migration`.
+- Phase 24C commit: `8b9ac3b docs: record taxonomy schema live apply`.
+- Working branch: `feature/phase-24d-taxonomy-resolver`.
+- Push status: not pushed.
+
+Implemented locally:
+
+- `TaxonomyRepository` contract with `resolveScientificName` and `confirmScientificName`.
+- Scientific-name normalization with NFC, whitespace collapse, control-character rejection, and 200 code point maximum.
+- Deterministic broad taxon mapping from accepted lineage to `식물`, `포유류`, `조류`, `곤충`, `양서/파충류`, `균류`, or `기타`.
+- Deterministic mock taxonomy repository fixtures for exact, synonym, variant, higher-rank, no-match, and controlled timeout/error cases.
+- Supabase taxonomy repository that invokes the trusted `resolve-taxonomy` Edge Function and validates returned JSON before trusting it.
+- `supabase/functions/resolve-taxonomy/` Edge Function source with CORS, POST handling, authenticated user validation, admin cache writes after authentication, GBIF timeout handling, local cache lookup, GBIF mapper, taxon upsert, and successful-resolution cache upsert.
+- Deno test source under `supabase/functions/tests/`.
+- Node pure tests under `tests/`.
+
+Official docs rechecked:
+
+- Supabase Edge Function auth, authorization headers, function dependencies, Deno tests, and `functions.invoke`.
+- GBIF taxonomy interpretation and Species Match API v2 with COL XR `checklistKey`.
+
+Verification:
+
+- `npm.cmd run typecheck`: PASS during implementation.
+- `node --loader ./tests/ts-extension-loader.mjs --test tests/*.test.mjs`: PASS, 13 tests.
+- Supabase CLI: not installed.
+- Deno: not installed.
+- Docker: not installed.
+- Local Edge Function serve/test/deploy: NOT RUN.
+
+Boundary result:
+
+- App repository code changed only to add taxonomy repository foundation.
+- Upload/create/edit UI was not changed.
+- Observation create/update behavior was not changed.
+- No observation `taxon_id` or taxonomy metadata write path was connected.
+- Migration `0007` was not edited.
+- No migration `0008` was created.
+- No remote SQL was applied.
+- No Edge Function was deployed.
+- No live Supabase setting changed.
+- Package files were not changed.
+- Storage, Auth, Admin app code, Kakao, Vercel, DNS, and Production UI were not changed.
+- No GBIF call was made by public list/detail/map/search/tree rendering.
+
+Recommended next phase:
+
+```text
+Phase 24D-2 - Local Edge Function Tooling And Authenticated Resolver Smoke
+```
+
+Exact Phase 24D-2 scope:
+
+1. Install or verify local Supabase CLI, Deno, and Docker tooling.
+2. Run Deno tests for `resolve-taxonomy`.
+3. Serve `resolve-taxonomy` locally.
+4. Invoke `resolve` and `confirm` with an authenticated disposable test session.
+5. Verify `taxa` and `taxonomy_name_resolutions` writes using safe read-only checks.
+6. Confirm no secret-like logs.
+7. Do not integrate upload UI yet.
+8. Do not deploy remotely unless separately approved.
 
 ## Phase 24C Current Session Result
 

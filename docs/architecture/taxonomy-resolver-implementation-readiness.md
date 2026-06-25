@@ -1,0 +1,316 @@
+# Taxonomy Resolver Implementation Readiness
+
+Phase: 24D-1 - TaxonomyRepository And Trusted GBIF Resolver Implementation
+
+Status: implementation prepared locally. The Edge Function was not deployed, and no live Supabase setting was changed.
+
+## Goal
+
+Phase 24D-1 adds the trusted taxonomy resolution foundation without connecting it to the upload or edit UI.
+
+Implemented locally:
+
+- `TaxonomyRepository` contract.
+- Deterministic mock taxonomy repository.
+- Supabase taxonomy repository that invokes one trusted Edge Function.
+- `resolve-taxonomy` Supabase Edge Function source.
+- Scientific-name normalization.
+- Deterministic broad project-taxon derivation.
+- GBIF Species Match API v2 mapper.
+- Local taxonomy cache lookup and trusted cache writes inside the Edge Function.
+- Confirmation protocol for synonym and variant results.
+- Pure unit tests.
+
+Not implemented in this phase:
+
+- No upload form integration.
+- No owner/admin edit integration.
+- No observation `taxon_id` writes.
+- No taxonomy requirement on observation creation.
+- No taxonomy tree.
+- No Edge Function deployment.
+- No migration, RLS, Storage, Auth, Kakao, Vercel, or live DB setting change.
+
+한국어 요약: 이번 단계는 학명 확인 기능의 기반 코드만 준비했습니다. 아직 화면에 연결하지 않았고, Supabase Edge Function도 배포하지 않았습니다.
+
+## Official Sources Rechecked
+
+Supabase:
+
+- Securing Edge Functions: `https://supabase.com/docs/guides/functions/auth`
+- Authorization headers: `https://supabase.com/docs/guides/functions/auth-headers`
+- Function dependencies and function-specific `deno.json`: `https://supabase.com/docs/guides/functions/dependencies`
+- Edge Function tests with Deno: `https://supabase.com/docs/guides/functions/unit-test`
+- JavaScript `functions.invoke`: `https://supabase.com/docs/reference/javascript/functions-invoke`
+
+GBIF:
+
+- Taxonomy interpretation and Species Match API v2: `https://techdocs.gbif.org/en/data-processing/taxonomy-interpretation`
+- API reference entry point: `https://techdocs.gbif.org/en/openapi/`
+
+Implementation decisions from the official docs:
+
+- Browser code calls `supabase.functions.invoke('resolve-taxonomy')`.
+- The function expects a signed-in user's JWT in the `Authorization` header.
+- The function validates the user before creating the admin Supabase client.
+- Authoritative writes to `taxa` and `taxonomy_name_resolutions` happen only inside the trusted function.
+- The function has its own `deno.json`.
+- GBIF lookup uses `GET https://api.gbif.org/v2/species/match` with `scientificName` and the COL XR `checklistKey`.
+
+The current Supabase docs also show a newer `withSupabase` wrapper. This implementation uses the official `supabase-js` Edge Function pattern instead because the repository has no existing Edge Function tooling, no Deno installation, and no safe local way to verify or pin the wrapper package in this phase. The function still validates the caller with `auth.getUser()` before any admin/cache write.
+
+## Implemented Files
+
+Client/app repository foundation:
+
+- `src/features/taxonomy/taxonomyCore.ts`
+- `src/repositories/taxonomyRepository.ts`
+- `src/repositories/taxonomyRepositoryProvider.ts`
+- `src/repositories/mockTaxonomyRepository.ts`
+- `src/repositories/supabase/supabaseTaxonomyRepository.ts`
+
+Trusted Edge Function source:
+
+- `supabase/functions/resolve-taxonomy/deno.json`
+- `supabase/functions/resolve-taxonomy/index.ts`
+- `supabase/functions/resolve-taxonomy/taxonomy_core.ts`
+- `supabase/functions/resolve-taxonomy/gbif_mapper.ts`
+- `supabase/functions/tests/resolve-taxonomy-test.ts`
+
+Local tests:
+
+- `tests/taxonomy-core.test.mjs`
+- `tests/mock-taxonomy-repository.test.mjs`
+- `tests/gbif-mapper.test.mjs`
+- `tests/ts-extension-loader.mjs`
+
+## Repository Contract
+
+The new contract is:
+
+```text
+TaxonomyRepository.resolveScientificName({ scientificName })
+TaxonomyRepository.confirmScientificName({ scientificName, acceptedSourceTaxonKey })
+```
+
+Result states:
+
+- `resolved`
+- `needsConfirmation`
+- `blocked`
+- `error`
+
+The client never sends arbitrary accepted names, lineage fields, taxonomy IDs, or observation taxonomy metadata as authority.
+
+## Normalization Rules
+
+The resolver uses a named maximum:
+
+```text
+SCIENTIFIC_NAME_MAX_LENGTH = 200
+```
+
+Rules:
+
+- Input must be a string.
+- Normalize Unicode with NFC.
+- Trim leading/trailing whitespace.
+- Collapse repeated internal whitespace.
+- Reject empty input.
+- Reject control characters.
+- Reject values longer than 200 Unicode code points.
+- Keep reported scientific-name casing and authorship punctuation.
+- Use a separate lowercased `normalizedInput` only for cache lookup.
+
+## Broad Taxon Mapping
+
+The deterministic helper maps taxonomy lineage to the existing broad groups:
+
+| Rule | Broad taxon |
+| --- | --- |
+| class `Insecta` | `곤충` |
+| class `Aves` | `조류` |
+| class `Mammalia` | `포유류` |
+| class `Amphibia` or `Reptilia` | `양서/파충류` |
+| kingdom `Plantae` | `식물` |
+| kingdom `Fungi` | `균류` |
+| no match | `기타` |
+
+The mapper does not use common names, Korean names, or LLM inference.
+
+## Mock Repository Fixtures
+
+The mock repository is deterministic and makes no network request.
+
+Fixtures:
+
+- Exact accepted: `Homo sapiens`
+- Exact accepted insect: `Apis mellifera`
+- Exact accepted plant: `Taraxacum officinale`
+- Exact accepted fungus: `Amanita muscaria`
+- Synonym requiring confirmation: `Felis concolor` -> `Puma concolor`
+- Variant requiring confirmation: `Homo sapines` -> `Homo sapiens`
+- Higher rank blocked: `Homo`
+- No match blocked: `Xyzabc nonexistentii`
+- Controlled retryable error: `Timeout test`
+
+Confirmation verifies the expected accepted source taxon key. A mismatched key returns `invalid_confirmation`.
+
+## Supabase Repository Behavior
+
+`supabaseTaxonomyRepository` calls only:
+
+```text
+resolve-taxonomy
+```
+
+Supported action bodies:
+
+```json
+{ "action": "resolve", "scientificName": "Homo sapiens" }
+```
+
+```json
+{
+  "action": "confirm",
+  "scientificName": "Felis concolor",
+  "acceptedSourceTaxonKey": "4QHKG"
+}
+```
+
+Rules:
+
+- UI components do not call the function directly.
+- Browser code does not write `taxa`.
+- Browser code does not write `taxonomy_name_resolutions`.
+- Browser code does not write observation taxonomy fields.
+- Function transport errors become safe repository-domain errors.
+- Returned JSON is validated before being trusted.
+
+The provider uses the existing repository-mode convention through `VITE_OBSERVATION_REPOSITORY`. No new `VITE_*` variable was added.
+
+## Edge Function Behavior
+
+HTTP/auth:
+
+- Handles `OPTIONS` for CORS.
+- Accepts `POST`.
+- Rejects unsupported methods.
+- Requires a signed-in Supabase user.
+- Validates the user through `auth.getUser()` before creating the admin client.
+- Returns safe JSON only.
+- Does not log email, JWT, keys, or raw DB errors.
+
+Cache and GBIF flow:
+
+1. Normalize scientific name.
+2. Check `taxonomy_name_resolutions` by source/checklist/normalized input.
+3. If cache exists and confirmation is still required, return `needsConfirmation` without GBIF.
+4. If cache exists and no confirmation is required, return `resolved` without GBIF.
+5. Check accepted `taxa` by accepted/canonical name before GBIF.
+6. If no local cache applies, call GBIF with a 9 second timeout.
+7. Map exact accepted species/infraspecific taxa to `resolved`.
+8. Map synonym and variant candidates to `needsConfirmation`.
+9. Block higher-rank-only, no-match, unsupported, ambiguous, and malformed responses.
+10. Upsert accepted taxa and successful resolution cache rows through the admin client only.
+
+Confirmation flow:
+
+1. Normalize original input.
+2. Check existing successful resolution cache.
+3. If cached accepted source key matches, return `resolved`.
+4. Otherwise call GBIF again for the original input.
+5. Verify the authoritative accepted source key matches the client-provided candidate key.
+6. Upsert `taxa`.
+7. Upsert successful resolution cache.
+8. Return `resolved`.
+
+## Cache Writes
+
+`taxa` row identity:
+
+```text
+source + source_checklist_key + source_taxon_key
+```
+
+Resolution cache identity:
+
+```text
+source + source_checklist_key + normalized_input
+```
+
+The function does not cache:
+
+- no match
+- timeout
+- HTTP 429
+- GBIF 5xx
+- malformed response
+- blocked higher-rank-only results
+
+## Verification
+
+Run locally:
+
+```bash
+npm.cmd run typecheck
+node --loader ./tests/ts-extension-loader.mjs --test tests/*.test.mjs
+npm.cmd run build
+```
+
+Deno/Supabase local function checks are expected later:
+
+```bash
+deno test --config supabase/functions/resolve-taxonomy/deno.json supabase/functions/tests/resolve-taxonomy-test.ts
+supabase functions serve resolve-taxonomy
+```
+
+Phase 24D-1 environment note:
+
+- Supabase CLI: not installed.
+- Deno: not installed.
+- Docker: not installed.
+- Edge Function local serve/deploy was NOT RUN.
+
+## Deployment Readiness
+
+Before deploying the Edge Function in a later phase:
+
+1. Install/verify Supabase CLI.
+2. Install/verify Deno.
+3. Confirm the target Supabase project and environment privately.
+4. Confirm `0007` is applied in the target DB.
+5. Confirm the function runtime has server-side Supabase env values available.
+6. Run Deno tests.
+7. Serve the function locally.
+8. Test authenticated resolve/confirm with a disposable approved test account.
+9. Verify no secret-like logs.
+10. Deploy only after explicit approval.
+
+Do not put service-role values in frontend code, `VITE_*` variables, docs, or logs.
+
+## Remaining Risks
+
+- The Edge Function has not been served locally because Supabase CLI, Deno, and Docker are unavailable.
+- The trusted function has not been deployed.
+- Live authenticated invocation has not been tested.
+- The newer `@supabase/server` wrapper was not adopted in this phase; reassess once Edge Function tooling is installed.
+- Upload/create/edit UI is not integrated yet.
+- No observation taxonomy linkage is written yet.
+- Phase 24E must decide the exact UI state wiring for `학명 확인`.
+
+## Next Recommended Phase
+
+```text
+Phase 24D-2 - Local Edge Function Tooling And Authenticated Resolver Smoke
+```
+
+Recommended scope:
+
+- Install or verify local Supabase CLI/Deno/Docker tooling.
+- Run Deno tests.
+- Serve `resolve-taxonomy` locally.
+- Invoke `resolve` and `confirm` with an authenticated test session.
+- Verify cache writes through safe SQL checks.
+- Do not integrate upload UI yet.
+- Do not deploy remotely yet unless a separate approval step is given.

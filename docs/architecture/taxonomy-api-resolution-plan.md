@@ -10,7 +10,9 @@ Phase 24B update: a local migration candidate and apply-readiness documentation 
 
 Phase 24C update: migration `0007_create_taxonomy_schema.sql` was manually applied by the operator to the Supabase project shared with Production and verified. No app code, package file, Edge Function, Vercel setting, Storage setting, Auth setting, Kakao setting, Admin app code, merge, push, or new Production UI deployment occurred.
 
-한국어 요약: Phase 24A는 학명 확인 API와 향후 설계를 정리했고, Phase 24C에서 taxonomy DB 구조만 수동 적용했습니다. 앱 코드와 배포 설정은 바꾸지 않았습니다.
+Phase 24D-1 update: local `TaxonomyRepository`, deterministic mock repository, Supabase function-invoking repository, and `resolve-taxonomy` Edge Function source now exist. The Edge Function was not deployed, upload/edit UI was not integrated, and observation taxonomy linkage is still not written.
+
+한국어 요약: Phase 24D-1에서 학명 확인용 repository와 Edge Function 소스를 로컬에 추가했습니다. 아직 화면에 연결하지 않았고, Edge Function 배포나 Vercel 배포는 하지 않았습니다.
 
 ## Phase 24B Schema Update
 
@@ -57,6 +59,29 @@ Confirmed after manual apply:
 - The original foreign-key verification query had a false negative due brittle text matching; the corrected relational metadata query confirmed the actual `observations.taxon_id -> taxa.id` foreign key exists.
 - The trusted write path is still required in Phase 24D.
 - No taxonomy resolver, Supabase Edge Function, upload UI integration, or observation taxonomy requirement exists yet.
+
+## Phase 24D-1 Resolver Foundation State
+
+Local implementation now includes:
+
+- `TaxonomyRepository` contract.
+- Scientific-name normalization helper with a 200 code point limit.
+- Deterministic broad taxon mapper from accepted lineage to the existing project groups.
+- Deterministic mock taxonomy repository fixtures.
+- Supabase taxonomy repository that invokes `resolve-taxonomy`.
+- Trusted Edge Function source under `supabase/functions/resolve-taxonomy/`.
+- GBIF response mapper for exact accepted, synonym, variant, higher-rank-only, no-match, and malformed cases.
+- Local cache lookup before GBIF.
+- Trusted upsert path for `taxa` and successful `taxonomy_name_resolutions` rows inside the function.
+- Node pure tests and Deno test source.
+
+Still not done:
+
+- No Edge Function deployment.
+- No local Edge Function serve smoke because Supabase CLI, Deno, and Docker were unavailable in Phase 24D-1.
+- No upload/create/edit UI integration.
+- No observation `taxon_id` writes.
+- No taxonomy requirement on new observation creation.
 
 ## Current Project Findings
 
