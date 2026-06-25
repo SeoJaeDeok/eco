@@ -6,9 +6,11 @@ Original phase: 24A - Scientific Name Resolution API Validation And Taxonomy Int
 
 Phase 24A status: design-only. No app code, package file, Supabase migration, RLS policy, Storage behavior, Auth behavior, Kakao behavior, Admin behavior, Vercel configuration, deployment, merge, or push was part of that phase.
 
-Phase 24B update: a local migration candidate and apply-readiness documentation now exist, but Codex did not apply SQL remotely and did not change application code.
+Phase 24B update: a local migration candidate and apply-readiness documentation were prepared. Codex did not apply SQL remotely and did not change application code in Phase 24B.
 
-한국어 요약: Phase 24A는 학명 확인 API와 향후 설계만 정리합니다. 실제 코드, DB, 배포 설정은 바꾸지 않습니다.
+Phase 24C update: migration `0007_create_taxonomy_schema.sql` was manually applied by the operator to the Supabase project shared with Production and verified. No app code, package file, Edge Function, Vercel setting, Storage setting, Auth setting, Kakao setting, Admin app code, merge, push, or new Production UI deployment occurred.
+
+한국어 요약: Phase 24A는 학명 확인 API와 향후 설계를 정리했고, Phase 24C에서 taxonomy DB 구조만 수동 적용했습니다. 앱 코드와 배포 설정은 바꾸지 않았습니다.
 
 ## Phase 24B Schema Update
 
@@ -38,7 +40,23 @@ Final Phase 24B database decisions:
 - Deny direct browser edits to observation taxonomy linkage fields.
 - Defer the trusted Supabase Edge Function/RPC write path to Phase 24D.
 
-This Phase 24B migration has not been applied by Codex.
+This Phase 24B migration was later manually applied by the operator in Phase 24C. Codex did not run remote SQL.
+
+## Phase 24C Live Schema State
+
+Confirmed after manual apply:
+
+- `public.taxa` is available as the accepted terminal taxonomy cache table.
+- `public.taxonomy_name_resolutions` is available as the server-only successful resolution cache.
+- Nullable observation taxonomy columns are available: `taxon_id`, `taxonomy_match_type`, `taxonomy_confidence`, and `taxonomy_verified_at`.
+- Existing observations remained valid and retained null taxonomy linkage.
+- Public authoritative taxonomy read through `public.taxa` is available.
+- Browser writes to authoritative taxonomy/cache tables are denied.
+- The existing approved-only public observation policy remained present.
+- Existing owner/admin edit protection remained present.
+- The original foreign-key verification query had a false negative due brittle text matching; the corrected relational metadata query confirmed the actual `observations.taxon_id -> taxa.id` foreign key exists.
+- The trusted write path is still required in Phase 24D.
+- No taxonomy resolver, Supabase Edge Function, upload UI integration, or observation taxonomy requirement exists yet.
 
 ## Current Project Findings
 
@@ -524,8 +542,9 @@ Phase 24B:
 
 Phase 24C:
 
-- Apply-readiness review and manual Supabase apply checklist.
-- No Codex remote SQL application.
+- Manual Supabase apply and compatibility verification completed.
+- Migration `0007` is now immutable.
+- No Codex remote SQL application, app code change, or Production UI deployment occurred.
 
 Phase 24D:
 
@@ -534,6 +553,8 @@ Phase 24D:
 - GBIF mapper and response validation.
 - Local cache lookup/upsert.
 - Mock fixtures.
+- Do not integrate upload UI yet.
+- Do not require taxonomy on observation creation yet.
 
 Phase 24E:
 
@@ -553,4 +574,4 @@ Phase 25:
 
 - Collapsible kingdom to species taxonomy tree using stored taxonomy data only.
 
-한국어 요약: 다음은 24B에서 DB/RLS migration 후보를 만드는 단계입니다. 실제 API 구현과 UI는 그 뒤 단계입니다.
+한국어 요약: 다음은 24D에서 `TaxonomyRepository`와 신뢰된 GBIF resolver를 만드는 단계입니다. 업로드 UI 연결과 taxonomy 필수 제출은 그 다음 단계입니다.

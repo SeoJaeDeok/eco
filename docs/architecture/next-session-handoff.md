@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24B taxonomy schema/RLS migration candidate work.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24C taxonomy schema live apply and compatibility verification work.
 
 Read this together with:
 
@@ -30,6 +30,7 @@ Read this together with:
 - `docs/architecture/taxonomy-api-resolution-plan.md`
 - `docs/architecture/taxonomy-api-probe-results.md`
 - `docs/architecture/taxonomy-schema-rls-apply-readiness.md`
+- `docs/architecture/taxonomy-schema-live-smoke.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/eco/project-working-guide.md`
 - `docs/eco/phase-history/index.md`
@@ -109,6 +110,87 @@ Read this together with:
 - 23 Vercel production deployment and smoke are closed. The GitHub repository is connected to Vercel, production deploys from `main`, the first HTTPS deployment loaded, public list/detail/image/refresh smoke passed, and custom-domain connection remains optional follow-up.
 - 24A taxonomy API validation and taxonomy integration design completed on `feature/phase-24a-taxonomy-api-design`; Phase 24 remains open and no app code, package files, migrations/RLS, Supabase function, Vercel config, production deployment, merge, or push was performed.
 - 24B taxonomy schema/RLS migration candidate prepared on `feature/phase-24b-taxonomy-schema-rls`; Phase 24 remains open and no app code, package files, Supabase function, Vercel config, production deployment, merge, or push was performed.
+- 24C taxonomy schema migration `0007` manually applied and verified on the Supabase database shared with Production; Phase 24 remains open and no app code, package files, Supabase function, Vercel config, production UI deployment, merge, or push was performed.
+
+## Phase 24C Current Session Result
+
+Status: manual database apply and compatibility verification complete. Phase 24 remains open.
+
+Base state:
+
+- Phase 24A commit: `b74ca3a docs: validate taxonomy API integration plan`.
+- Phase 24B commit: `428a684 docs: prepare taxonomy schema migration`.
+- Working branch: `feature/phase-24c-taxonomy-schema-live-apply`.
+- Push status: not pushed.
+
+Manual apply context:
+
+- Migration file: `supabase/migrations/0007_create_taxonomy_schema.sql`.
+- Target database category: shared with Vercel Production.
+- Browser smoke origin: not explicitly recorded.
+- Migration `0007` is now immutable.
+- Rollback SQL was not run.
+- No new Production UI deployment occurred.
+- No application code changed.
+
+Confirmed migration and schema results:
+
+| Check | Result |
+| --- | --- |
+| Preflight passed | PASS |
+| Migration apply succeeded | PASS |
+| Post-apply schema checks passed | PASS |
+| Observation count remained unchanged | PASS |
+| Existing taxonomy linkage remained null | PASS |
+| `public.taxa` public SELECT readiness | PASS |
+| Browser taxonomy write-denial metadata checks | PASS |
+| Approved-only observation policy remained present | PASS |
+| Owner/admin protection objects remained present | PASS |
+
+Foreign-key verification note:
+
+- The original FK verification query returned `false` because it used brittle string matching against a rendered constraint definition.
+- A corrected relational metadata query returned `observation_taxon_id_fk_exists_corrected = true`.
+- The original FK result is recorded as a verification-query false negative, not a schema failure.
+- The actual foreign key from `public.observations.taxon_id` to `public.taxa.id` exists and is valid.
+
+Application compatibility verification:
+
+- Automated checks passed: working tree clean, migration `0007` unchanged, forbidden tracked paths absent, `git diff --check`, `npm.cmd run typecheck`, and `npm.cmd run build`.
+- Public regression passed: public observation list, existing detail, image loading, approved observation visibility, pending/rejected public exposure absence, public `taxa` SELECT, resolution-cache public SELECT denial, admin route hidden from `Navbar`, anonymous edit control hidden, signed-out upload gate, public email exposure absence, and secret-like console output absence.
+- Static compatibility passed: current create/insert/update paths send no taxonomy metadata, owner edit form exposes no protected taxonomy fields, direct taxonomy-link mutation is blocked, taxonomy-linked scientific-name stale-link protection exists, and existing protected payload rules remain.
+- Manual browser smoke passed: existing public list/detail/image flow, legacy observation create, public visibility of the new legacy observation, safe nickname display, raw email hiding, owner edit, scientific-name edit, edited description persistence, anonymous edit hiding, and signed-out upload gate.
+- Manual read-only SQL passed: the single compatibility test observation was found once, remained approved, kept all taxonomy fields null, matched the expected edited scientific name, retained approved-only and owner/admin policies, retained the taxonomy guard trigger, and confirmed the corrected FK check.
+
+Boundary result:
+
+- App code was not changed.
+- Package files were not changed.
+- Migration SQL in the repository was not changed after apply.
+- No Supabase Edge Function was created.
+- No GBIF call was made.
+- No taxonomy rows were created by Codex.
+- Vercel configuration and environment variables were not changed.
+- Storage, Auth, Kakao, and Admin app behavior were not changed.
+- No merge or push occurred.
+
+Recommended next phase:
+
+```text
+Phase 24D - TaxonomyRepository And Trusted GBIF Resolver
+```
+
+Exact Phase 24D scope:
+
+1. Create `TaxonomyRepository`.
+2. Add deterministic mock taxonomy fixtures.
+3. Add a trusted Supabase Edge Function.
+4. Query the local taxonomy cache before GBIF.
+5. Normalize and validate GBIF responses.
+6. Insert/update `taxa` and successful resolution-cache rows through a trusted server path.
+7. Return safe normalized resolution results.
+8. Do not integrate the upload UI yet.
+9. Do not require taxonomy on observation creation yet.
 
 ## Phase 24B Current Session Result
 

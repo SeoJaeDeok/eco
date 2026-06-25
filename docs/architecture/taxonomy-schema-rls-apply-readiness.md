@@ -2,7 +2,7 @@
 
 Phase: 24B - Taxonomy Schema And RLS Migration Candidate
 
-Status: migration candidate only. Codex did not apply SQL to any Supabase project.
+Status: applied and verified in Phase 24C. Codex did not execute remote SQL; the operator manually applied migration `0007_create_taxonomy_schema.sql` to the Supabase project shared with Production.
 
 ## Problem Statement
 
@@ -10,7 +10,41 @@ Phase 24A validated the official GBIF Species Match API v2 and selected a stored
 
 The migration must keep all existing observations valid, keep public reads approved-only, and prevent browser clients from forging authoritative taxonomy data.
 
-한국어 요약: 이번 단계는 DB/RLS 후보 SQL만 준비합니다. 실제 Supabase 적용, 앱 코드, Edge Function, 배포는 하지 않습니다.
+한국어 요약: Phase 24C에서 `0007`을 운영과 같은 Supabase DB에 수동 적용하고 검증했습니다. 앱 코드, Edge Function, Vercel 배포 설정은 바꾸지 않았습니다.
+
+## Phase 24C Live Apply Result
+
+Migration `0007_create_taxonomy_schema.sql` was manually applied and verified in Phase 24C.
+
+Confirmed result:
+
+- Target database category: shared with Vercel Production.
+- Preflight checks: PASS.
+- Migration apply: PASS.
+- Post-apply schema checks: PASS.
+- Observation count remained unchanged: PASS.
+- Existing observations remained compatible with null taxonomy linkage: PASS.
+- `public.taxa` public SELECT readiness: PASS.
+- `public.taxonomy_name_resolutions` browser/public access denial: PASS.
+- Browser taxonomy write-denial metadata checks: PASS.
+- Existing approved-only public observation policy remained present: PASS.
+- Existing owner/admin protection objects remained present: PASS.
+- Rollback SQL was not run.
+- No app code, package file, Edge Function, Vercel setting, Storage setting, Auth setting, Kakao setting, or Admin app code changed.
+
+Foreign-key verification note:
+
+- The original FK verification query returned `false` because it used brittle string matching against a rendered constraint definition.
+- A corrected relational metadata query returned `observation_taxon_id_fk_exists_corrected = true`.
+- The original FK result is recorded as a verification-query false negative, not a schema failure.
+- The actual foreign key from `public.observations.taxon_id` to `public.taxa.id` exists and is valid.
+
+Operational rule after apply:
+
+- Migration `0007` is now immutable.
+- Do not edit, rerun, or replace `0007`.
+- Future DB corrections require a separately reviewed new migration.
+- Phase 24D trusted resolver implementation is still not implemented.
 
 ## Actual Current Schema Findings
 
@@ -402,20 +436,27 @@ Never weaken RLS as a rollback shortcut.
 
 ## Known Risks
 
-- The migration is static-reviewed only in Phase 24B; it is not live-tested against Supabase in this phase.
+- Phase 24C live apply and compatibility smoke passed, but the exact browser smoke origin was not explicitly recorded as local or Production.
 - The trusted Edge Function/RPC write path is intentionally deferred to Phase 24D.
 - The expanded edit guard blocks direct taxonomy relinking for all direct update flows; Phase 24D must provide a reviewed trusted path.
 - Public list queries currently use `select('*')`; Phase 24F should narrow public list fields before taxonomy data grows.
 - Future Phase 25 tree browsing must aggregate stored data lazily and must not call GBIF during browsing.
 
-## Exact Phase 24C Plan
+## Phase 24C Completion And Next Step
 
-Phase 24C should be an apply-readiness and manual Supabase apply phase:
+Phase 24C completed the manual apply and verification step:
 
-1. Review this document and `supabase/migrations/0007_create_taxonomy_schema.sql`.
-2. Run pre-apply SQL in a dev/local Supabase database.
-3. Manually apply migration `0007`.
-4. Run post-apply SQL.
-5. Smoke current app behavior without implementing taxonomy UI.
-6. Record PASS/PARTIAL/FAIL results.
-7. Do not implement `TaxonomyRepository`, Edge Function code, upload UI integration, or taxonomy tree in Phase 24C.
+1. The operator manually applied migration `0007` to the Supabase project shared with Production.
+2. Preflight, apply, post-apply, public read, write-denial, policy, and owner/admin protection checks passed.
+3. Existing observation rows remained present and retained null taxonomy linkage.
+4. Legacy public list/detail/image, create, owner edit, anonymous edit hiding, and signed-out upload gate smoke passed.
+5. Rollback SQL was not run.
+6. `0007` is now immutable.
+
+Next recommended phase:
+
+```text
+Phase 24D - TaxonomyRepository And Trusted GBIF Resolver
+```
+
+Phase 24D should implement the trusted resolver/cache path. It should not integrate the upload UI yet and should not require taxonomy on observation creation yet.
