@@ -6,6 +6,14 @@ This document designs a later taxonomy tree/mindmap view for observations. It is
 
 **한국어:** 이 문서는 관찰 기록을 계통 분류 트리로 탐색하는 향후 기능을 설계합니다. Phase 21F에서는 구현하지 않습니다.
 
+## Phase 24A Note
+
+Phase 24A keeps the taxonomy tree as Phase 25 work.
+
+Tree browsing must use stored taxonomy data from the project database. It must not call GBIF while rendering, expanding, searching, or filtering tree nodes.
+
+**한국어:** 트리 구현은 Phase 25 범위입니다. 트리 탐색 중 GBIF를 직접 호출하지 않고 저장된 taxonomy 데이터만 사용해야 합니다.
+
 ## MVP Direction
 
 Start with a collapsible tree view, not a complex graph library.

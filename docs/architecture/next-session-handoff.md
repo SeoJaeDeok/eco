@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 23 first Vercel production deployment.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24A taxonomy API validation and integration design work.
 
 Read this together with:
 
@@ -27,6 +27,8 @@ Read this together with:
 - `docs/architecture/observation-image-size-live-smoke.md`
 - `docs/architecture/deployment-domain-readiness.md`
 - `docs/architecture/taxonomy-resolution-design.md`
+- `docs/architecture/taxonomy-api-resolution-plan.md`
+- `docs/architecture/taxonomy-api-probe-results.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/eco/project-working-guide.md`
 - `docs/eco/phase-history/index.md`
@@ -104,6 +106,77 @@ Read this together with:
 - 23A deployment/custom-domain readiness checklist prepared on `feature/phase-23-deployment-domain-readiness`; no deployment, merge, push, hosting project, DNS change, Supabase Auth setting change, Kakao setting change, or app/package/migration change was performed.
 - 23B Vercel deployment configuration started on `feature/phase-23b-vercel-first-deployment`; Vercel was selected as the first hosting provider and `vercel.json` was added for SPA fallback. No Vercel project, custom domain, DNS, Supabase Auth, or Kakao setting was changed.
 - 23 Vercel production deployment and smoke are closed. The GitHub repository is connected to Vercel, production deploys from `main`, the first HTTPS deployment loaded, public list/detail/image/refresh smoke passed, and custom-domain connection remains optional follow-up.
+- 24A taxonomy API validation and taxonomy integration design completed on `feature/phase-24a-taxonomy-api-design`; Phase 24 remains open and no app code, package files, migrations/RLS, Supabase function, Vercel config, production deployment, merge, or push was performed.
+
+## Phase 24A Current Session Result
+
+Status: design-only. Official API validation and implementation-ready planning are complete; implementation remains deferred to later Phase 24 steps.
+
+Base state:
+
+- Phase 23 was closed at `7d98e54 docs: close phase 23 deployment`.
+- `main` and `origin/main` were verified at `7d98e54` before branching.
+- Working branch: `feature/phase-24a-taxonomy-api-design`.
+- Push status: not pushed.
+
+API validation:
+
+- Official source: GBIF Species Match API v2 with the Catalogue of Life eXtended Release checklist.
+- Endpoint: `https://api.gbif.org/v2/species/match`.
+- Checklist key: `7ddf754f-d193-4cc9-b351-99906754a03b`.
+- Probe status: PASS for the compact read-only matrix recorded in `docs/architecture/taxonomy-api-probe-results.md`.
+- Probe matrix covered exact accepted species, a misspelling/variant, a higher-rank-only input, a no-match input, and a verified synonym.
+- API failure cases such as timeout, HTTP 429, and GBIF 5xx were not naturally observed and remain handled by design.
+
+Chosen Phase 24A product decisions:
+
+- Use an explicit `학명 확인` button.
+- Do not call GBIF while the user types.
+- Do not call GBIF during public list, detail, map, search, or future taxonomy-tree rendering.
+- New observation records will eventually require successfully resolved taxonomy.
+- Existing observations remain valid without a taxonomy relation.
+- Do not use an LLM to guess taxonomy.
+- Use Korean rank labels `계`, `문`, `강`, `목`, `과`, `속`, `종`.
+- Keep Korean-name enrichment as a separate optional follow-up.
+
+Architecture recommendation:
+
+- Recommended path: `TaxonomyRepository -> Supabase Edge Function -> local DB cache -> GBIF`.
+- The recommendation is conditional on adding Edge Function tooling in a later implementation phase because the current repo has no `supabase/functions/` directory or Supabase Edge Function config.
+- Browser-direct GBIF calls are not recommended for taxonomy writes because clients could forge taxonomy fields and duplicate/cache behavior is weak.
+- Vercel serverless remains a fallback if Supabase Edge Functions are rejected, but it adds a second backend surface and production-deployment complexity.
+
+Database/model recommendation:
+
+- MVP model: one accepted terminal `taxa` row with flattened lineage columns and `observations.taxon_id` nullable relation.
+- Source taxon keys must be stored as `text`, not numeric.
+- Existing `observations.scientific_name` should remain for compatibility; new resolved creates can store accepted display text there while also storing reported input separately.
+- Do not make `observations.taxon_id` globally `NOT NULL` until legacy rows are handled and server-side new-row enforcement is separately approved.
+
+Next recommended Phase 24B scope:
+
+```text
+Phase 24B - Taxonomy Schema And RLS Migration Candidate
+```
+
+Recommended 24B tasks:
+
+1. Draft nullable `taxa` schema with flattened lineage columns.
+2. Draft nullable observation taxonomy relation/metadata columns.
+3. Decide whether the first migration candidate includes a small reported-name resolution cache/alias table.
+4. Draft RLS/grants for taxonomy reads and resolver writes.
+5. Keep the SQL as a migration candidate only; do not apply remote SQL.
+6. Do not implement `TaxonomyRepository`, Edge Function code, upload UI, owner/admin edit integration, or taxonomy tree in 24B.
+
+Boundary result:
+
+- App code was not changed.
+- Package files were not changed.
+- Supabase migrations/RLS were not changed.
+- No Supabase Edge Function was created.
+- Vercel configuration and environment variables were not changed.
+- Storage, Auth, Kakao, and Admin behavior were not changed.
+- No deployment, merge, or push occurred.
 
 ## Phase 21 Current Session Result
 

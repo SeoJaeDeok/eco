@@ -6,6 +6,32 @@ This document designs a later taxonomy resolver for scientific names and canonic
 
 **한국어:** 이 문서는 향후 학명 기반 분류 자동 보정 기능을 설계합니다. Phase 21F에서는 앱 구현, 외부 API 호출, DB/RLS 변경을 하지 않습니다.
 
+## Phase 24A Update
+
+Phase 24A validated the current official GBIF Species Match API and supersedes the earlier interaction and storage sketches where they differ.
+
+Use these newer documents as the implementation-ready source of truth:
+
+- `docs/architecture/taxonomy-api-resolution-plan.md`
+- `docs/architecture/taxonomy-api-probe-results.md`
+
+Superseded points from this Phase 21F design:
+
+- Do not debounce lookup from the scientific-name input.
+- Do not call a taxonomy API automatically while the user types.
+- Use an explicit `학명 확인` button.
+- Do not auto-confirm high-confidence non-exact results based only on confidence.
+- Store accepted taxonomy once in a local taxonomy cache/table and keep observations linked by relation rather than duplicating full lineage data into every row.
+
+Still-valid points:
+
+- Do not use an LLM as the taxonomy source of truth.
+- Keep taxonomy lookup behind a repository/service boundary.
+- Preserve existing observations that do not have taxonomy relations.
+- Do not block public list/detail/map rendering when the taxonomy provider is unavailable.
+
+**한국어:** Phase 24A에서 공식 GBIF API와 버튼형 UX를 다시 검증했습니다. 구현 기준은 새 `taxonomy-api-resolution-plan.md`를 우선합니다.
+
 ## Core Principle
 
 Do not use an LLM guess as the taxonomy source of truth.
@@ -92,7 +118,7 @@ Introduce required scientific names in steps:
 
 Future resolver code should:
 
-- debounce lookup from UI input;
+- use an explicit `학명 확인` button instead of debounced lookup from UI input;
 - cache successful lookup responses;
 - handle third-party downtime without blocking basic observation browsing;
 - record unresolved state rather than inventing a classification;
