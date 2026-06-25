@@ -2,11 +2,43 @@
 
 ## Phase And Scope
 
-Phase: 24A - Scientific Name Resolution API Validation And Taxonomy Integration Design
+Original phase: 24A - Scientific Name Resolution API Validation And Taxonomy Integration Design
 
-Status: design-only. No app code, package file, Supabase migration, RLS policy, Storage behavior, Auth behavior, Kakao behavior, Admin behavior, Vercel configuration, deployment, merge, or push is part of this phase.
+Phase 24A status: design-only. No app code, package file, Supabase migration, RLS policy, Storage behavior, Auth behavior, Kakao behavior, Admin behavior, Vercel configuration, deployment, merge, or push was part of that phase.
+
+Phase 24B update: a local migration candidate and apply-readiness documentation now exist, but Codex did not apply SQL remotely and did not change application code.
 
 한국어 요약: Phase 24A는 학명 확인 API와 향후 설계만 정리합니다. 실제 코드, DB, 배포 설정은 바꾸지 않습니다.
+
+## Phase 24B Schema Update
+
+Phase 24B prepared the schema/RLS migration candidate in:
+
+```text
+supabase/migrations/0007_create_taxonomy_schema.sql
+```
+
+Apply-readiness notes live in:
+
+```text
+docs/architecture/taxonomy-schema-rls-apply-readiness.md
+```
+
+Final Phase 24B database decisions:
+
+- Keep existing `observations.scientific_name` as the user-entered/reported scientific name.
+- Do not add a separate `reported_scientific_name` observation column in the MVP.
+- Add `public.taxa` as the accepted terminal taxonomy cache with flattened lineage columns.
+- Add `public.taxonomy_name_resolutions` as a server-only successful query-resolution cache.
+- Add nullable `observations.taxon_id`, `taxonomy_match_type`, `taxonomy_confidence`, and `taxonomy_verified_at`.
+- Keep existing observations valid when these fields are `NULL`.
+- Keep `observations.taxon` and current broad filters unchanged.
+- Allow public reads of accepted `taxa` rows.
+- Deny browser writes to authoritative taxonomy cache data.
+- Deny direct browser edits to observation taxonomy linkage fields.
+- Defer the trusted Supabase Edge Function/RPC write path to Phase 24D.
+
+This Phase 24B migration has not been applied by Codex.
 
 ## Current Project Findings
 
@@ -214,7 +246,9 @@ Cache approach:
 
 - Primary cache table: `taxa`, unique by source/checklist/source accepted taxon key.
 - Resolver first checks exact local accepted/canonical-name matches when the input is already an accepted name.
-- If synonym/variant repeated-input reuse is required in Phase 24B, add a small `taxonomy_resolution_cache` or alias table keyed by normalized reported input text, source, and checklist. That table can point to the accepted `taxa.id` and avoid repeat GBIF calls for the same synonym or spelling variant.
+- Phase 24B adds `taxonomy_name_resolutions`, a server-only successful query-resolution cache keyed by normalized reported input text, source, and checklist.
+- The resolution cache points to accepted `taxa.id` and avoids repeated GBIF calls for exact accepted names, synonyms, and user-confirmed variants.
+- Do not cache no-match, timeout, HTTP 429, GBIF 5xx, or malformed response results.
 - Stale cache refresh should happen only during explicit lookup, never during public render. Candidate stale window: 180 days, with a manual "refresh taxonomy" path later if needed.
 
 Performance risks:
@@ -303,7 +337,6 @@ updated_at timestamptz not null
 Candidate `observations` additions:
 
 ```text
-reported_scientific_name text
 taxon_id uuid null references public.taxa(id)
 taxonomy_match_type text
 taxonomy_confidence integer
@@ -312,9 +345,12 @@ taxonomy_verified_at timestamptz
 
 Compatibility note:
 
-- Keep existing `observations.scientific_name` for current display/search compatibility.
-- For new resolved creates, set `scientific_name` to the accepted scientific name while storing the user's entered text in `reported_scientific_name` when it differs.
+- Keep existing `observations.scientific_name` as the user-entered/reported scientific name.
+- Do not add `reported_scientific_name` in the MVP because it duplicates current schema/code meaning.
+- Store the accepted name and source identity in `taxa`, linked from observations through nullable `taxon_id`.
 - Do not rewrite historical `scientific_name` values in Phase 24.
+- Direct scientific-name edits remain compatible for legacy rows with `taxon_id = null`.
+- Once an observation has `taxon_id`, direct scientific-name edits are blocked until a trusted resolver-backed edit flow is implemented.
 
 Key type decision:
 
@@ -345,10 +381,10 @@ Likely indexes:
 Staged rollout:
 
 1. Add nullable taxonomy schema and RLS migration candidate.
-2. Implement resolver/cache path.
-3. Integrate upload/create.
-4. Smoke locally and in Vercel Preview.
-5. Roll out to production after explicit approval.
+2. Manually review and apply the migration in Phase 24C.
+3. Implement the trusted resolver/cache path in Phase 24D.
+4. Integrate upload/create and owner/admin edit UI in Phase 24E.
+5. Smoke locally, in Preview, and then production in Phase 24F after explicit approval.
 6. Add later server-side enforcement for new creates.
 7. Optional legacy backfill as a separate reviewed phase.
 
@@ -357,6 +393,7 @@ Enforcement without breaking old rows:
 - Do not make `observations.taxon_id` globally `NOT NULL` immediately.
 - Keep old observations valid with `taxon_id = null`.
 - Enforce taxonomy only on new create/update flows through repository/server validation and later insert/update constraints or triggers that apply to new rows or changed scientific names.
+- Phase 24B blocks ordinary browser clients from forging taxonomy fields; Phase 24D must add the trusted server write boundary that can upsert cache rows and attach taxonomy metadata.
 
 한국어 요약: MVP는 `taxa` 한 행에 accepted taxon과 표준 lineage를 납작하게 저장하는 방식이 가장 안전합니다. 기존 관찰 기록은 taxonomy 연결이 없어도 계속 유효해야 합니다.
 

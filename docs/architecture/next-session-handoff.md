@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24A taxonomy API validation and integration design work.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24B taxonomy schema/RLS migration candidate work.
 
 Read this together with:
 
@@ -29,6 +29,7 @@ Read this together with:
 - `docs/architecture/taxonomy-resolution-design.md`
 - `docs/architecture/taxonomy-api-resolution-plan.md`
 - `docs/architecture/taxonomy-api-probe-results.md`
+- `docs/architecture/taxonomy-schema-rls-apply-readiness.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/eco/project-working-guide.md`
 - `docs/eco/phase-history/index.md`
@@ -107,6 +108,72 @@ Read this together with:
 - 23B Vercel deployment configuration started on `feature/phase-23b-vercel-first-deployment`; Vercel was selected as the first hosting provider and `vercel.json` was added for SPA fallback. No Vercel project, custom domain, DNS, Supabase Auth, or Kakao setting was changed.
 - 23 Vercel production deployment and smoke are closed. The GitHub repository is connected to Vercel, production deploys from `main`, the first HTTPS deployment loaded, public list/detail/image/refresh smoke passed, and custom-domain connection remains optional follow-up.
 - 24A taxonomy API validation and taxonomy integration design completed on `feature/phase-24a-taxonomy-api-design`; Phase 24 remains open and no app code, package files, migrations/RLS, Supabase function, Vercel config, production deployment, merge, or push was performed.
+- 24B taxonomy schema/RLS migration candidate prepared on `feature/phase-24b-taxonomy-schema-rls`; Phase 24 remains open and no app code, package files, Supabase function, Vercel config, production deployment, merge, or push was performed.
+
+## Phase 24B Current Session Result
+
+Status: migration candidate and documentation only. Remote SQL was not applied, and no app/server implementation was added.
+
+Base state:
+
+- Phase 24A commit: `b74ca3a docs: validate taxonomy API integration plan`.
+- Working branch: `feature/phase-24b-taxonomy-schema-rls`.
+- Phase 24A remains unmerged/unpushed from this repository state.
+- Production remains based on `main`.
+- Push status: not pushed.
+
+Migration candidate:
+
+- File: `supabase/migrations/0007_create_taxonomy_schema.sql`.
+- Adds `public.taxa` for accepted terminal taxonomy cache rows with flattened lineage columns.
+- Adds `public.taxonomy_name_resolutions` as a server-only successful query-resolution cache.
+- Adds nullable observation fields: `taxon_id`, `taxonomy_match_type`, `taxonomy_confidence`, and `taxonomy_verified_at`.
+- Keeps existing `observations.scientific_name` as the user-entered/reported scientific name.
+- Keeps existing broad `observations.taxon` and current public filters unchanged.
+- Adds public read policy for accepted `taxa` rows.
+- Adds no browser write policy for authoritative taxonomy tables.
+- Updates the authenticated observation insert policy so browser creates must leave taxonomy linkage fields `NULL`.
+- Extends `public.guard_observation_edit_fields()` to block direct taxonomy relinking and to block direct scientific-name changes when `taxon_id` is already attached.
+
+Documentation updated:
+
+- `docs/architecture/taxonomy-schema-rls-apply-readiness.md`
+- `docs/architecture/taxonomy-api-resolution-plan.md`
+- `docs/architecture/taxonomy-resolution-design.md`
+- `docs/architecture/next-session-handoff.md`
+
+Boundary result:
+
+- App code was not changed.
+- Package files were not changed.
+- Existing migrations `0001` through `0006` were not edited.
+- No Supabase Edge Function was created.
+- No live Supabase SQL/RLS/grant change was applied by Codex.
+- Vercel configuration and environment variables were not changed.
+- Storage, Auth, Kakao, and Admin app behavior were not changed.
+- No deployment, merge, or push occurred.
+
+Known risks:
+
+- The migration is static-reviewed only until Phase 24C manually applies it in a dev/local Supabase database.
+- The trusted taxonomy write path is intentionally deferred; Phase 24D must design the Edge Function/RPC mechanism before observations can be linked to taxonomy.
+- Current public list repository code still uses `select('*')`; Phase 24F should narrow public list fields before taxonomy usage grows.
+
+Recommended next phase:
+
+```text
+Phase 24C - Taxonomy Schema/RLS Apply-Readiness Review And Manual Supabase Apply
+```
+
+Exact Phase 24C scope:
+
+1. Review `supabase/migrations/0007_create_taxonomy_schema.sql`.
+2. Run the pre-apply checks in `docs/architecture/taxonomy-schema-rls-apply-readiness.md`.
+3. Manually apply `0007` to a dev/local Supabase database only.
+4. Run the post-apply verification SQL.
+5. Smoke current list/detail/create/owner edit/admin edit behavior.
+6. Record results.
+7. Do not implement `TaxonomyRepository`, Supabase Edge Function code, upload lookup UI, owner/admin taxonomy edit integration, or taxonomy tree in Phase 24C.
 
 ## Phase 24A Current Session Result
 
@@ -150,7 +217,7 @@ Database/model recommendation:
 
 - MVP model: one accepted terminal `taxa` row with flattened lineage columns and `observations.taxon_id` nullable relation.
 - Source taxon keys must be stored as `text`, not numeric.
-- Existing `observations.scientific_name` should remain for compatibility; new resolved creates can store accepted display text there while also storing reported input separately.
+- Existing `observations.scientific_name` remains the user-entered/reported scientific name; Phase 24B did not add a duplicate reported-name observation column.
 - Do not make `observations.taxon_id` globally `NOT NULL` until legacy rows are handled and server-side new-row enforcement is separately approved.
 
 Next recommended Phase 24B scope:
@@ -163,7 +230,7 @@ Recommended 24B tasks:
 
 1. Draft nullable `taxa` schema with flattened lineage columns.
 2. Draft nullable observation taxonomy relation/metadata columns.
-3. Decide whether the first migration candidate includes a small reported-name resolution cache/alias table.
+3. Include the selected server-only successful query-resolution cache table.
 4. Draft RLS/grants for taxonomy reads and resolver writes.
 5. Keep the SQL as a migration candidate only; do not apply remote SQL.
 6. Do not implement `TaxonomyRepository`, Edge Function code, upload UI, owner/admin edit integration, or taxonomy tree in 24B.

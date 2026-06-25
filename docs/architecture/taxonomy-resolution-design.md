@@ -14,6 +14,7 @@ Use these newer documents as the implementation-ready source of truth:
 
 - `docs/architecture/taxonomy-api-resolution-plan.md`
 - `docs/architecture/taxonomy-api-probe-results.md`
+- `docs/architecture/taxonomy-schema-rls-apply-readiness.md`
 
 Superseded points from this Phase 21F design:
 
@@ -22,6 +23,8 @@ Superseded points from this Phase 21F design:
 - Use an explicit `학명 확인` button.
 - Do not auto-confirm high-confidence non-exact results based only on confidence.
 - Store accepted taxonomy once in a local taxonomy cache/table and keep observations linked by relation rather than duplicating full lineage data into every row.
+- Keep existing `observations.scientific_name` as the user-entered/reported scientific name; do not add a duplicate reported-name observation column in the Phase 24B MVP.
+- Use `public.taxa` for accepted terminal taxa and `public.taxonomy_name_resolutions` for server-only successful query-resolution caching.
 
 Still-valid points:
 
@@ -31,6 +34,27 @@ Still-valid points:
 - Do not block public list/detail/map rendering when the taxonomy provider is unavailable.
 
 **한국어:** Phase 24A에서 공식 GBIF API와 버튼형 UX를 다시 검증했습니다. 구현 기준은 새 `taxonomy-api-resolution-plan.md`를 우선합니다.
+
+## Phase 24B Schema Update
+
+Phase 24B adds a migration candidate only:
+
+```text
+supabase/migrations/0007_create_taxonomy_schema.sql
+```
+
+The candidate uses:
+
+- `public.taxa` for accepted terminal taxonomy rows with flattened lineage columns.
+- `public.taxonomy_name_resolutions` for server-only successful input-name cache rows.
+- Nullable observation linkage fields: `taxon_id`, `taxonomy_match_type`, `taxonomy_confidence`, and `taxonomy_verified_at`.
+- Existing `observations.scientific_name` as the reported/user-entered scientific name.
+
+The migration candidate preserves legacy observations with no taxonomy link and blocks ordinary browser clients from writing taxonomy cache data or relinking observation taxonomy fields.
+
+Phase 24B does not apply SQL remotely and does not implement the resolver, Edge Function, upload UI, owner/admin edit integration, or taxonomy tree.
+
+**한국어:** Phase 24B는 DB/RLS 후보만 준비합니다. 실제 적용과 구현은 다음 단계입니다.
 
 ## Core Principle
 
@@ -101,6 +125,8 @@ Conceptual DB fields for a later migration candidate:
 Do not draft/apply SQL in Phase 21F. The names above are conceptual and need a separate DB/RLS phase.
 
 **한국어:** 저장 필드는 개념 설계만 기록합니다. 실제 SQL 초안과 적용은 별도 phase에서 진행합니다.
+
+Phase 24B supersedes this conceptual field list for the MVP schema. Use `docs/architecture/taxonomy-schema-rls-apply-readiness.md` and `supabase/migrations/0007_create_taxonomy_schema.sql` for the current candidate object names.
 
 ## Future Scientific Name Required Flow
 
