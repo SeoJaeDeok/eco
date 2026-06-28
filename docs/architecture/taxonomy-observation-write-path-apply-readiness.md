@@ -12,6 +12,20 @@ Phase 24E-2A correction:
 - The preflight and post-apply checks now verify column-level read readiness
   and the policy instead of requiring table-level `SELECT`.
 
+Phase 24E-2A execute-grant correction:
+
+- The first 0010 apply attempt failed at its own postcondition because `anon`
+  could execute `public.create_observation_with_verified_taxonomy(...)`.
+- PostgreSQL/Supabase functions can receive default `EXECUTE` privileges, so
+  protected functions must explicitly revoke execution from `public`, `anon`,
+  and other roles before granting the intended role.
+- The old failed attempt is not considered a successful migration.
+- The corrected 0010 uses `CREATE OR REPLACE FUNCTION`, explicitly revokes
+  execution from `public`, `anon`, and `authenticated`, then grants only the
+  taxonomy-linked create RPC back to `authenticated`.
+- The internal helper function remains non-public and is not directly
+  executable by browser roles.
+
 ## Migration
 
 Filename:
@@ -52,7 +66,14 @@ EXECUTE on public.create_observation_with_verified_taxonomy(...) to authenticate
 It revokes:
 
 ```text
-EXECUTE on the new functions from public/anon by default
+EXECUTE on the helper from public/anon/authenticated
+EXECUTE on the create RPC from public/anon/authenticated before re-grant
+```
+
+It then grants:
+
+```text
+EXECUTE on public.create_observation_with_verified_taxonomy(...) to authenticated only
 ```
 
 It does not:
@@ -86,9 +107,6 @@ select
       and tgname = 'observations_guard_edit_fields'
       and not tgisinternal
   ) as edit_guard_trigger_exists,
-  to_regprocedure(
-    'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)'
-  ) is null as create_rpc_not_present_yet,
   has_any_column_privilege('anon', 'public.taxa', 'SELECT') as anon_has_taxa_column_select,
   has_any_column_privilege('authenticated', 'public.taxa', 'SELECT') as authenticated_has_taxa_column_select,
   exists (
@@ -156,6 +174,56 @@ If any value is false:
 - do not manually edit live objects
 - report only the failed safe boolean name
 
+## Optional Partial-State Diagnostic SQL
+
+Run this only if the previous failed 0010 attempt may have left functions
+behind. It is read-only and returns only safe booleans/counts.
+
+```sql
+with function_refs as (
+  select
+    to_regprocedure(
+      'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)'
+    ) as create_rpc_oid,
+    to_regprocedure('public.normalize_taxonomy_input_key(text)') as helper_oid
+)
+select
+  create_rpc_oid is not null as create_rpc_exists,
+  coalesce(has_function_privilege('anon', create_rpc_oid, 'EXECUTE'), false) as anon_can_execute_create_rpc,
+  coalesce(has_function_privilege('authenticated', create_rpc_oid, 'EXECUTE'), false) as authenticated_can_execute_create_rpc,
+  coalesce((
+    select exists (
+      select 1
+      from pg_proc p
+      cross join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) as acl
+      where p.oid = create_rpc_oid
+        and acl.grantee = 0
+        and acl.privilege_type = 'EXECUTE'
+    )
+  ), false) as public_can_execute_create_rpc,
+  helper_oid is not null as helper_exists,
+  coalesce(has_function_privilege('anon', helper_oid, 'EXECUTE'), false) as anon_can_execute_helper,
+  coalesce(has_function_privilege('authenticated', helper_oid, 'EXECUTE'), false) as authenticated_can_execute_helper,
+  coalesce((
+    select exists (
+      select 1
+      from pg_proc p
+      cross join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) as acl
+      where p.oid = helper_oid
+        and acl.grantee = 0
+        and acl.privilege_type = 'EXECUTE'
+    )
+  ), false) as public_can_execute_helper
+from function_refs;
+```
+
+Expected safe interpretation:
+
+- The function existence values may be either `true` or `false` before the
+  corrected migration is applied.
+- If any unsafe execute value is `true`, do not manually revoke it in the
+  Dashboard. Apply only the corrected full 0010 after preflight passes.
+
 ## Manual Apply Steps
 
 1. Open the intended Supabase project.
@@ -182,21 +250,73 @@ If an error occurs:
 Run this after 0010 applies.
 
 ```sql
+with function_refs as (
+  select
+    to_regprocedure('public.normalize_taxonomy_input_key(text)') as helper_oid,
+    to_regprocedure(
+      'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)'
+    ) as create_rpc_oid
+),
+function_flags as (
+  select
+    helper_oid,
+    create_rpc_oid,
+    coalesce((
+      select p.prosecdef
+      from pg_proc p
+      where p.oid = create_rpc_oid
+    ), false) as create_rpc_security_definer,
+    coalesce((
+      select exists (
+        select 1
+        from unnest(coalesce(p.proconfig, array[]::text[])) as cfg(setting)
+        where split_part(setting, '=', 1) = 'search_path'
+          and replace(split_part(setting, '=', 2), '"', '') = ''
+      )
+      from pg_proc p
+      where p.oid = create_rpc_oid
+    ), false) as create_rpc_safe_search_path,
+    coalesce((
+      select exists (
+        select 1
+        from pg_proc p
+        cross join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) as acl
+        where p.oid = create_rpc_oid
+          and acl.grantee = 0
+          and acl.privilege_type = 'EXECUTE'
+      )
+    ), false) as public_can_execute_create_rpc,
+    coalesce((
+      select exists (
+        select 1
+        from pg_proc p
+        cross join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) as acl
+        where p.oid = helper_oid
+          and acl.grantee = 0
+          and acl.privilege_type = 'EXECUTE'
+      )
+    ), false) as public_can_execute_helper
+  from function_refs
+)
 select
-  to_regprocedure('public.normalize_taxonomy_input_key(text)') is not null as normalize_helper_exists,
-  to_regprocedure(
-    'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)'
-  ) is not null as create_rpc_exists,
+  helper_oid is not null as normalize_helper_exists,
+  create_rpc_oid is not null as create_rpc_exists,
+  create_rpc_security_definer,
+  create_rpc_safe_search_path,
   has_function_privilege(
     'authenticated',
-    'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)',
+    create_rpc_oid,
     'EXECUTE'
   ) as authenticated_can_execute_create_rpc,
   not has_function_privilege(
     'anon',
-    'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)',
+    create_rpc_oid,
     'EXECUTE'
   ) as anon_cannot_execute_create_rpc,
+  not public_can_execute_create_rpc as public_cannot_execute_create_rpc,
+  not has_function_privilege('anon', helper_oid, 'EXECUTE') as anon_cannot_execute_helper,
+  not has_function_privilege('authenticated', helper_oid, 'EXECUTE') as authenticated_cannot_execute_helper,
+  not public_can_execute_helper as public_cannot_execute_helper,
   not (
     has_column_privilege('anon', 'public.observations', 'taxon_id', 'INSERT')
     or has_column_privilege('authenticated', 'public.observations', 'taxon_id', 'INSERT')
@@ -252,7 +372,14 @@ select
       and cmd = 'SELECT'
   ) as approved_only_public_policy_exists,
   count(*) filter (where taxon_id is not null) >= 0 as observation_taxonomy_count_safe_boolean
-from public.observations;
+from function_flags, public.observations
+group by
+  helper_oid,
+  create_rpc_oid,
+  create_rpc_security_definer,
+  create_rpc_safe_search_path,
+  public_can_execute_create_rpc,
+  public_can_execute_helper;
 ```
 
 Expected post-apply result:
@@ -287,6 +414,34 @@ revoke all on function public.create_observation_with_verified_taxonomy(
   text,
   integer
 ) from public;
+
+revoke all on function public.create_observation_with_verified_taxonomy(
+  text,
+  text,
+  uuid,
+  text,
+  date,
+  double precision,
+  double precision,
+  text,
+  text,
+  text,
+  integer
+) from anon;
+
+revoke all on function public.create_observation_with_verified_taxonomy(
+  text,
+  text,
+  uuid,
+  text,
+  date,
+  double precision,
+  double precision,
+  text,
+  text,
+  text,
+  integer
+) from authenticated;
 
 drop function if exists public.create_observation_with_verified_taxonomy(
   text,

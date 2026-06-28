@@ -57,12 +57,6 @@ begin
     raise exception 'Phase 24E preflight failed: observations_guard_edit_fields trigger is missing.';
   end if;
 
-  if to_regprocedure(
-    'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)'
-  ) is not null then
-    raise exception 'Phase 24E preflight failed: create_observation_with_verified_taxonomy already exists.';
-  end if;
-
   if not (
     has_any_column_privilege('anon', 'public.taxa', 'SELECT')
     and has_any_column_privilege('authenticated', 'public.taxa', 'SELECT')
@@ -119,6 +113,14 @@ begin
   end if;
 end $$;
 
+create temp table phase_24e_0010_pre_counts
+on commit drop
+as
+select
+  count(*)::bigint as observation_count,
+  count(*) filter (where taxon_id is not null)::bigint as taxonomy_linked_observation_count
+from public.observations;
+
 -- ---------------------------------------------------------------------------
 -- Helper
 -- ---------------------------------------------------------------------------
@@ -127,7 +129,7 @@ end $$;
 -- enough for DB verification: trim, collapse whitespace, and lowercase. The
 -- trusted resolver remains authoritative for GBIF matching and taxonomy cache
 -- writes.
-create function public.normalize_taxonomy_input_key(input_value text)
+create or replace function public.normalize_taxonomy_input_key(input_value text)
 returns text
 language sql
 immutable
@@ -147,13 +149,18 @@ $$;
 comment on function public.normalize_taxonomy_input_key(text) is
   'Internal helper for comparing reported scientific names with trusted taxonomy cache inputs.';
 
+-- PostgreSQL/Supabase projects may expose newly-created functions through
+-- default EXECUTE grants. This helper is internal to trusted DB code, so remove
+-- browser/API execution explicitly.
 revoke all on function public.normalize_taxonomy_input_key(text) from public;
+revoke all on function public.normalize_taxonomy_input_key(text) from anon;
+revoke all on function public.normalize_taxonomy_input_key(text) from authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Trusted create RPC
 -- ---------------------------------------------------------------------------
 
-create function public.create_observation_with_verified_taxonomy(
+create or replace function public.create_observation_with_verified_taxonomy(
   p_name text,
   p_reported_scientific_name text,
   p_taxon_id uuid,
@@ -365,6 +372,37 @@ revoke all on function public.create_observation_with_verified_taxonomy(
   integer
 ) from public;
 
+-- Converge permissions even if an earlier failed manual attempt left the
+-- function behind with unsafe default EXECUTE grants. Only signed-in users may
+-- call this RPC; anon/public must remain denied.
+revoke all on function public.create_observation_with_verified_taxonomy(
+  text,
+  text,
+  uuid,
+  text,
+  date,
+  double precision,
+  double precision,
+  text,
+  text,
+  text,
+  integer
+) from anon;
+
+revoke all on function public.create_observation_with_verified_taxonomy(
+  text,
+  text,
+  uuid,
+  text,
+  date,
+  double precision,
+  double precision,
+  text,
+  text,
+  text,
+  integer
+) from authenticated;
+
 grant execute on function public.create_observation_with_verified_taxonomy(
   text,
   text,
@@ -384,15 +422,41 @@ grant execute on function public.create_observation_with_verified_taxonomy(
 -- ---------------------------------------------------------------------------
 
 do $$
+declare
+  v_create_rpc regprocedure := to_regprocedure(
+    'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)'
+  );
+  v_helper regprocedure := to_regprocedure('public.normalize_taxonomy_input_key(text)');
 begin
-  if to_regprocedure('public.normalize_taxonomy_input_key(text)') is null then
+  if v_helper is null then
     raise exception 'Phase 24E postcondition failed: normalize_taxonomy_input_key is missing.';
   end if;
 
-  if to_regprocedure(
-    'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)'
-  ) is null then
+  if v_create_rpc is null then
     raise exception 'Phase 24E postcondition failed: create_observation_with_verified_taxonomy is missing.';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_proc p
+    where p.oid = v_create_rpc
+      and p.prosecdef
+  ) then
+    raise exception 'Phase 24E postcondition failed: create RPC is not SECURITY DEFINER.';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_proc p
+    where p.oid = v_create_rpc
+      and exists (
+        select 1
+        from unnest(coalesce(p.proconfig, array[]::text[])) as cfg(setting)
+        where split_part(setting, '=', 1) = 'search_path'
+          and replace(split_part(setting, '=', 2), '"', '') = ''
+      )
+  ) then
+    raise exception 'Phase 24E postcondition failed: create RPC search_path is not locked down.';
   end if;
 
   if not has_function_privilege(
@@ -403,12 +467,42 @@ begin
     raise exception 'Phase 24E postcondition failed: authenticated cannot execute taxonomy-linked create RPC.';
   end if;
 
+  if exists (
+    select 1
+    from pg_proc p
+    cross join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) as acl
+    where p.oid = v_create_rpc
+      and acl.grantee = 0
+      and acl.privilege_type = 'EXECUTE'
+  ) then
+    raise exception 'Phase 24E postcondition failed: public can execute taxonomy-linked create RPC.';
+  end if;
+
   if has_function_privilege(
     'anon',
     'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)',
     'EXECUTE'
   ) then
     raise exception 'Phase 24E postcondition failed: anon can execute taxonomy-linked create RPC.';
+  end if;
+
+  if exists (
+    select 1
+    from pg_proc p
+    cross join lateral aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) as acl
+    where p.oid = v_helper
+      and acl.grantee = 0
+      and acl.privilege_type = 'EXECUTE'
+  ) then
+    raise exception 'Phase 24E postcondition failed: public can execute internal taxonomy helper.';
+  end if;
+
+  if has_function_privilege('anon', 'public.normalize_taxonomy_input_key(text)', 'EXECUTE') then
+    raise exception 'Phase 24E postcondition failed: anon can execute internal taxonomy helper.';
+  end if;
+
+  if has_function_privilege('authenticated', 'public.normalize_taxonomy_input_key(text)', 'EXECUTE') then
+    raise exception 'Phase 24E postcondition failed: authenticated can directly execute internal taxonomy helper.';
   end if;
 
   if (
@@ -432,6 +526,25 @@ begin
     raise exception 'Phase 24E postcondition failed: direct browser taxonomy observation column write is unexpectedly granted.';
   end if;
 
+  if (
+    has_table_privilege('anon', 'public.taxa', 'INSERT')
+    or has_table_privilege('anon', 'public.taxa', 'UPDATE')
+    or has_table_privilege('anon', 'public.taxa', 'DELETE')
+    or has_table_privilege('authenticated', 'public.taxa', 'INSERT')
+    or has_table_privilege('authenticated', 'public.taxa', 'UPDATE')
+    or has_table_privilege('authenticated', 'public.taxa', 'DELETE')
+    or has_table_privilege('anon', 'public.taxonomy_name_resolutions', 'SELECT')
+    or has_table_privilege('authenticated', 'public.taxonomy_name_resolutions', 'SELECT')
+    or has_table_privilege('anon', 'public.taxonomy_name_resolutions', 'INSERT')
+    or has_table_privilege('anon', 'public.taxonomy_name_resolutions', 'UPDATE')
+    or has_table_privilege('anon', 'public.taxonomy_name_resolutions', 'DELETE')
+    or has_table_privilege('authenticated', 'public.taxonomy_name_resolutions', 'INSERT')
+    or has_table_privilege('authenticated', 'public.taxonomy_name_resolutions', 'UPDATE')
+    or has_table_privilege('authenticated', 'public.taxonomy_name_resolutions', 'DELETE')
+  ) then
+    raise exception 'Phase 24E postcondition failed: browser taxonomy cache access is broader than expected.';
+  end if;
+
   if not exists (
     select 1
     from pg_policies
@@ -441,6 +554,40 @@ begin
       and cmd = 'SELECT'
   ) then
     raise exception 'Phase 24E postcondition failed: approved-only public observation policy is missing.';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'observations'
+      and policyname = 'Owners can update own approved observation content'
+      and cmd = 'UPDATE'
+  ) then
+    raise exception 'Phase 24E postcondition failed: owner update policy is missing.';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'observations'
+      and policyname = 'Admins can update observations'
+      and cmd = 'UPDATE'
+  ) then
+    raise exception 'Phase 24E postcondition failed: admin update policy is missing.';
+  end if;
+
+  if exists (
+    select 1
+    from phase_24e_0010_pre_counts c
+    where c.observation_count <> (select count(*) from public.observations)
+      or c.taxonomy_linked_observation_count <> (
+        select count(*) filter (where taxon_id is not null)
+        from public.observations
+      )
+  ) then
+    raise exception 'Phase 24E postcondition failed: observation counts changed during migration.';
   end if;
 end $$;
 

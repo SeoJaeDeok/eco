@@ -202,10 +202,26 @@ Phase 24E-2A preflight correction:
 - No remote SQL was run, and 0010 still has not been applied in this
   correction step.
 
+Phase 24E-2A execute-grant correction:
+
+- The operator then ran the corrected 0010 preflight successfully, but the
+  0010 migration failed at its own postcondition:
+  `anon can execute taxonomy-linked create RPC`.
+- This failed attempt is not considered a successful migration; 0010 should
+  not be treated as immutable yet.
+- The cause was function EXECUTE exposure through PostgreSQL/Supabase defaults.
+- `0010` was corrected to use `CREATE OR REPLACE FUNCTION`, revoke EXECUTE
+  from `public`, `anon`, and `authenticated`, then grant the create RPC only
+  to `authenticated`.
+- The internal taxonomy input helper remains non-public and is not directly
+  executable by browser roles.
+- No rollback SQL was run by Codex, no remote SQL was run by Codex, no app UI
+  changed, and no Production UI deployment occurred.
+
 Exact next step:
 
 ```text
-Retry the 0010 preflight, then manually apply 0010 if all checks pass.
+Rerun the 0010 preflight, apply the corrected 0010, then run post-apply verification.
 ```
 
 ## Phase 24D-3 Live Resolver Smoke Result

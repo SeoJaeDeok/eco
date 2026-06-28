@@ -321,12 +321,24 @@ Security model:
 
 - `authenticated` can execute the RPC.
 - `anon` cannot execute the RPC.
+- `public` cannot execute the RPC.
+- `public`, `anon`, and `authenticated` cannot directly execute the internal
+  `normalize_taxonomy_input_key(text)` helper.
 - Browser roles still cannot directly write observation taxonomy columns.
 - Browser roles still cannot write `public.taxa`.
 - Browser roles still cannot read or write `public.taxonomy_name_resolutions`.
 - Existing approved-only public read remains unchanged.
 
 No remote SQL was applied in this phase.
+
+Phase 24E-2A correction:
+
+- The first remote apply attempt failed at the migration postcondition because
+  `anon` could execute the create RPC through default function execute grants.
+- The migration was corrected before successful application.
+- `0010` now explicitly revokes function execution from `public`, `anon`, and
+  `authenticated`, then grants only the create RPC back to `authenticated`.
+- The helper remains internal and is not directly executable by browser roles.
 
 ## Rollout Plan
 
