@@ -296,6 +296,38 @@ Local verification after applying 0008 locally passed for service-role taxonomy 
 
 Resolver smoke remains BLOCKED for the shared Supabase DB until 0008 is manually applied and verified there. No remote SQL was applied in this unblock step.
 
+## Phase 24C.1 Post-0008 DELETE Grant Follow-Up
+
+Status: follow-up correction candidate prepared.
+
+The operator manually applied `0008` to the Supabase project shared with
+Production. The intended SELECT/INSERT/UPDATE grants for `service_role` were
+confirmed.
+
+Additional read-only diagnostics found:
+
+- Admin/service client construction remains PASS.
+- `service_role` DELETE on the taxonomy cache tables is a direct grant.
+- anon/authenticated taxonomy writes remain denied.
+- `public.taxa` public SELECT policy exists and is correctly named.
+- `public.taxonomy_name_resolutions` remains server-only.
+
+Correction path:
+
+```text
+supabase/migrations/0009_revoke_taxonomy_service_role_delete.sql
+```
+
+`0009` revokes only DELETE from `service_role` on:
+
+- `public.taxa`
+- `public.taxonomy_name_resolutions`
+
+It preserves `service_role` SELECT/INSERT/UPDATE, changes no RLS policies, and
+does not change observations, Storage, Auth, Admin, Kakao, Vercel, or app UI.
+
+Resolver smoke remains BLOCKED until `0009` is manually applied and verified.
+
 ## Deployment Readiness
 
 Before deploying the Edge Function in a later phase:

@@ -167,6 +167,64 @@ Exact next step:
 Phase 24C.1 apply migration 0008 manually, verify service_role grants, then resume Phase 24D-2 local resolver smoke
 ```
 
+## Phase 24C.1 Post-0008 DELETE Grant Correction
+
+Status: corrective migration candidate prepared. Phase 24D-2 local smoke remains
+blocked until manual apply and verification.
+
+Current branch:
+
+```text
+feature/phase-24d2-local-resolver-smoke
+```
+
+Relevant commits:
+
+```text
+b1e9407 fix: grant taxonomy cache access to service role
+92cb6cc docs: document taxonomy service-role grant unblock
+```
+
+The operator manually applied `0008` to the Supabase project shared with
+Production. It fixed the intended `service_role` SELECT/INSERT/UPDATE access to
+the taxonomy cache tables.
+
+Post-0008 read-only diagnostics then confirmed:
+
+- `service_role` DELETE is still present as a direct grant.
+- anon/authenticated taxonomy writes remain denied.
+- `public.taxa` public SELECT policy exists and is correctly named.
+- `public.taxonomy_name_resolutions` remains server-only.
+
+New migration candidate:
+
+```text
+supabase/migrations/0009_revoke_taxonomy_service_role_delete.sql
+```
+
+New apply-readiness document:
+
+```text
+docs/architecture/taxonomy-service-role-delete-revoke-apply-readiness.md
+```
+
+`0009` revokes only DELETE from `service_role` on `public.taxa` and
+`public.taxonomy_name_resolutions`. It preserves SELECT/INSERT/UPDATE for the
+trusted resolver, changes no RLS policies, grants nothing to browser roles, and
+does not change observations, Storage, Auth, Admin, Kakao, Vercel, or app UI.
+
+Dirty Phase 24D-2 local smoke/tooling/function WIP files are intentionally
+preserved and were not staged for the corrective migration commit.
+
+No remote `0009` SQL was applied. No Edge Function was deployed. No push was
+performed.
+
+Exact next step:
+
+```text
+Phase 24C.1 apply 0009 manually, verify service_role DELETE is false, then resume Phase 24D-2 local resolver smoke
+```
+
 ## Phase 24D-1 Current Session Result
 
 Status: local resolver foundation implemented. No remote deployment or UI integration occurred.

@@ -288,3 +288,48 @@ The target database is shared with Production. Applying 0008 is a live database 
 Apply during a low-traffic period and run the post-apply checks immediately.
 
 No app deployment is required for 0008 alone.
+
+## Post-0008 Shared DB Follow-Up
+
+Status: `0008` was manually applied to the Supabase project shared with
+Production. It fixed the intended `service_role` SELECT/INSERT/UPDATE path for
+the taxonomy cache tables.
+
+The operator then ran additional read-only diagnostics because the first
+post-apply check reported unexpected values.
+
+Confirmed diagnostic result:
+
+| Check | Result |
+| --- | --- |
+| `service_role_delete_direct_grant` | true |
+| `service_role_delete_source_category` | direct_grant |
+| anon taxonomy writes denied | true |
+| authenticated taxonomy writes denied | true |
+| `taxa` public SELECT policy exists | true |
+| exact `taxa` public policy name exists | true |
+| resolution cache public SELECT policy count | 0 |
+| resolution cache public policy count | 0 |
+
+Interpretation:
+
+- The trusted server grant correction from `0008` succeeded for
+  SELECT/INSERT/UPDATE.
+- `public.taxa` public SELECT policy is present and correctly named.
+- `public.taxonomy_name_resolutions` remains server-only.
+- Browser roles still cannot write authoritative taxonomy data.
+- A direct `service_role` DELETE grant remains on the two taxonomy cache tables.
+
+Correction path:
+
+```text
+supabase/migrations/0009_revoke_taxonomy_service_role_delete.sql
+```
+
+`0009` removes only DELETE from `service_role` on `public.taxa` and
+`public.taxonomy_name_resolutions`. It preserves `service_role`
+SELECT/INSERT/UPDATE, keeps browser writes denied, and does not change RLS
+policies.
+
+Phase 24D-2 resolver smoke remains blocked until `0009` is manually applied and
+verified.
