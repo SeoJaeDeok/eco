@@ -1,20 +1,20 @@
 import {
   createEmptyTaxonomyLineage,
-  deriveBroadTaxonFromLineage,
   createSourceAttribution,
+  deriveBroadTaxonFromLineage,
   type Taxon,
   type TaxonomyLineage,
-} from './taxonomy_core.ts';
+} from "./taxonomy_core.ts";
 
 export type TaxonomyBlockedReason =
-  | 'higher_rank_only'
-  | 'no_match'
-  | 'unsupported_terminal_rank'
-  | 'ambiguous_result'
-  | 'incomplete_accepted_identity'
-  | 'malformed_upstream_response';
+  | "higher_rank_only"
+  | "no_match"
+  | "unsupported_terminal_rank"
+  | "ambiguous_result"
+  | "incomplete_accepted_identity"
+  | "malformed_upstream_response";
 
-export type TaxonomyConfirmationReason = 'synonym' | 'variant';
+export type TaxonomyConfirmationReason = "synonym" | "variant";
 
 export interface AcceptedTaxonCandidate {
   sourceTaxonKey: string;
@@ -33,15 +33,15 @@ export interface AcceptedTaxonCandidate {
 
 export type GbifInterpretation =
   | {
-    kind: 'resolved';
+    kind: "resolved";
     taxon: AcceptedTaxonCandidate;
   }
   | {
-    kind: 'needsConfirmation';
+    kind: "needsConfirmation";
     taxon: AcceptedTaxonCandidate & { reason: TaxonomyConfirmationReason };
   }
   | {
-    kind: 'blocked';
+    kind: "blocked";
     reason: TaxonomyBlockedReason;
     reportedScientificName: string;
     matchType: string | null;
@@ -50,38 +50,53 @@ export type GbifInterpretation =
 type UnknownRecord = Record<string, unknown>;
 
 const STANDARD_RANKS = {
-  KINGDOM: 'kingdom',
-  PHYLUM: 'phylum',
-  CLASS: 'class',
-  ORDER: 'order',
-  FAMILY: 'family',
-  GENUS: 'genus',
-  SPECIES: 'species',
+  KINGDOM: "kingdom",
+  PHYLUM: "phylum",
+  CLASS: "class",
+  ORDER: "order",
+  FAMILY: "family",
+  GENUS: "genus",
+  SPECIES: "species",
 } as const;
 
-const ACCEPTED_TERMINAL_RANKS = new Set(['SPECIES', 'SUBSPECIES', 'VARIETY', 'FORM']);
-const HIGHER_RANKS = new Set(['KINGDOM', 'PHYLUM', 'CLASS', 'ORDER', 'FAMILY', 'GENUS']);
+const ACCEPTED_TERMINAL_RANKS = new Set([
+  "SPECIES",
+  "SUBSPECIES",
+  "VARIETY",
+  "FORM",
+]);
+const HIGHER_RANKS = new Set([
+  "KINGDOM",
+  "PHYLUM",
+  "CLASS",
+  "ORDER",
+  "FAMILY",
+  "GENUS",
+]);
 
 const isObject = (value: unknown): value is UnknownRecord => {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 };
 
 const readString = (value: unknown): string | null => {
-  return typeof value === 'string' && value.trim() ? value.trim() : null;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 };
 
 const readNumber = (value: unknown): number | null => {
-  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 };
 
 const readBoolean = (value: unknown) => value === true;
 
 const readIssues = (value: unknown): string[] => {
   if (!Array.isArray(value)) return [];
-  return value.filter((issue): issue is string => typeof issue === 'string' && issue.trim().length > 0);
+  return value.filter((issue): issue is string =>
+    typeof issue === "string" && issue.trim().length > 0
+  );
 };
 
-const normalizeRank = (value: string | null) => value?.trim().toUpperCase() ?? null;
+const normalizeRank = (value: string | null) =>
+  value?.trim().toUpperCase() ?? null;
 
 const extractLineage = (classification: unknown): TaxonomyLineage => {
   const lineage = createEmptyTaxonomyLineage();
@@ -111,7 +126,7 @@ const createBlocked = (
   reportedScientificName: string,
   matchType: string | null,
 ): GbifInterpretation => ({
-  kind: 'blocked',
+  kind: "blocked",
   reason,
   reportedScientificName,
   matchType,
@@ -122,49 +137,81 @@ export const interpretGbifSpeciesMatch = (
   response: unknown,
 ): GbifInterpretation => {
   if (!isObject(response)) {
-    return createBlocked('malformed_upstream_response', reportedScientificName, null);
+    return createBlocked(
+      "malformed_upstream_response",
+      reportedScientificName,
+      null,
+    );
   }
 
-  const diagnostics = isObject(response.diagnostics) ? response.diagnostics : {};
+  const diagnostics = isObject(response.diagnostics)
+    ? response.diagnostics
+    : {};
   const matchType = readString(diagnostics.matchType);
   const confidence = readNumber(diagnostics.confidence);
   const issues = readIssues(response.issues);
   const usage = isObject(response.usage) ? response.usage : null;
 
   if (!usage) {
-    return createBlocked(matchType === 'NONE' ? 'no_match' : 'malformed_upstream_response', reportedScientificName, matchType);
+    return createBlocked(
+      matchType === "NONE" ? "no_match" : "malformed_upstream_response",
+      reportedScientificName,
+      matchType,
+    );
   }
 
   const usageStatus = normalizeRank(readString(usage.status));
-  const synonym = readBoolean(response.synonym) || usageStatus === 'SYNONYM';
-  const acceptedUsage = isObject(response.acceptedUsage) ? response.acceptedUsage : null;
+  const synonym = readBoolean(response.synonym) || usageStatus === "SYNONYM";
+  const acceptedUsage = isObject(response.acceptedUsage)
+    ? response.acceptedUsage
+    : null;
   const accepted = synonym ? acceptedUsage : acceptedUsage ?? usage;
 
   if (!accepted) {
-    return createBlocked('incomplete_accepted_identity', reportedScientificName, matchType);
+    return createBlocked(
+      "incomplete_accepted_identity",
+      reportedScientificName,
+      matchType,
+    );
   }
 
   const sourceTaxonKey = readString(accepted.key);
   const acceptedScientificName = readString(accepted.name);
   const terminalRank = normalizeRank(readString(accepted.rank));
-  const taxonomicStatus = normalizeRank(readString(accepted.status)) ?? (synonym ? 'ACCEPTED' : usageStatus);
+  const taxonomicStatus = normalizeRank(readString(accepted.status)) ??
+    (synonym ? "ACCEPTED" : usageStatus);
 
-  if (!sourceTaxonKey || !acceptedScientificName || !terminalRank || !taxonomicStatus) {
-    return createBlocked('incomplete_accepted_identity', reportedScientificName, matchType);
+  if (
+    !sourceTaxonKey || !acceptedScientificName || !terminalRank ||
+    !taxonomicStatus
+  ) {
+    return createBlocked(
+      "incomplete_accepted_identity",
+      reportedScientificName,
+      matchType,
+    );
   }
 
   if (HIGHER_RANKS.has(terminalRank)) {
-    return createBlocked('higher_rank_only', reportedScientificName, matchType);
+    return createBlocked("higher_rank_only", reportedScientificName, matchType);
   }
 
   if (!ACCEPTED_TERMINAL_RANKS.has(terminalRank)) {
-    return createBlocked('unsupported_terminal_rank', reportedScientificName, matchType);
+    return createBlocked(
+      "unsupported_terminal_rank",
+      reportedScientificName,
+      matchType,
+    );
   }
 
   const lineage = extractLineage(response.classification);
 
-  if (terminalRank !== 'SPECIES' && !lineage.species.key) {
-    return createBlocked('incomplete_accepted_identity', reportedScientificName, matchType);
+  if (terminalRank !== "SPECIES" && !lineage.species.key) {
+    return createBlocked(
+      "incomplete_accepted_identity",
+      reportedScientificName,
+      matchType,
+    );
   }
 
   const taxon: AcceptedTaxonCandidate = {
@@ -174,7 +221,7 @@ export const interpretGbifSpeciesMatch = (
     terminalRank,
     taxonomicStatus,
     lineage,
-    matchType: matchType ?? 'UNKNOWN',
+    matchType: matchType ?? "UNKNOWN",
     confidence,
     synonym,
     reason: null,
@@ -184,32 +231,32 @@ export const interpretGbifSpeciesMatch = (
 
   if (synonym) {
     return {
-      kind: 'needsConfirmation',
+      kind: "needsConfirmation",
       taxon: {
         ...taxon,
-        reason: 'synonym',
+        reason: "synonym",
       },
     };
   }
 
-  if (matchType === 'EXACT' && taxonomicStatus === 'ACCEPTED') {
+  if (matchType === "EXACT" && taxonomicStatus === "ACCEPTED") {
     return {
-      kind: 'resolved',
+      kind: "resolved",
       taxon,
     };
   }
 
-  if (matchType === 'VARIANT' && taxonomicStatus === 'ACCEPTED') {
+  if (matchType === "VARIANT" && taxonomicStatus === "ACCEPTED") {
     return {
-      kind: 'needsConfirmation',
+      kind: "needsConfirmation",
       taxon: {
         ...taxon,
-        reason: 'variant',
+        reason: "variant",
       },
     };
   }
 
-  return createBlocked('ambiguous_result', reportedScientificName, matchType);
+  return createBlocked("ambiguous_result", reportedScientificName, matchType);
 };
 
 export const createCandidateResult = (
@@ -217,7 +264,7 @@ export const createCandidateResult = (
   taxon: AcceptedTaxonCandidate & { reason: TaxonomyConfirmationReason },
   cacheHit: boolean,
 ) => ({
-  status: 'needsConfirmation',
+  status: "needsConfirmation",
   reportedScientificName,
   candidate: {
     acceptedSourceTaxonKey: taxon.sourceTaxonKey,
@@ -235,5 +282,5 @@ export const createCandidateResult = (
   },
   cacheHit,
   retryable: false,
-  messageKey: 'taxonomy.confirmationRequired',
+  messageKey: "taxonomy.confirmationRequired",
 } as const);

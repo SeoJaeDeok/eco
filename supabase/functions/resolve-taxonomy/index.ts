@@ -1,33 +1,34 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
+  type AcceptedTaxonCandidate,
   createCandidateResult,
   interpretGbifSpeciesMatch,
-  type AcceptedTaxonCandidate,
-} from './gbif_mapper.ts';
+} from "./gbif_mapper.ts";
 import {
+  createSourceAttribution,
   deriveBroadTaxonFromLineage,
   GBIF_CHECKLIST_KEY,
   GBIF_MATCH_ENDPOINT,
   GBIF_REQUEST_TIMEOUT_MS,
   normalizeScientificNameInput,
   TAXONOMY_SOURCE_NAME,
-  createSourceAttribution,
   type TaxonomyLineage,
-} from './taxonomy_core.ts';
+} from "./taxonomy_core.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 type TaxonomyActionRequest =
   | {
-    action: 'resolve';
+    action: "resolve";
     scientificName: string;
   }
   | {
-    action: 'confirm';
+    action: "confirm";
     scientificName: string;
     acceptedSourceTaxonKey: string;
   };
@@ -98,7 +99,7 @@ const defaultDependencies: HandlerDependencies = {
 
 const jsonResponse = (body: unknown, init: ResponseInit = {}) => {
   const headers = new Headers(init.headers);
-  headers.set('Content-Type', 'application/json');
+  headers.set("Content-Type", "application/json");
 
   for (const [key, value] of Object.entries(corsHeaders)) {
     headers.set(key, value);
@@ -112,63 +113,71 @@ const jsonResponse = (body: unknown, init: ResponseInit = {}) => {
 
 const errorResult = (
   reason:
-    | 'invalid_input'
-    | 'unauthorized'
-    | 'rate_limited'
-    | 'timeout'
-    | 'upstream_failure'
-    | 'database_failure'
-    | 'malformed_response'
-    | 'invalid_confirmation',
+    | "invalid_input"
+    | "unauthorized"
+    | "rate_limited"
+    | "timeout"
+    | "upstream_failure"
+    | "database_failure"
+    | "malformed_response"
+    | "invalid_confirmation",
   retryable: boolean,
 ) => ({
-  status: 'error',
+  status: "error",
   reason,
   retryable,
-  messageKey: 'taxonomy.error',
+  messageKey: "taxonomy.error",
 } as const);
 
 const blockedResult = (
   reason:
-    | 'higher_rank_only'
-    | 'no_match'
-    | 'unsupported_terminal_rank'
-    | 'ambiguous_result'
-    | 'incomplete_accepted_identity'
-    | 'malformed_upstream_response',
+    | "higher_rank_only"
+    | "no_match"
+    | "unsupported_terminal_rank"
+    | "ambiguous_result"
+    | "incomplete_accepted_identity"
+    | "malformed_upstream_response",
   reportedScientificName: string,
   matchType: string | null,
 ) => ({
-  status: 'blocked',
+  status: "blocked",
   reason,
   reportedScientificName,
   matchType,
   retryable: false,
-  messageKey: 'taxonomy.blocked',
+  messageKey: "taxonomy.blocked",
 } as const);
 
 const isObject = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 };
 
-const readRequestBody = async (request: Request): Promise<TaxonomyActionRequest | null> => {
+const readRequestBody = async (
+  request: Request,
+): Promise<TaxonomyActionRequest | null> => {
   try {
     const body = await request.json();
 
-    if (!isObject(body) || typeof body.action !== 'string' || typeof body.scientificName !== 'string') {
+    if (
+      !isObject(body) || typeof body.action !== "string" ||
+      typeof body.scientificName !== "string"
+    ) {
       return null;
     }
 
-    if (body.action === 'resolve') {
+    if (body.action === "resolve") {
       return {
-        action: 'resolve',
+        action: "resolve",
         scientificName: body.scientificName,
       };
     }
 
-    if (body.action === 'confirm' && typeof body.acceptedSourceTaxonKey === 'string') {
+    if (
+      body.action === "confirm" &&
+      typeof body.acceptedSourceTaxonKey === "string"
+    ) {
       return {
-        action: 'confirm',
+        action: "confirm",
         scientificName: body.scientificName,
         acceptedSourceTaxonKey: body.acceptedSourceTaxonKey,
       };
@@ -181,9 +190,9 @@ const readRequestBody = async (request: Request): Promise<TaxonomyActionRequest 
 };
 
 const getRequiredEnv = (deps: HandlerDependencies): FunctionEnv | null => {
-  const SUPABASE_URL = deps.getEnv('SUPABASE_URL');
-  const SUPABASE_ANON_KEY = deps.getEnv('SUPABASE_ANON_KEY');
-  const SUPABASE_SERVICE_ROLE_KEY = deps.getEnv('SUPABASE_SERVICE_ROLE_KEY');
+  const SUPABASE_URL = deps.getEnv("SUPABASE_URL");
+  const SUPABASE_ANON_KEY = deps.getEnv("SUPABASE_ANON_KEY");
+  const SUPABASE_SERVICE_ROLE_KEY = deps.getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
     return null;
@@ -201,23 +210,27 @@ const authenticateRequest = async (
   env: FunctionEnv,
   deps: HandlerDependencies,
 ) => {
-  const authorization = request.headers.get('Authorization') ?? '';
+  const authorization = request.headers.get("Authorization") ?? "";
 
-  if (!authorization.toLocaleLowerCase('en-US').startsWith('bearer ')) {
+  if (!authorization.toLocaleLowerCase("en-US").startsWith("bearer ")) {
     return false;
   }
 
-  const userClient = deps.createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
-    global: {
-      headers: {
-        Authorization: authorization,
+  const userClient = deps.createClient(
+    env.SUPABASE_URL,
+    env.SUPABASE_ANON_KEY,
+    {
+      global: {
+        headers: {
+          Authorization: authorization,
+        },
+      },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
       },
     },
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
+  );
 
   const { data, error } = await userClient.auth.getUser();
   return !error && Boolean(data.user);
@@ -256,7 +269,7 @@ const resolvedResultFromTaxaRow = (
   const lineage = lineageFromTaxaRow(row);
 
   return {
-    status: 'resolved',
+    status: "resolved",
     taxonId: row.id,
     reportedScientificName: metadata.reportedScientificName,
     acceptedScientificName: row.accepted_scientific_name,
@@ -271,7 +284,7 @@ const resolvedResultFromTaxaRow = (
     source: createSourceAttribution(row.source_taxon_key),
     resolvedAt: metadata.resolvedAt ?? row.resolved_at,
     cacheHit: metadata.cacheHit,
-    messageKey: 'taxonomy.resolved',
+    messageKey: "taxonomy.resolved",
   } as const;
 };
 
@@ -283,7 +296,7 @@ const candidateResultFromCachedRows = (
   const lineage = lineageFromTaxaRow(taxon);
 
   return {
-    status: 'needsConfirmation',
+    status: "needsConfirmation",
     reportedScientificName,
     candidate: {
       acceptedSourceTaxonKey: taxon.source_taxon_key,
@@ -295,13 +308,13 @@ const candidateResultFromCachedRows = (
       matchType: resolution.match_type,
       confidence: resolution.confidence,
       synonym: resolution.synonym,
-      reason: resolution.synonym ? 'synonym' : 'variant',
+      reason: resolution.synonym ? "synonym" : "variant",
       broadTaxon: deriveBroadTaxonFromLineage(lineage),
       source: createSourceAttribution(taxon.source_taxon_key),
     },
     cacheHit: true,
     retryable: false,
-    messageKey: 'taxonomy.confirmationRequired',
+    messageKey: "taxonomy.confirmationRequired",
   } as const;
 };
 
@@ -310,15 +323,15 @@ const getCachedResolution = async (
   normalizedInput: string,
 ) => {
   const { data, error } = await adminClient
-    .from('taxonomy_name_resolutions')
-    .select('*')
-    .eq('source', TAXONOMY_SOURCE_NAME)
-    .eq('source_checklist_key', GBIF_CHECKLIST_KEY)
-    .eq('normalized_input', normalizedInput)
+    .from("taxonomy_name_resolutions")
+    .select("*")
+    .eq("source", TAXONOMY_SOURCE_NAME)
+    .eq("source_checklist_key", GBIF_CHECKLIST_KEY)
+    .eq("normalized_input", normalizedInput)
     .maybeSingle();
 
   if (error) {
-    throw new Error('resolution_cache_read_failed');
+    throw new Error("resolution_cache_read_failed");
   }
 
   return data as ResolutionCacheRow | null;
@@ -326,13 +339,13 @@ const getCachedResolution = async (
 
 const getTaxonById = async (adminClient: SupabaseClient, taxonId: string) => {
   const { data, error } = await adminClient
-    .from('taxa')
-    .select('*')
-    .eq('id', taxonId)
+    .from("taxa")
+    .select("*")
+    .eq("id", taxonId)
     .maybeSingle();
 
   if (error) {
-    throw new Error('taxa_read_failed');
+    throw new Error("taxa_read_failed");
   }
 
   return data as TaxaRow | null;
@@ -342,34 +355,43 @@ const getAcceptedTaxonByInput = async (
   adminClient: SupabaseClient,
   normalizedInput: string,
 ) => {
-  const escapedInput = normalizedInput.replace(/[\\%_]/g, (value) => `\\${value}`);
+  const escapedInput = normalizedInput.replace(
+    /[\\%_]/g,
+    (value) => `\\${value}`,
+  );
 
   const { data: acceptedNameData, error: acceptedNameError } = await adminClient
-    .from('taxa')
-    .select('*')
-    .eq('source', TAXONOMY_SOURCE_NAME)
-    .eq('source_checklist_key', GBIF_CHECKLIST_KEY)
-    .ilike('accepted_scientific_name', escapedInput)
+    .from("taxa")
+    .select("*")
+    .eq("source", TAXONOMY_SOURCE_NAME)
+    .eq("source_checklist_key", GBIF_CHECKLIST_KEY)
+    .ilike("accepted_scientific_name", escapedInput)
     .limit(2);
 
   if (acceptedNameError) {
-    throw new Error('taxa_read_failed');
+    throw new Error("taxa_read_failed");
   }
 
-  const { data: canonicalNameData, error: canonicalNameError } = await adminClient
-    .from('taxa')
-    .select('*')
-    .eq('source', TAXONOMY_SOURCE_NAME)
-    .eq('source_checklist_key', GBIF_CHECKLIST_KEY)
-    .ilike('canonical_name', escapedInput)
-    .limit(2);
+  const { data: canonicalNameData, error: canonicalNameError } =
+    await adminClient
+      .from("taxa")
+      .select("*")
+      .eq("source", TAXONOMY_SOURCE_NAME)
+      .eq("source_checklist_key", GBIF_CHECKLIST_KEY)
+      .ilike("canonical_name", escapedInput)
+      .limit(2);
 
   if (canonicalNameError) {
-    throw new Error('taxa_read_failed');
+    throw new Error("taxa_read_failed");
   }
 
   const rowsById = new Map<string, TaxaRow>();
-  for (const row of [...(acceptedNameData ?? []), ...(canonicalNameData ?? [])] as TaxaRow[]) {
+  for (
+    const row of [
+      ...(acceptedNameData ?? []),
+      ...(canonicalNameData ?? []),
+    ] as TaxaRow[]
+  ) {
     rowsById.set(row.id, row);
   }
 
@@ -379,7 +401,7 @@ const getAcceptedTaxonByInput = async (
   }
 
   if (rows.length > 1) {
-    throw new Error('taxa_ambiguous_cache_hit');
+    throw new Error("taxa_ambiguous_cache_hit");
   }
 
   return null;
@@ -390,24 +412,27 @@ const fetchGbifSpeciesMatch = async (
   deps: HandlerDependencies,
 ) => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), GBIF_REQUEST_TIMEOUT_MS);
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    GBIF_REQUEST_TIMEOUT_MS,
+  );
 
   try {
     const url = new URL(GBIF_MATCH_ENDPOINT);
-    url.searchParams.set('scientificName', reportedScientificName);
-    url.searchParams.set('checklistKey', GBIF_CHECKLIST_KEY);
+    url.searchParams.set("scientificName", reportedScientificName);
+    url.searchParams.set("checklistKey", GBIF_CHECKLIST_KEY);
 
     const response = await deps.fetch(url, {
-      method: 'GET',
+      method: "GET",
       signal: controller.signal,
     });
 
     if (response.status === 429) {
-      return { ok: false, reason: 'rate_limited' as const };
+      return { ok: false, reason: "rate_limited" as const };
     }
 
     if (!response.ok) {
-      return { ok: false, reason: 'upstream_failure' as const };
+      return { ok: false, reason: "upstream_failure" as const };
     }
 
     try {
@@ -416,14 +441,14 @@ const fetchGbifSpeciesMatch = async (
         data: await response.json(),
       } as const;
     } catch {
-      return { ok: false, reason: 'malformed_response' as const };
+      return { ok: false, reason: "malformed_response" as const };
     }
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      return { ok: false, reason: 'timeout' as const };
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return { ok: false, reason: "timeout" as const };
     }
 
-    return { ok: false, reason: 'upstream_failure' as const };
+    return { ok: false, reason: "upstream_failure" as const };
   } finally {
     clearTimeout(timeoutId);
   }
@@ -470,15 +495,15 @@ const upsertTaxon = async (
   now: string,
 ) => {
   const { data, error } = await adminClient
-    .from('taxa')
+    .from("taxa")
     .upsert(taxonRowFromCandidate(taxon, now), {
-      onConflict: 'source,source_checklist_key,source_taxon_key',
+      onConflict: "source,source_checklist_key,source_taxon_key",
     })
-    .select('*')
+    .select("*")
     .single();
 
   if (error) {
-    throw new Error('taxa_upsert_failed');
+    throw new Error("taxa_upsert_failed");
   }
 
   return data as TaxaRow;
@@ -496,7 +521,7 @@ const upsertResolutionCache = async (
   },
 ) => {
   const { error } = await adminClient
-    .from('taxonomy_name_resolutions')
+    .from("taxonomy_name_resolutions")
     .upsert({
       source: TAXONOMY_SOURCE_NAME,
       source_checklist_key: GBIF_CHECKLIST_KEY,
@@ -510,11 +535,11 @@ const upsertResolutionCache = async (
       issues_json: input.taxon.issues,
       resolved_at: input.now,
     }, {
-      onConflict: 'source,source_checklist_key,normalized_input',
+      onConflict: "source,source_checklist_key,normalized_input",
     });
 
   if (error) {
-    throw new Error('resolution_cache_upsert_failed');
+    throw new Error("resolution_cache_upsert_failed");
   }
 };
 
@@ -523,17 +548,24 @@ const resolveFromCache = async (
   normalizedInput: string,
   reportedScientificName: string,
 ) => {
-  const cachedResolution = await getCachedResolution(adminClient, normalizedInput);
+  const cachedResolution = await getCachedResolution(
+    adminClient,
+    normalizedInput,
+  );
 
   if (cachedResolution) {
     const taxon = await getTaxonById(adminClient, cachedResolution.taxon_id);
 
     if (!taxon) {
-      throw new Error('resolution_cache_taxon_missing');
+      throw new Error("resolution_cache_taxon_missing");
     }
 
     if (cachedResolution.requires_confirmation) {
-      return candidateResultFromCachedRows(reportedScientificName, taxon, cachedResolution);
+      return candidateResultFromCachedRows(
+        reportedScientificName,
+        taxon,
+        cachedResolution,
+      );
     }
 
     return resolvedResultFromTaxaRow(taxon, {
@@ -546,7 +578,10 @@ const resolveFromCache = async (
     });
   }
 
-  const acceptedTaxon = await getAcceptedTaxonByInput(adminClient, normalizedInput);
+  const acceptedTaxon = await getAcceptedTaxonByInput(
+    adminClient,
+    normalizedInput,
+  );
 
   if (!acceptedTaxon) {
     return null;
@@ -554,7 +589,7 @@ const resolveFromCache = async (
 
   return resolvedResultFromTaxaRow(acceptedTaxon, {
     reportedScientificName,
-    matchType: 'EXACT',
+    matchType: "EXACT",
     confidence: null,
     synonym: false,
     cacheHit: true,
@@ -563,13 +598,13 @@ const resolveFromCache = async (
 
 const resolveScientificName = async (
   adminClient: SupabaseClient,
-  request: Extract<TaxonomyActionRequest, { action: 'resolve' }>,
+  request: Extract<TaxonomyActionRequest, { action: "resolve" }>,
   deps: HandlerDependencies,
 ) => {
   const normalized = normalizeScientificNameInput(request.scientificName);
 
   if (!normalized.ok) {
-    return errorResult('invalid_input', false);
+    return errorResult("invalid_input", false);
   }
 
   try {
@@ -583,27 +618,50 @@ const resolveScientificName = async (
       return cacheResult;
     }
   } catch (error) {
-    if (error instanceof Error && error.message === 'taxa_ambiguous_cache_hit') {
-      return blockedResult('ambiguous_result', normalized.reportedScientificName, null);
+    if (
+      error instanceof Error && error.message === "taxa_ambiguous_cache_hit"
+    ) {
+      return blockedResult(
+        "ambiguous_result",
+        normalized.reportedScientificName,
+        null,
+      );
     }
 
-    return errorResult('database_failure', true);
+    return errorResult("database_failure", true);
   }
 
-  const gbifResult = await fetchGbifSpeciesMatch(normalized.reportedScientificName, deps);
+  const gbifResult = await fetchGbifSpeciesMatch(
+    normalized.reportedScientificName,
+    deps,
+  );
 
   if (!gbifResult.ok) {
-    return errorResult(gbifResult.reason, gbifResult.reason !== 'malformed_response');
+    return errorResult(
+      gbifResult.reason,
+      gbifResult.reason !== "malformed_response",
+    );
   }
 
-  const interpretation = interpretGbifSpeciesMatch(normalized.reportedScientificName, gbifResult.data);
+  const interpretation = interpretGbifSpeciesMatch(
+    normalized.reportedScientificName,
+    gbifResult.data,
+  );
 
-  if (interpretation.kind === 'blocked') {
-    return blockedResult(interpretation.reason, interpretation.reportedScientificName, interpretation.matchType);
+  if (interpretation.kind === "blocked") {
+    return blockedResult(
+      interpretation.reason,
+      interpretation.reportedScientificName,
+      interpretation.matchType,
+    );
   }
 
-  if (interpretation.kind === 'needsConfirmation') {
-    return createCandidateResult(normalized.reportedScientificName, interpretation.taxon, false);
+  if (interpretation.kind === "needsConfirmation") {
+    return createCandidateResult(
+      normalized.reportedScientificName,
+      interpretation.taxon,
+      false,
+    );
   }
 
   try {
@@ -627,24 +685,27 @@ const resolveScientificName = async (
       resolvedAt: now,
     });
   } catch {
-    return errorResult('database_failure', true);
+    return errorResult("database_failure", true);
   }
 };
 
 const confirmScientificName = async (
   adminClient: SupabaseClient,
-  request: Extract<TaxonomyActionRequest, { action: 'confirm' }>,
+  request: Extract<TaxonomyActionRequest, { action: "confirm" }>,
   deps: HandlerDependencies,
 ) => {
   const normalized = normalizeScientificNameInput(request.scientificName);
   const acceptedSourceTaxonKey = request.acceptedSourceTaxonKey.trim();
 
   if (!normalized.ok || !acceptedSourceTaxonKey) {
-    return errorResult('invalid_input', false);
+    return errorResult("invalid_input", false);
   }
 
   try {
-    const cachedResolution = await getCachedResolution(adminClient, normalized.normalizedInput);
+    const cachedResolution = await getCachedResolution(
+      adminClient,
+      normalized.normalizedInput,
+    );
     if (cachedResolution) {
       const taxon = await getTaxonById(adminClient, cachedResolution.taxon_id);
       if (taxon?.source_taxon_key === acceptedSourceTaxonKey) {
@@ -659,25 +720,38 @@ const confirmScientificName = async (
       }
     }
   } catch {
-    return errorResult('database_failure', true);
+    return errorResult("database_failure", true);
   }
 
-  const gbifResult = await fetchGbifSpeciesMatch(normalized.reportedScientificName, deps);
+  const gbifResult = await fetchGbifSpeciesMatch(
+    normalized.reportedScientificName,
+    deps,
+  );
 
   if (!gbifResult.ok) {
-    return errorResult(gbifResult.reason, gbifResult.reason !== 'malformed_response');
+    return errorResult(
+      gbifResult.reason,
+      gbifResult.reason !== "malformed_response",
+    );
   }
 
-  const interpretation = interpretGbifSpeciesMatch(normalized.reportedScientificName, gbifResult.data);
+  const interpretation = interpretGbifSpeciesMatch(
+    normalized.reportedScientificName,
+    gbifResult.data,
+  );
 
-  if (interpretation.kind === 'blocked') {
-    return blockedResult(interpretation.reason, interpretation.reportedScientificName, interpretation.matchType);
+  if (interpretation.kind === "blocked") {
+    return blockedResult(
+      interpretation.reason,
+      interpretation.reportedScientificName,
+      interpretation.matchType,
+    );
   }
 
   const taxon = interpretation.taxon;
 
   if (taxon.sourceTaxonKey !== acceptedSourceTaxonKey) {
-    return errorResult('invalid_confirmation', false);
+    return errorResult("invalid_confirmation", false);
   }
 
   try {
@@ -688,7 +762,7 @@ const confirmScientificName = async (
       reportedScientificName: normalized.reportedScientificName,
       taxonId: taxonRow.id,
       taxon,
-      requiresConfirmation: interpretation.kind === 'needsConfirmation',
+      requiresConfirmation: interpretation.kind === "needsConfirmation",
       now,
     });
 
@@ -701,7 +775,7 @@ const confirmScientificName = async (
       resolvedAt: now,
     });
   } catch {
-    return errorResult('database_failure', true);
+    return errorResult("database_failure", true);
   }
 };
 
@@ -709,37 +783,43 @@ export const handleRequest = async (
   request: Request,
   deps: HandlerDependencies = defaultDependencies,
 ) => {
-  if (request.method === 'OPTIONS') {
-    return new Response('ok', {
+  if (request.method === "OPTIONS") {
+    return new Response("ok", {
       headers: corsHeaders,
     });
   }
 
-  if (request.method !== 'POST') {
-    return jsonResponse(errorResult('invalid_input', false), { status: 405 });
+  if (request.method !== "POST") {
+    return jsonResponse(errorResult("invalid_input", false), { status: 405 });
   }
 
   const env = getRequiredEnv(deps);
   if (!env) {
-    return jsonResponse(errorResult('database_failure', true), { status: 500 });
+    return jsonResponse(errorResult("database_failure", true), { status: 500 });
   }
 
   const isAuthenticated = await authenticateRequest(request, env, deps);
   if (!isAuthenticated) {
-    return jsonResponse(errorResult('unauthorized', false), { status: 401 });
+    return jsonResponse(errorResult("unauthorized", false), { status: 401 });
   }
 
   const body = await readRequestBody(request);
   if (!body) {
-    return jsonResponse(errorResult('invalid_input', false), { status: 400 });
+    return jsonResponse(errorResult("invalid_input", false), { status: 400 });
   }
 
   const adminClient = createAdminClient(env, deps);
-  const result = body.action === 'resolve'
+  const result = body.action === "resolve"
     ? await resolveScientificName(adminClient, body, deps)
     : await confirmScientificName(adminClient, body, deps);
+  const responseStatus = result.status === "error" &&
+      result.reason === "invalid_confirmation"
+    ? 409
+    : 200;
 
-  return jsonResponse(result);
+  return jsonResponse(result, { status: responseStatus });
 };
 
-Deno.serve((request) => handleRequest(request));
+if (import.meta.main) {
+  Deno.serve((request) => handleRequest(request));
+}
