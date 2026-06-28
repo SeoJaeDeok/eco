@@ -2,7 +2,9 @@
 
 Phase: 24C.1 / 24D-2 Unblock - Taxonomy Service-Role DELETE Correction
 
-Status: migration candidate prepared. Codex did not apply remote SQL, did not deploy the Edge Function, and did not change Production UI.
+Status: migration candidate prepared and replayability-corrected. Codex did
+not apply remote SQL, did not deploy the Edge Function, and did not change
+Production UI.
 
 ## Problem Statement
 
@@ -41,6 +43,33 @@ The resolver needs trusted server-side cache access:
 The resolver does not need `DELETE`.
 
 Migration `0009_revoke_taxonomy_service_role_delete.sql` removes only the unnecessary DELETE privilege while preserving the cache read/upsert path.
+
+## Replayability Correction
+
+After `0009` was manually applied to the shared Supabase database and verified,
+local Phase 24D-2 replay found that `supabase db reset --local` stopped at
+`0009`.
+
+Cause:
+
+- The original `0009` preflight required `service_role` DELETE to be present
+  before the migration ran.
+- A clean local replay after `0008` can already have `service_role` DELETE
+  absent on both taxonomy cache tables.
+- That clean local state is already safe and matches the intended final DELETE
+  state.
+
+Correction:
+
+- `0009` now accepts both starting states:
+  - DELETE currently present, as observed during the shared-DB post-0008
+    diagnosis.
+  - DELETE already absent, as observed during clean local replay.
+- The final expected state is unchanged: `service_role` keeps
+  SELECT/INSERT/UPDATE and does not have DELETE on either taxonomy cache table.
+- No remote SQL was run for this replayability correction.
+- Because the shared Supabase database already passed the post-0009 checks,
+  no further manual correction is needed there for this issue.
 
 ## Immutable Migration Rule
 
@@ -164,12 +193,16 @@ Expected pre-apply result:
 
 - Required role and tables exist.
 - `service_role` SELECT/INSERT/UPDATE are true on both tables.
-- `service_role` DELETE is true on one or both tables before correction.
+- `service_role` DELETE may be true on one or both tables before correction,
+  or already false on both tables during clean local replay.
 - anon/authenticated write-denial checks are true.
 - `taxa_public_select_policy_exists = true`.
 - `resolution_public_policy_count = 0`.
 
-If any required object is missing, browser write access is present, or the expected public/private policy state differs, stop and do not apply `0009`.
+If any required object is missing, browser write access is present, or the
+expected public/private policy state differs, stop and do not apply `0009`.
+Do not stop merely because service-role DELETE is already false before apply;
+that is a valid replay-safe starting state.
 
 ## Manual Apply Instructions
 
@@ -283,7 +316,8 @@ After taxonomy data exists, prefer a new corrective migration rather than ad hoc
 
 ## Next Step After Apply
 
-After `0009` is manually applied and verified:
+After `0009` is manually applied and verified, or after replay-safe local
+reset confirms the same final state:
 
 ```text
 Resume Phase 24D-2 local resolver smoke.

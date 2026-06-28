@@ -328,6 +328,40 @@ does not change observations, Storage, Auth, Admin, Kakao, Vercel, or app UI.
 
 Resolver smoke remains BLOCKED until `0009` is manually applied and verified.
 
+## Phase 24C.1 / 24D-2 Replayability Update
+
+Status: local replayability repair prepared.
+
+The operator manually applied `0009` to the shared Supabase database and
+confirmed the intended final grant state:
+
+- `service_role` SELECT/INSERT/UPDATE on both taxonomy cache tables remain
+  available.
+- `service_role` DELETE on both taxonomy cache tables is false.
+- anon/authenticated taxonomy writes remain denied.
+- `public.taxa` public read remains ready.
+- `public.taxonomy_name_resolutions` remains server-only.
+
+When Phase 24D-2 resumed locally, `supabase db reset --local` failed while
+applying `0009` because the original preflight required DELETE to exist before
+the revoke. A clean local replay after `0008` can already have DELETE absent,
+which is safe and matches the intended final state.
+
+Correction:
+
+- `0009` was made replay-safe without changing its final intended database
+  state.
+- It now accepts either starting state: DELETE present or DELETE already absent.
+- It still requires SELECT/INSERT/UPDATE, browser write denial, the public
+  `taxa` SELECT policy, no public resolution-cache policy, and RLS to remain in
+  place.
+- No remote SQL was run for the replayability repair.
+- No resolver smoke was run in this repair step.
+
+Phase 24D-2 remains blocked until local `supabase db reset --local` passes with
+migrations `0001` through `0009`, then the authenticated local resolver smoke
+can resume.
+
 ## Deployment Readiness
 
 Before deploying the Edge Function in a later phase:

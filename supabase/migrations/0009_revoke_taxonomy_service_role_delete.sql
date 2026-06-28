@@ -5,6 +5,7 @@
 -- - Keep trusted Edge Function cache reads and upserts working.
 -- - Remove DELETE from service_role on taxonomy cache tables.
 -- - Keep browser roles unable to write authoritative taxonomy data.
+-- - Replay safely whether service_role DELETE is present or already absent.
 --
 -- Non-goals:
 -- - No taxonomy data change.
@@ -42,13 +43,6 @@ begin
     and has_table_privilege('service_role', 'public.taxonomy_name_resolutions', 'UPDATE')
   ) then
     raise exception 'Phase 24C.1 preflight failed: service_role must keep SELECT/INSERT/UPDATE on taxonomy cache tables from 0008.';
-  end if;
-
-  if not (
-    has_table_privilege('service_role', 'public.taxa', 'DELETE')
-    or has_table_privilege('service_role', 'public.taxonomy_name_resolutions', 'DELETE')
-  ) then
-    raise exception 'Phase 24C.1 preflight failed: service_role DELETE is already absent on both taxonomy cache tables.';
   end if;
 
   if (
@@ -100,6 +94,11 @@ end $$;
 -- for cache reads and upserts. It does not need DELETE. The service-role
 -- credential must stay server-only and must never be exposed to browser code,
 -- VITE_* variables, logs, or documentation.
+--
+-- This migration is intentionally replay-safe. The manually diagnosed shared
+-- database had a direct service_role DELETE grant after 0008, while a clean
+-- local replay after 0008 may already have DELETE absent. Both starting states
+-- are acceptable as long as the final state has DELETE absent.
 revoke delete
 on table public.taxa
 from service_role;

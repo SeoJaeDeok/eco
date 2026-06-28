@@ -225,6 +225,51 @@ Exact next step:
 Phase 24C.1 apply 0009 manually, verify service_role DELETE is false, then resume Phase 24D-2 local resolver smoke
 ```
 
+## Phase 24C.1 0009 Replayability Correction
+
+Status: replayability correction prepared. Dirty Phase 24D-2 local
+smoke/tooling/function WIP remains intentionally preserved.
+
+The operator manually applied `0009` to the Supabase project shared with
+Production and confirmed the intended final state:
+
+- `service_role` SELECT/INSERT/UPDATE on `public.taxa`: PASS.
+- `service_role` DELETE on `public.taxa`: false / PASS.
+- `service_role` SELECT/INSERT/UPDATE on
+  `public.taxonomy_name_resolutions`: PASS.
+- `service_role` DELETE on `public.taxonomy_name_resolutions`: false / PASS.
+- anon/authenticated taxonomy writes remain denied.
+- `public.taxa` public read remains ready.
+- `public.taxonomy_name_resolutions` remains server-only.
+
+When Phase 24D-2 resumed locally, `supabase db reset --local` failed at
+`0009_revoke_taxonomy_service_role_delete.sql`.
+
+Cause:
+
+- The original `0009` preflight required `service_role` DELETE to already be
+  present.
+- A clean local replay after `0008` can already have DELETE absent.
+- That local starting state is safe and already matches the intended final
+  DELETE state.
+
+Correction:
+
+- `0009` was made replay-safe while keeping the final database state unchanged.
+- It now accepts both starting states: DELETE present or DELETE already absent.
+- It still preserves `service_role` SELECT/INSERT/UPDATE, browser write denial,
+  `taxa` public SELECT, server-only resolution cache behavior, and RLS.
+- No remote SQL was run for this replayability correction.
+- No Edge Function was deployed.
+- No resolver smoke was run during this correction step.
+- No push was performed.
+
+Exact next step:
+
+```text
+Resume Phase 24D-2 local resolver smoke from the current branch.
+```
+
 ## Phase 24D-1 Current Session Result
 
 Status: local resolver foundation implemented. No remote deployment or UI integration occurred.
