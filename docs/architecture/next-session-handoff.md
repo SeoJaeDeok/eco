@@ -114,6 +114,59 @@ Read this together with:
 - 24C taxonomy schema migration `0007` manually applied and verified on the Supabase database shared with Production; Phase 24 remains open and no app code, package files, Supabase function, Vercel config, production UI deployment, merge, or push was performed.
 - 24D-1 taxonomy resolver foundation implemented locally on `feature/phase-24d-taxonomy-resolver`; Phase 24 remains open, the Edge Function was not deployed, upload/edit UI was not integrated, observation taxonomy linkage was not written, and no push was performed.
 
+
+## Phase 24C.1 / 24D-2 Unblock Current Result
+
+Status: service-role taxonomy grant blocker diagnosed. Migration candidate prepared. Phase 24D-2 local smoke work remains in progress.
+
+Current branch:
+
+```text
+feature/phase-24d2-local-resolver-smoke
+```
+
+Base HEAD:
+
+```text
+0d046e3 feat: add taxonomy resolver foundation
+```
+
+Dirty local-smoke/tooling/function work from Phase 24D-2 is intentionally preserved and was not discarded.
+
+Observed blocker:
+
+- Local Supabase stack and migrations through 0007 worked.
+- Unauthorized resolver request returned 401.
+- Authenticated resolver request stopped before GBIF with `database_failure`.
+- Local PostgREST checks for `public.taxa` and `public.taxonomy_name_resolutions` returned HTTP 403 / SQL reason `42501`.
+
+Diagnosis:
+
+- Admin/service client construction: PASS.
+- Missing service-role table grants: confirmed.
+
+New migration candidate:
+
+```text
+supabase/migrations/0008_grant_taxonomy_service_role_access.sql
+```
+
+It grants `service_role` SELECT, INSERT, and UPDATE on `public.taxa` and `public.taxonomy_name_resolutions`. It does not grant DELETE, does not change RLS policies, and does not grant browser writes.
+
+Documentation added:
+
+```text
+docs/architecture/taxonomy-service-role-grants-apply-readiness.md
+```
+
+No remote SQL was applied. No Edge Function was deployed. No upload UI was integrated. No push was performed.
+
+Exact next step:
+
+```text
+Phase 24C.1 apply migration 0008 manually, verify service_role grants, then resume Phase 24D-2 local resolver smoke
+```
+
 ## Phase 24D-1 Current Session Result
 
 Status: local resolver foundation implemented. No remote deployment or UI integration occurred.

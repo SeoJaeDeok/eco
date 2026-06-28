@@ -272,6 +272,30 @@ Phase 24D-1 environment note:
 - Docker: not installed.
 - Edge Function local serve/deploy was NOT RUN.
 
+
+## Phase 24C.1 / 24D-2 Unblock Update
+
+Status: service-role grant blocker diagnosed and migration candidate prepared.
+
+During the Phase 24D-2 local resolver smoke, authenticated requests reached the function but stopped before GBIF with a safe `database_failure` result. Local PostgREST checks for `public.taxa` and `public.taxonomy_name_resolutions` returned HTTP 403 with SQL reason `42501`.
+
+Diagnosis:
+
+- Admin/service client construction: PASS. The user JWT is used only for caller authentication. The admin client is separate and does not set the user's Authorization header.
+- Service-role grants: MISSING after migration 0007. `service_role` had schema usage but did not have SELECT/INSERT/UPDATE on the taxonomy cache tables.
+
+Correction path:
+
+- New migration candidate: `supabase/migrations/0008_grant_taxonomy_service_role_access.sql`.
+- It grants `service_role` SELECT, INSERT, and UPDATE on `public.taxa` and `public.taxonomy_name_resolutions`.
+- It does not grant DELETE.
+- It does not grant new browser write privileges.
+- It does not change RLS policies.
+
+Local verification after applying 0008 locally passed for service-role taxonomy table access and preserved browser denial checks.
+
+Resolver smoke remains BLOCKED for the shared Supabase DB until 0008 is manually applied and verified there. No remote SQL was applied in this unblock step.
+
 ## Deployment Readiness
 
 Before deploying the Edge Function in a later phase:
