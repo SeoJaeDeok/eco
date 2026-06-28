@@ -115,7 +115,84 @@ Read this together with:
 - 24D-1 taxonomy resolver foundation implemented locally on `feature/phase-24d-taxonomy-resolver`; Phase 24 remains open, the Edge Function was not deployed, upload/edit UI was not integrated, observation taxonomy linkage was not written, and no push was performed.
 - 24D-2 local taxonomy resolver smoke completed on `feature/phase-24d2-local-resolver-smoke`; local migrations `0001` through `0009` replayed, authenticated local resolver/cache/RLS smoke passed, official local gateway serve remained PARTIAL on Windows, and no remote deployment or UI integration occurred.
 - 24D-3 deployed `resolve-taxonomy` to the Supabase project shared with Production and authenticated live resolver/cache/RLS smoke passed; Phase 24 remains open, upload UI was not integrated, observation taxonomy linkage was not written, Vercel/Production UI was not changed, and no push was performed.
+- 24E-1 taxonomy-linked observation write path design prepared on `feature/phase-24e-taxonomy-observation-write-path`; migration candidate `0010_create_taxonomy_observation_write_path.sql` was added, no remote SQL was applied, Upload UI was not changed, and no push was performed.
 
+
+## Phase 24E-1 Taxonomy Observation Write Path Result
+
+Status: design and migration candidate prepared. Push status: not pushed.
+
+Current branch:
+
+```text
+feature/phase-24e-taxonomy-observation-write-path
+```
+
+Base before this phase:
+
+```text
+8d6f8b8 docs: record taxonomy resolver live smoke
+```
+
+Selected architecture:
+
+- Use a narrow authenticated SECURITY DEFINER RPC for taxonomy-linked
+  observation creation.
+- Do not loosen browser INSERT/UPDATE grants for taxonomy columns.
+- Do not expose service-role values to frontend code.
+- Do not create another Edge Function for the MVP write path.
+
+Migration candidate:
+
+```text
+supabase/migrations/0010_create_taxonomy_observation_write_path.sql
+```
+
+Objects:
+
+- `public.normalize_taxonomy_input_key(text)`
+- `public.create_observation_with_verified_taxonomy(...)`
+
+Behavior:
+
+- Requires a signed-in user through `auth.uid()`.
+- Verifies the accepted taxon in trusted `public.taxa`.
+- Verifies the reported scientific name against a trusted
+  `taxonomy_name_resolutions` row for the selected accepted taxon.
+- Derives the existing broad `observations.taxon` from accepted lineage.
+- Sets `taxon_id`, `taxonomy_match_type`, `taxonomy_confidence`, and
+  `taxonomy_verified_at` inside the RPC.
+- Preserves existing direct legacy create behavior with null taxonomy linkage.
+- Leaves taxonomy-linked scientific-name edits blocked by the existing guard
+  until a re-resolution edit flow is designed.
+
+Documentation added:
+
+```text
+docs/architecture/taxonomy-observation-write-path-design.md
+docs/architecture/taxonomy-observation-write-path-apply-readiness.md
+```
+
+Updated:
+
+```text
+docs/architecture/taxonomy-api-resolution-plan.md
+docs/architecture/next-session-handoff.md
+```
+
+Boundaries:
+
+- No Upload UI change.
+- No observation create/update app code change.
+- No remote SQL apply.
+- No Edge Function deployment.
+- No Storage/Auth/Admin/Kakao/Vercel/Production UI change.
+
+Exact next step:
+
+```text
+Phase 24E-2 - manually apply taxonomy observation write path migration and smoke trusted create/edit path
+```
 
 ## Phase 24D-3 Live Resolver Smoke Result
 

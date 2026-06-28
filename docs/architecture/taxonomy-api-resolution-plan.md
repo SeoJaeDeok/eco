@@ -18,6 +18,8 @@ Phase 24D-2 update: local Supabase CLI/Deno/Docker tooling was verified. Local m
 
 Phase 24D-3 update: `resolve-taxonomy` was deployed to the Supabase project shared with Production and authenticated live smoke passed. The live smoke confirmed no-token HTTP 401, exact lookup, cache hit, synonym confirmation, wrong-confirmation conflict, variant confirmation requirement, higher-rank block, no-match block, remote cache writes, and RLS/permission boundaries. Hosted log review remains PARTIAL because the available repository-local Supabase CLI surface did not expose hosted function logs. Upload UI integration, observation taxonomy linkage, Vercel deployment, and Production UI changes remain deferred.
 
+Phase 24E-1 update: the selected observation write-path architecture is a narrow authenticated SECURITY DEFINER RPC, not broad browser taxonomy column grants. Migration candidate `0010_create_taxonomy_observation_write_path.sql` creates `public.create_observation_with_verified_taxonomy(...)`, which verifies the signed-in user, trusted cached taxonomy identity, and optional owner image path before inserting an approved observation with taxonomy linkage. Upload UI integration and remote SQL apply remain deferred to Phase 24E-2 or later.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:
@@ -85,6 +87,7 @@ Still not done:
 - No upload/create/edit UI integration.
 - No observation `taxon_id` writes.
 - No taxonomy requirement on new observation creation.
+- No remote apply of the Phase 24E-1 observation write-path RPC candidate.
 
 ## Current Project Findings
 
