@@ -14,6 +14,8 @@ Phase 24D-1 update: local `TaxonomyRepository`, deterministic mock repository, S
 
 한국어 요약: Phase 24D-1에서 학명 확인용 repository와 Edge Function 소스를 로컬에 추가했습니다. 아직 화면에 연결하지 않았고, Edge Function 배포나 Vercel 배포는 하지 않았습니다.
 
+Phase 24D-2 update: local Supabase CLI/Deno/Docker tooling was verified. Local migrations `0001` through `0009` replayed from scratch, including the replay-safe `0009` service-role DELETE revoke. A direct Deno handler harness verified authenticated resolver behavior against the local Supabase stack and real GBIF: exact lookup, cache hit, synonym confirmation, wrong-confirmation conflict, variant confirmation requirement, higher-rank block, and no-match block. Official `supabase functions serve resolve-taxonomy` remains PARTIAL on this Windows machine because it exits with `ENAMETOOLONG`; remote deployment is still deferred to Phase 24D-3.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:
@@ -78,7 +80,7 @@ Local implementation now includes:
 Still not done:
 
 - No Edge Function deployment.
-- No local Edge Function serve smoke because Supabase CLI, Deno, and Docker were unavailable in Phase 24D-1.
+- Official local Supabase gateway serve remains PARTIAL on Windows due an `ENAMETOOLONG` error; the exported request handler passed a direct local Deno authenticated smoke.
 - No upload/create/edit UI integration.
 - No observation `taxon_id` writes.
 - No taxonomy requirement on new observation creation.

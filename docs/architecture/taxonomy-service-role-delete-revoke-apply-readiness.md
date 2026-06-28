@@ -323,11 +323,16 @@ reset confirms the same final state:
 Resume Phase 24D-2 local resolver smoke.
 ```
 
-Phase 24D-2 remains blocked until:
+Phase 24D-2 local smoke has now resumed and passed through the direct Deno
+handler harness after:
 
 - `service_role` DELETE is false on both taxonomy cache tables.
 - service_role SELECT/INSERT/UPDATE remain true.
 - browser taxonomy writes remain denied.
 - the resolver cache tables retain the intended public/server-only policy split.
+
+The official local `supabase functions serve resolve-taxonomy` command still
+has a Windows `ENAMETOOLONG` limitation, so remote gateway behavior remains for
+Phase 24D-3.
 
 No Edge Function deployment should occur until the separate Phase 24D-3 deployment step is explicitly started.

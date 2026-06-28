@@ -358,9 +358,39 @@ Correction:
 - No remote SQL was run for the replayability repair.
 - No resolver smoke was run in this repair step.
 
-Phase 24D-2 remains blocked until local `supabase db reset --local` passes with
-migrations `0001` through `0009`, then the authenticated local resolver smoke
-can resume.
+Phase 24D-2 later resumed after the replay-safe `0009` correction. Local
+`supabase db reset --local` applied migrations `0001` through `0009` from
+scratch, and the authenticated resolver smoke passed through the direct Deno
+handler harness.
+
+## Phase 24D-2 Local Smoke Result
+
+Status: PASS with one tooling limitation.
+
+Resolved since Phase 24D-1:
+
+- Supabase CLI is available as a repository-local dev dependency.
+- Deno is available and Deno format/lint/check/tests pass.
+- Docker Desktop is available and the local Supabase stack starts.
+- Local migrations `0001` through `0009` replay from scratch.
+- Local Auth user/session creation works for disposable test users.
+- Authenticated resolver calls reach GBIF, write cache rows, and return safe
+  normalized results.
+- Duplicate exact lookup reuses the local cache.
+- Synonym confirmation caches only after explicit confirmation.
+- Wrong confirmation returns HTTP 409.
+- Higher-rank and no-match inputs remain blocked and are not cached.
+- `public.taxa` remains publicly readable.
+- `public.taxonomy_name_resolutions` remains server-only.
+- No observation taxonomy linkage was written.
+
+Tooling limitation:
+
+- `supabase functions serve resolve-taxonomy` still exits in this Windows
+  environment with an `ENAMETOOLONG` spawn error.
+- The direct Deno harness exercised the same exported request handler against
+  local Supabase Auth/PostgREST/DB and real GBIF, but official gateway behavior
+  must still be verified in Phase 24D-3 after deployment.
 
 ## Deployment Readiness
 
@@ -381,9 +411,11 @@ Do not put service-role values in frontend code, `VITE_*` variables, docs, or lo
 
 ## Remaining Risks
 
-- The Edge Function has not been served locally because Supabase CLI, Deno, and Docker are unavailable.
-- The trusted function has not been deployed.
-- Live authenticated invocation has not been tested.
+- Official local `supabase functions serve` remains PARTIAL on this Windows
+  machine because of the `ENAMETOOLONG` runtime error.
+- The trusted function has not been deployed remotely.
+- Live authenticated invocation against the shared Supabase project has not been
+  tested.
 - The newer `@supabase/server` wrapper was not adopted in this phase; reassess once Edge Function tooling is installed.
 - Upload/create/edit UI is not integrated yet.
 - No observation taxonomy linkage is written yet.
@@ -392,15 +424,15 @@ Do not put service-role values in frontend code, `VITE_*` variables, docs, or lo
 ## Next Recommended Phase
 
 ```text
-Phase 24D-2 - Local Edge Function Tooling And Authenticated Resolver Smoke
+Phase 24D-3 - Deploy Resolve-Taxonomy And Run Live Resolver Smoke
 ```
 
 Recommended scope:
 
-- Install or verify local Supabase CLI/Deno/Docker tooling.
-- Run Deno tests.
-- Serve `resolve-taxonomy` locally.
-- Invoke `resolve` and `confirm` with an authenticated test session.
-- Verify cache writes through safe SQL checks.
+- Manually confirm target Supabase project and required function secrets.
+- Deploy only the `resolve-taxonomy` Edge Function after explicit approval.
+- Use an authenticated test session against the shared Supabase project.
+- Run exact, cache-hit, synonym, confirmation, wrong-confirmation, higher-rank,
+  and no-match smoke without upload UI integration.
+- Verify remote cache writes and RLS boundaries with safe read-only checks.
 - Do not integrate upload UI yet.
-- Do not deploy remotely yet unless a separate approval step is given.

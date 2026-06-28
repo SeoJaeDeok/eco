@@ -270,6 +270,81 @@ Exact next step:
 Resume Phase 24D-2 local resolver smoke from the current branch.
 ```
 
+## Phase 24D-2 Local Resolver Smoke Result
+
+Status: local authenticated resolver smoke completed. Push status: not pushed.
+
+Current branch:
+
+```text
+feature/phase-24d2-local-resolver-smoke
+```
+
+Base before this smoke:
+
+```text
+b182d76 fix: make taxonomy service-role revoke replay safe
+```
+
+Tooling/config:
+
+- Added repository-local Supabase CLI tooling.
+- Added local-only `supabase/config.toml`.
+- Added local Supabase ignore rules.
+- No remote project was linked.
+- No remote SQL was run.
+- No Edge Function was deployed.
+
+Local verification:
+
+- Deno format/lint/check/tests: PASS.
+- Existing Node taxonomy tests: PASS.
+- `npm.cmd run typecheck`: PASS.
+- `npm.cmd run build`: PASS.
+- Local Supabase migrations `0001` through `0009`: PASS from scratch.
+- `service_role` SELECT/INSERT/UPDATE on taxonomy tables: PASS.
+- `service_role` DELETE on taxonomy tables: false / PASS.
+- anon/authenticated taxonomy writes: denied / PASS.
+- `public.taxa` public read: PASS.
+- `public.taxonomy_name_resolutions` server-only behavior: PASS.
+
+Function serve note:
+
+- Official `supabase functions serve resolve-taxonomy` remains PARTIAL on this
+  Windows machine because it exits with `ENAMETOOLONG`.
+- The exported Edge Function request handler was verified through a direct Deno
+  local harness against local Supabase Auth/PostgREST/DB and real GBIF.
+
+Authenticated resolver smoke:
+
+- No token -> HTTP 401: PASS.
+- Disposable local Auth user/session: PASS.
+- First `Homo sapiens` lookup -> resolved, cache miss, broad taxon mammal: PASS.
+- Second `Homo sapiens` lookup -> cache hit, no duplicate rows: PASS.
+- `Felis concolor` -> needs confirmation for `Puma concolor`: PASS.
+- Synonym confirmation -> resolved and cached: PASS.
+- Wrong confirmation key -> HTTP 409: PASS.
+- `Homo sapines` -> needs confirmation for `Homo sapiens`: PASS.
+- `Homo` -> blocked higher-rank-only: PASS.
+- `Xyzabc nonexistentii` -> blocked no-match: PASS.
+
+Boundaries:
+
+- Upload UI was not integrated.
+- Observation create/update behavior was not changed.
+- No observation taxonomy metadata was written.
+- Migrations `0007`, `0008`, and `0009` were not edited after their committed
+  states.
+- No migration `0010` was created.
+- Vercel, Storage, Auth Production behavior, Admin app behavior, Kakao, and
+  Production UI were not changed.
+
+Exact next step:
+
+```text
+Phase 24D-3 - deploy resolve-taxonomy to the shared Supabase project and run authenticated live resolver smoke without upload UI integration
+```
+
 ## Phase 24D-1 Current Session Result
 
 Status: local resolver foundation implemented. No remote deployment or UI integration occurred.
