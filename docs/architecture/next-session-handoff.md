@@ -188,10 +188,24 @@ Boundaries:
 - No Edge Function deployment.
 - No Storage/Auth/Admin/Kakao/Vercel/Production UI change.
 
+Phase 24E-2A preflight correction:
+
+- The first 0010 manual preflight checked table-level SELECT on `public.taxa`
+  for `anon` and `authenticated`.
+- The operator reported those two values as false before applying 0010.
+- This was a verification mismatch, not a confirmed live permission failure,
+  because `0007` intentionally grants column-level SELECT on `public.taxa`
+  and also creates the `"Public can read accepted taxa"` RLS policy.
+- `0010` and the apply-readiness document were updated to check
+  `has_any_column_privilege(..., 'public.taxa', 'SELECT')`, the public taxa
+  SELECT policy, and continued denial of anon/authenticated taxonomy writes.
+- No remote SQL was run, and 0010 still has not been applied in this
+  correction step.
+
 Exact next step:
 
 ```text
-Phase 24E-2 - manually apply taxonomy observation write path migration and smoke trusted create/edit path
+Retry the 0010 preflight, then manually apply 0010 if all checks pass.
 ```
 
 ## Phase 24D-3 Live Resolver Smoke Result

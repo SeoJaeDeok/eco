@@ -28,7 +28,9 @@ Already applied and verified:
 
 Current invariant:
 
-- Browser clients can read accepted taxa from `public.taxa`.
+- Browser clients can read accepted taxa from `public.taxa` through the
+  column-level SELECT grants and `"Public can read accepted taxa"` RLS policy
+  created by `0007`.
 - Browser clients cannot write `public.taxa`.
 - Browser clients cannot read or write `public.taxonomy_name_resolutions`.
 - Browser clients cannot directly insert or update observation taxonomy columns.

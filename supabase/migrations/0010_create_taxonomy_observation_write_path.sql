@@ -64,10 +64,18 @@ begin
   end if;
 
   if not (
-    has_table_privilege('anon', 'public.taxa', 'SELECT')
-    and has_table_privilege('authenticated', 'public.taxa', 'SELECT')
+    has_any_column_privilege('anon', 'public.taxa', 'SELECT')
+    and has_any_column_privilege('authenticated', 'public.taxa', 'SELECT')
+    and exists (
+      select 1
+      from pg_policies
+      where schemaname = 'public'
+        and tablename = 'taxa'
+        and policyname = 'Public can read accepted taxa'
+        and cmd = 'SELECT'
+    )
   ) then
-    raise exception 'Phase 24E preflight failed: public taxa read access is missing.';
+    raise exception 'Phase 24E preflight failed: public taxa column read access or RLS policy is missing.';
   end if;
 
   if (

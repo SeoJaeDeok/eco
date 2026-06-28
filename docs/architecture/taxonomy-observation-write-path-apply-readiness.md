@@ -4,6 +4,14 @@ Phase: 24E-1 - Taxonomy-Linked Observation Write Path Design And Migration Candi
 
 Status: migration candidate prepared. No remote SQL has been applied.
 
+Phase 24E-2A correction:
+
+- The first preflight draft checked table-level `SELECT` on `public.taxa`.
+- Migration `0007` intentionally uses column-level public `SELECT` grants on
+  `public.taxa` plus the `"Public can read accepted taxa"` RLS policy.
+- The preflight and post-apply checks now verify column-level read readiness
+  and the policy instead of requiring table-level `SELECT`.
+
 ## Migration
 
 Filename:
@@ -81,8 +89,16 @@ select
   to_regprocedure(
     'public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)'
   ) is null as create_rpc_not_present_yet,
-  has_table_privilege('anon', 'public.taxa', 'SELECT') as anon_can_select_taxa,
-  has_table_privilege('authenticated', 'public.taxa', 'SELECT') as authenticated_can_select_taxa,
+  has_any_column_privilege('anon', 'public.taxa', 'SELECT') as anon_has_taxa_column_select,
+  has_any_column_privilege('authenticated', 'public.taxa', 'SELECT') as authenticated_has_taxa_column_select,
+  exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'taxa'
+      and policyname = 'Public can read accepted taxa'
+      and cmd = 'SELECT'
+  ) as taxa_public_select_policy_exists,
   not (
     has_table_privilege('anon', 'public.taxa', 'INSERT')
     or has_table_privilege('anon', 'public.taxa', 'UPDATE')
@@ -199,6 +215,16 @@ select
     or has_column_privilege('anon', 'public.observations', 'taxonomy_verified_at', 'UPDATE')
     or has_column_privilege('authenticated', 'public.observations', 'taxonomy_verified_at', 'UPDATE')
   ) as direct_observation_taxonomy_writes_denied,
+  has_any_column_privilege('anon', 'public.taxa', 'SELECT') as anon_has_taxa_column_select,
+  has_any_column_privilege('authenticated', 'public.taxa', 'SELECT') as authenticated_has_taxa_column_select,
+  exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'taxa'
+      and policyname = 'Public can read accepted taxa'
+      and cmd = 'SELECT'
+  ) as taxa_public_select_policy_exists,
   not (
     has_table_privilege('anon', 'public.taxa', 'INSERT')
     or has_table_privilege('anon', 'public.taxa', 'UPDATE')
