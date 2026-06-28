@@ -392,7 +392,7 @@ Tooling limitation:
   local Supabase Auth/PostgREST/DB and real GBIF, but official gateway behavior
   must still be verified in Phase 24D-3 after deployment.
 
-## Deployment Readiness
+## Historical Deployment Readiness
 
 Before deploying the Edge Function in a later phase:
 
@@ -409,30 +409,67 @@ Before deploying the Edge Function in a later phase:
 
 Do not put service-role values in frontend code, `VITE_*` variables, docs, or logs.
 
+## Phase 24D-3 Live Deployment Smoke Result
+
+Status: PASS with one log-review limitation.
+
+Phase 24D-3 deployed only the existing `resolve-taxonomy` Edge Function to the
+Supabase project shared with Production. The deployment used normal JWT
+verification; `--no-verify-jwt` was not used.
+
+Confirmed live behavior:
+
+- No-token request returns HTTP 401.
+- Approved email/password test session can invoke the deployed function.
+- `Homo sapiens` resolves as an accepted species.
+- Repeating `Homo sapiens` returns a cache hit.
+- `Felis concolor` resolves through the synonym/confirmation path to accepted
+  `Puma concolor`.
+- A wrong confirmation key returns HTTP 409.
+- `Homo sapines` requires confirmation and is not silently accepted.
+- `Homo` is blocked as higher-rank-only.
+- `Xyzabc nonexistentii` is blocked as no match.
+- Remote cache writes created one accepted `Homo sapiens` identity, one accepted
+  `Puma concolor` identity, and one successful resolution mapping for each
+  confirmed input.
+- No observation received taxonomy linkage.
+- `service_role` keeps SELECT/INSERT/UPDATE and does not have DELETE on the two
+  taxonomy cache tables.
+- anon/authenticated taxonomy writes remain denied.
+- `public.taxa` remains publicly readable.
+- `public.taxonomy_name_resolutions` remains server-only.
+
+Hosted function logs were not directly reviewed because the repository-local
+Supabase CLI surface does not expose a hosted function log retrieval command.
+Static source review found no `console.log` calls, and the smoke output recorded
+only safe booleans/counts.
+
 ## Remaining Risks
 
 - Official local `supabase functions serve` remains PARTIAL on this Windows
   machine because of the `ENAMETOOLONG` runtime error.
-- The trusted function has not been deployed remotely.
-- Live authenticated invocation against the shared Supabase project has not been
-  tested.
-- The newer `@supabase/server` wrapper was not adopted in this phase; reassess once Edge Function tooling is installed.
+- Hosted Edge Function logs were not directly reviewed by Codex because the
+  available repository-local Supabase CLI surface did not expose a hosted
+  function log retrieval command.
+- The newer `@supabase/server` wrapper was not adopted in this phase; reassess
+  during future resolver maintenance if the project chooses to move away from
+  the current explicit Auth verification plus service-role admin-client pattern.
 - Upload/create/edit UI is not integrated yet.
 - No observation taxonomy linkage is written yet.
-- Phase 24E must decide the exact UI state wiring for `학명 확인`.
+- Phase 24E must decide the exact UI state wiring for the explicit
+  scientific-name confirmation button.
 
 ## Next Recommended Phase
 
 ```text
-Phase 24D-3 - Deploy Resolve-Taxonomy And Run Live Resolver Smoke
+Phase 24E - Connect Upload UI To TaxonomyRepository With Explicit 학명 확인 Button
 ```
 
 Recommended scope:
 
-- Manually confirm target Supabase project and required function secrets.
-- Deploy only the `resolve-taxonomy` Edge Function after explicit approval.
-- Use an authenticated test session against the shared Supabase project.
-- Run exact, cache-hit, synonym, confirmation, wrong-confirmation, higher-rank,
-  and no-match smoke without upload UI integration.
-- Verify remote cache writes and RLS boundaries with safe read-only checks.
-- Do not integrate upload UI yet.
+- Add explicit `학명 확인` UI state to the upload flow.
+- Call `TaxonomyRepository` only after the user presses the button.
+- Show resolved, confirmation-required, blocked, and error states safely.
+- Keep existing legacy observations valid and unlinked.
+- Do not require taxonomy for legacy rows beyond the approved UI behavior.
+- Do not call GBIF from public list/detail/map/tree rendering.

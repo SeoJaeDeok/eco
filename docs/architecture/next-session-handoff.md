@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24D-1 taxonomy resolver foundation implementation work.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24D-3 live taxonomy resolver smoke.
 
 Read this together with:
 
@@ -113,7 +113,79 @@ Read this together with:
 - 24B taxonomy schema/RLS migration candidate prepared on `feature/phase-24b-taxonomy-schema-rls`; Phase 24 remains open and no app code, package files, Supabase function, Vercel config, production deployment, merge, or push was performed.
 - 24C taxonomy schema migration `0007` manually applied and verified on the Supabase database shared with Production; Phase 24 remains open and no app code, package files, Supabase function, Vercel config, production UI deployment, merge, or push was performed.
 - 24D-1 taxonomy resolver foundation implemented locally on `feature/phase-24d-taxonomy-resolver`; Phase 24 remains open, the Edge Function was not deployed, upload/edit UI was not integrated, observation taxonomy linkage was not written, and no push was performed.
+- 24D-2 local taxonomy resolver smoke completed on `feature/phase-24d2-local-resolver-smoke`; local migrations `0001` through `0009` replayed, authenticated local resolver/cache/RLS smoke passed, official local gateway serve remained PARTIAL on Windows, and no remote deployment or UI integration occurred.
+- 24D-3 deployed `resolve-taxonomy` to the Supabase project shared with Production and authenticated live resolver/cache/RLS smoke passed; Phase 24 remains open, upload UI was not integrated, observation taxonomy linkage was not written, Vercel/Production UI was not changed, and no push was performed.
 
+
+## Phase 24D-3 Live Resolver Smoke Result
+
+Status: deployed and live-smoked. Push status: not pushed.
+
+Current branch:
+
+```text
+feature/phase-24d3-live-taxonomy-resolver
+```
+
+Base before this smoke:
+
+```text
+8b9d289 docs: record taxonomy resolver local smoke
+```
+
+Confirmed scope:
+
+- Target category: Supabase project shared with Production.
+- Deployed function: `resolve-taxonomy`.
+- No `supabase db push` was run.
+- No remote migration SQL was run in Phase 24D-3.
+- No Upload UI integration was added.
+- No `학명 확인` button was added yet.
+- No observation taxonomy metadata was written.
+- No Vercel deployment or Production UI change occurred.
+
+Live smoke result:
+
+- No-token request returned HTTP 401.
+- Approved email/password test session invoked the deployed function.
+- `Homo sapiens` resolved as an accepted species.
+- Repeating `Homo sapiens` returned a cache hit.
+- `Felis concolor` used the synonym/confirmation path to accepted
+  `Puma concolor`.
+- A wrong confirmation key returned HTTP 409.
+- `Homo sapines` required confirmation and was not silently accepted.
+- `Homo` was blocked as higher-rank-only.
+- `Xyzabc nonexistentii` was blocked as no match.
+
+Remote cache and permission result:
+
+- Remote taxonomy cache contains one accepted `Homo sapiens` identity and one
+  accepted `Puma concolor` identity from the smoke.
+- Successful resolution mappings exist once for the confirmed exact/synonym
+  inputs.
+- Variant, higher-rank, and no-match inputs did not create successful
+  resolution mappings.
+- Observation taxonomy linkage count remained `0`.
+- `service_role` retains SELECT/INSERT/UPDATE and has no DELETE on the two
+  taxonomy cache tables.
+- anon/authenticated taxonomy writes remain denied.
+- `public.taxa` remains publicly readable.
+- `public.taxonomy_name_resolutions` remains server-only.
+
+Log/privacy review:
+
+- Hosted function logs were not directly reviewed because the available
+  repository-local Supabase CLI surface did not expose a hosted function log
+  retrieval command.
+- Static source review found no `console.log` calls.
+- Smoke scripts and documentation did not record credentials, JWTs, emails,
+  keys, URLs, project refs, source taxon keys, row IDs, or raw GBIF responses.
+
+Exact next step:
+
+```text
+Phase 24E - connect Upload UI to TaxonomyRepository with explicit 학명 확인 button, without changing existing legacy observations
+```
 
 ## Phase 24C.1 / 24D-2 Unblock Current Result
 

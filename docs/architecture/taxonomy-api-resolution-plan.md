@@ -16,6 +16,8 @@ Phase 24D-1 update: local `TaxonomyRepository`, deterministic mock repository, S
 
 Phase 24D-2 update: local Supabase CLI/Deno/Docker tooling was verified. Local migrations `0001` through `0009` replayed from scratch, including the replay-safe `0009` service-role DELETE revoke. A direct Deno handler harness verified authenticated resolver behavior against the local Supabase stack and real GBIF: exact lookup, cache hit, synonym confirmation, wrong-confirmation conflict, variant confirmation requirement, higher-rank block, and no-match block. Official `supabase functions serve resolve-taxonomy` remains PARTIAL on this Windows machine because it exits with `ENAMETOOLONG`; remote deployment is still deferred to Phase 24D-3.
 
+Phase 24D-3 update: `resolve-taxonomy` was deployed to the Supabase project shared with Production and authenticated live smoke passed. The live smoke confirmed no-token HTTP 401, exact lookup, cache hit, synonym confirmation, wrong-confirmation conflict, variant confirmation requirement, higher-rank block, no-match block, remote cache writes, and RLS/permission boundaries. Hosted log review remains PARTIAL because the available repository-local Supabase CLI surface did not expose hosted function logs. Upload UI integration, observation taxonomy linkage, Vercel deployment, and Production UI changes remain deferred.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:
@@ -79,7 +81,6 @@ Local implementation now includes:
 
 Still not done:
 
-- No Edge Function deployment.
 - Official local Supabase gateway serve remains PARTIAL on Windows due an `ENAMETOOLONG` error; the exported request handler passed a direct local Deno authenticated smoke.
 - No upload/create/edit UI integration.
 - No observation `taxon_id` writes.
