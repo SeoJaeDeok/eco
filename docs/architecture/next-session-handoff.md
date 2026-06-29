@@ -118,6 +118,7 @@ Read this together with:
 - 24E-1 taxonomy-linked observation write path design prepared on `feature/phase-24e-taxonomy-observation-write-path`; migration candidate `0010_create_taxonomy_observation_write_path.sql` was added, no remote SQL was applied, Upload UI was not changed, and no push was performed.
 - 24E-2C taxonomy observation RPC runtime repair prepared on `feature/phase-24e2c-rpc-runtime-fix`; migration candidate `0011_repair_taxonomy_observation_rpc_runtime_expressions.sql` was added after the applied 0010 RPC failed at runtime with SQLSTATE `42883`. No remote SQL was applied in the correction step, Upload UI was not changed, and no push was performed.
 - 24E-2B trusted taxonomy observation create RPC smoke after 0011 completed on `feature/phase-24e2b-trusted-rpc-smoke-after-0011`; one approved taxonomy-linked smoke observation was created through the trusted RPC, DB/security checks passed, browser visual UI smoke remains PARTIAL, Upload UI was not changed, and no push was performed.
+- 24E-3 Upload UI taxonomy verification and trusted RPC create integration implemented locally on `feature/phase-24e3-upload-taxonomy-ui`; Upload now requires explicit `학명 확인`, uses `TaxonomyRepository`, creates through the trusted RPC repository path, locks taxonomy-linked scientific-name edits, and no migration/remote SQL/Edge Function/Vercel/Production UI change was performed.
 
 
 ## Phase 24E-1 Taxonomy Observation Write Path Result
@@ -257,6 +258,74 @@ Exact next step:
 
 ```text
 Phase 24E-3 - connect Upload UI to TaxonomyRepository with explicit 학명 확인 button and trusted RPC create path
+```
+
+## Phase 24E-3 Upload Taxonomy UI Integration
+
+Status: implemented locally. Browser visual smoke remains PARTIAL because the
+in-app browser connector was unavailable in this Codex session.
+
+Current branch:
+
+```text
+feature/phase-24e3-upload-taxonomy-ui
+```
+
+Base before this phase:
+
+```text
+277088b docs: record taxonomy observation write path smoke
+```
+
+Result:
+
+- Upload UI now requires explicit `학명 확인` before submit.
+- The UI uses `TaxonomyRepository` for resolve and confirmation.
+- No automatic lookup runs while typing.
+- Editing the scientific-name field invalidates the previous resolved result.
+- Resolved classification displays accepted scientific name, reported name when
+  different, broad project taxon, match type, source name, and 계/문/강/목/과/속/종
+  lineage.
+- Synonym and variant candidates require explicit confirmation before submit.
+- Supabase create uses `ObservationRepository.createObservationWithVerifiedTaxonomy(...)`,
+  which calls `create_observation_with_verified_taxonomy(...)`.
+- Browser clients still do not directly write `taxon_id`,
+  `taxonomy_match_type`, `taxonomy_confidence`, or `taxonomy_verified_at`.
+- If image upload succeeds and the trusted RPC create fails, the repository
+  attempts scoped cleanup of only the just-uploaded object.
+- Taxonomy-linked owner/admin edits lock scientific-name and broad-taxon fields;
+  content-only edits remain available.
+
+Documentation added:
+
+```text
+docs/architecture/taxonomy-upload-ui-integration.md
+```
+
+Tests added:
+
+```text
+tests/upload-taxonomy-verification.test.mjs
+tests/mock-observation-taxonomy-create.test.mjs
+tests/supabase-observation-taxonomy-path.test.mjs
+tests/observation-edit-taxonomy-protection.test.mjs
+```
+
+Boundaries:
+
+- No migration changed.
+- No new migration.
+- No remote SQL.
+- No Edge Function redeploy.
+- No Vercel config change.
+- No Production UI deployment.
+- No Storage/Auth/Admin/Kakao setting change.
+- No live DB data was created by Codex in Phase 24E-3.
+
+Exact next step:
+
+```text
+Phase 24F - Preview/Production smoke, public detail taxonomy display, and Phase 24 closeout
 ```
 
 ## Phase 24E-2B Trusted RPC Smoke After 0011

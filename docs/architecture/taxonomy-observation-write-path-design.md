@@ -367,26 +367,41 @@ Phase 24E-2B smoke after 0011:
 - The browser visual list/detail smoke remains PARTIAL, but public approved API
   compatibility passed.
 
+Phase 24E-3 Upload UI integration:
+
+- The Upload UI now requires explicit taxonomy verification before submit.
+- The UI calls `TaxonomyRepository`, not GBIF or Supabase directly.
+- Supabase create uses `createObservationWithVerifiedTaxonomy(...)`, which calls
+  the trusted RPC instead of direct browser taxonomy-column writes.
+- After a resolved result, the broad taxon selector is derived from taxonomy and
+  locked against conflicting manual edits.
+- Taxonomy-linked owner/admin edits lock scientific-name and broad-taxon fields
+  until a future re-resolution edit flow is designed.
+- Image upload cleanup is attempted if the upload succeeds but trusted RPC
+  create fails.
+- Browser visual smoke remains PARTIAL in this Codex session.
+
 ## Rollout Plan
 
 1. Phase 24E-2C: manually apply `0011` and verify the RPC runtime repair.
 2. Phase 24E-2B: trusted RPC smoke with safe test data. Completed with browser
    visual UI checks still PARTIAL.
-3. Add repository method for taxonomy-linked create.
-4. Add Upload UI `학명 확인` state and button.
-5. Require a resolved or confirmed taxonomy result before taxonomy-required
+3. Phase 24E-3: add repository method, Upload UI `학명 확인` state/button, and
+   trusted RPC create integration. Completed locally with browser visual smoke
+   still PARTIAL.
+4. Require a resolved or confirmed taxonomy result before taxonomy-required
    submission.
-6. Verify legacy rows and legacy direct create compatibility.
-7. Defer taxonomy-linked scientific-name edit/re-resolution to a later phase.
+5. Verify legacy rows and legacy direct create compatibility.
+6. Defer taxonomy-linked scientific-name edit/re-resolution to a later phase.
 
 ## Remaining Risks
 
 - The RPC normalizes lookup keys in SQL with trim, whitespace collapse, and
   lowercase. It does not perform full Unicode NFC normalization like the
   TypeScript resolver.
-- The existing upload-before-insert order can still leave orphan images if the
-  RPC fails after Storage upload.
-- Direct local/remote SQL apply and RPC smoke are not run in Phase 24E-1.
-- The Upload UI still does not call the resolver or the new RPC.
+- The upload-before-RPC order can still leave an orphan image if Storage cleanup
+  fails after an RPC error, but the repository now attempts scoped cleanup of
+  only the just-uploaded object.
+- Browser visual smoke for the new Upload UI is PARTIAL in Phase 24E-3.
 - Existing public list queries still use broad observation rows; future phases
   should narrow selected columns before taxonomy data usage grows.

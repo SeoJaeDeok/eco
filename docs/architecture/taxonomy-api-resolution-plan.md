@@ -29,6 +29,16 @@ anonymous RPC denial, and taxonomy permission checks passed. Browser visual UI
 smoke remains PARTIAL, and Upload UI integration remains deferred to Phase
 24E-3.
 
+Phase 24E-3 update: Upload UI taxonomy verification is implemented locally on
+`feature/phase-24e3-upload-taxonomy-ui`. The Upload UI now uses an explicit
+`학명 확인` button, requires a `resolved` taxonomy state before submit, displays
+accepted classification and lineage, supports explicit synonym/variant
+confirmation, and creates new records through the trusted RPC repository path.
+The browser does not call GBIF directly and does not write taxonomy columns
+directly. Browser visual smoke is PARTIAL because the in-app browser connector
+was unavailable in this Codex session. No migration, remote SQL, Edge Function,
+Vercel, or Production UI change was made.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:

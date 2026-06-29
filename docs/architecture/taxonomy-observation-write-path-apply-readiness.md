@@ -60,6 +60,18 @@ Phase 24E-2B smoke after 0011:
 - Browser visual UI smoke remains PARTIAL; public API compatibility for the
   approved row passed.
 
+Phase 24E-3 Upload UI integration:
+
+- Upload UI now calls `TaxonomyRepository` through an explicit `학명 확인`
+  state machine.
+- New observation submission is blocked until taxonomy is `resolved`.
+- Supabase repository creation uses the trusted RPC path through
+  `createObservationWithVerifiedTaxonomy(...)`.
+- Browser direct writes to taxonomy columns remain out of scope and are not
+  introduced by the UI.
+- Image cleanup is attempted if Storage upload succeeds but RPC create fails.
+- Browser visual smoke remains PARTIAL in this Codex session.
+
 ## Migration
 
 Filename:
