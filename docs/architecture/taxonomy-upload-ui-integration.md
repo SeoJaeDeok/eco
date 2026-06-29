@@ -203,6 +203,31 @@ Result:
 
 No Preview/Production deployment was performed.
 
+## Phase 24F-2 Preview Smoke Result
+
+Recorded in:
+
+```text
+docs/architecture/taxonomy-upload-ui-preview-smoke.md
+```
+
+Result:
+
+- the feature branch was pushed to origin
+- Vercel Preview deployment succeeded
+- Preview environment variables were confirmed ready by name only
+- Preview login worked after environment variables were fixed
+- submit remained blocked before taxonomy verification
+- exact plant create with `Taraxacum officinale` passed
+- dirty-state, synonym, variant, higher-rank, and no-match behavior passed
+- public list/detail compatibility passed
+- owner edit and anonymous edit-hidden behavior passed by operator report
+- read-only DB verification passed with booleans/counts only
+
+No main merge, Production deployment, migration change, remote SQL mutation,
+Edge Function deployment, package change, or Vercel Production setting change
+was performed.
+
 ## Manual Smoke Plan
 
 After this branch is deployed to a safe Preview or tested locally with
@@ -226,12 +251,14 @@ Do not create multiple public live smoke rows without approval.
 
 ## Remaining Risks
 
-- Preview browser smoke is still needed.
+- Production deployment smoke is still needed.
+- Build log secret review for Preview remains PARTIAL unless explicitly
+  confirmed later by the operator.
 - Rich taxonomy display in public detail remains deferred.
 - Legacy observations remain intentionally unlinked.
 
 ## Next Recommendation
 
 ```text
-Phase 24F-2 - push feature branch for Vercel Preview and run Preview smoke
+Phase 24F-3 - merge into main, run Production deployment smoke, create Phase 24 archive, and close Phase 24
 ```

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24F-1 Upload Taxonomy UI local smoke.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24F-2 Vercel Preview Upload Taxonomy smoke.
 
 Read this together with:
 
@@ -120,6 +120,7 @@ Read this together with:
 - 24E-2B trusted taxonomy observation create RPC smoke after 0011 completed on `feature/phase-24e2b-trusted-rpc-smoke-after-0011`; one approved taxonomy-linked smoke observation was created through the trusted RPC, DB/security checks passed, browser visual UI smoke remains PARTIAL, Upload UI was not changed, and no push was performed.
 - 24E-3 Upload UI taxonomy verification and trusted RPC create integration implemented locally on `feature/phase-24e3-upload-taxonomy-ui`; Upload now requires explicit `학명 확인`, uses `TaxonomyRepository`, creates through the trusted RPC repository path, locks taxonomy-linked scientific-name edits, and no migration/remote SQL/Edge Function/Vercel/Production UI change was performed.
 - 24F-1 Upload Taxonomy UI local smoke completed on `feature/phase-24f1-upload-taxonomy-smoke`; operator manual browser smoke passed, read-only DB verification passed, one approved no-image taxonomy-linked smoke observation exists in the shared DB, no Preview/Production deployment occurred, and no push was performed.
+- 24F-2 Vercel Preview Upload Taxonomy smoke completed on `feature/phase-24f1-upload-taxonomy-smoke`; the feature branch was pushed, Preview deployment succeeded, Preview browser smoke and read-only DB verification passed, one approved no-image Preview smoke observation exists in the shared DB, Production was not intentionally deployed, and main was not merged or pushed.
 
 
 ## Phase 24E-1 Taxonomy Observation Write Path Result
@@ -329,12 +330,13 @@ Follow-up smoke:
   `feature/phase-24f1-upload-taxonomy-smoke`.
 - Read-only DB verification passed for the created no-image taxonomy-linked
   observation.
-- No Preview/Production deployment was performed yet.
+- Phase 24F-2 Preview smoke later passed on the same feature branch.
+- No Production deployment was performed yet.
 
 Exact next step:
 
 ```text
-Phase 24F-2 - push feature branch for Vercel Preview and run Preview smoke
+Phase 24F-3 - merge into main, run Production deployment smoke, create Phase 24 archive, and close Phase 24
 ```
 
 ## Phase 24F-1 Upload Taxonomy UI Local Smoke
@@ -385,7 +387,73 @@ Boundaries:
 Exact next step:
 
 ```text
-Phase 24F-2 - push feature branch for Vercel Preview and run Preview smoke
+Phase 24F-3 - merge into main, run Production deployment smoke, create Phase 24 archive, and close Phase 24
+```
+
+## Phase 24F-2 Vercel Preview Upload Taxonomy Smoke
+
+Status: PASS for Preview deployment, Preview browser smoke, and read-only DB
+verification. Build log secret review remains PARTIAL unless explicitly
+confirmed later by the operator.
+
+Current branch:
+
+```text
+feature/phase-24f1-upload-taxonomy-smoke
+```
+
+Base before this closeout:
+
+```text
+2e8f5ea docs: record taxonomy upload ui smoke
+```
+
+Result:
+
+- the feature branch was pushed to origin
+- Vercel Preview deployment succeeded from the feature branch
+- Preview environment variables were confirmed ready by name only
+- Preview login worked after environment variables were fixed
+- submit was blocked before `hakmyeong check`
+- exact plant create with `Taraxacum officinale` passed
+- dirty-state invalidation passed
+- synonym and variant confirmation UI passed
+- higher-rank and no-match inputs remained blocked
+- public list/detail compatibility passed
+- owner edit and anonymous edit-hidden behavior passed by operator report
+- read-only DB verification passed with booleans/counts only
+
+Documentation added:
+
+```text
+docs/architecture/taxonomy-upload-ui-preview-smoke.md
+```
+
+Updated:
+
+```text
+docs/architecture/taxonomy-upload-ui-smoke.md
+docs/architecture/taxonomy-upload-ui-integration.md
+docs/architecture/next-session-handoff.md
+```
+
+Boundaries:
+
+- one approved no-image Preview smoke observation exists in the shared DB
+- no main merge
+- no push to main
+- no Production deployment
+- no migration changed
+- no new migration
+- no remote SQL mutation
+- no Edge Function redeploy
+- no Vercel Production setting change
+- no package change
+
+Exact next step:
+
+```text
+Phase 24F-3 - merge into main, run Production deployment smoke, create Phase 24 archive, and close Phase 24
 ```
 
 ## Phase 24E-2B Trusted RPC Smoke After 0011

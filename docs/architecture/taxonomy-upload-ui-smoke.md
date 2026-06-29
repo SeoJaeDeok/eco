@@ -147,9 +147,28 @@ Not changed:
 - Production UI deployment
 - package files
 
+## Phase 24F-2 Preview Smoke Follow-Up
+
+Preview smoke was completed later on the same feature branch and is recorded
+in:
+
+```text
+docs/architecture/taxonomy-upload-ui-preview-smoke.md
+```
+
+Summary:
+
+- the feature branch was pushed to origin
+- Vercel Preview deployment built successfully
+- Preview login worked after Preview environment variables were fixed
+- Preview Upload UI taxonomy smoke passed
+- read-only DB verification passed with booleans/counts only
+- Production deployment was not intentionally triggered
+
 ## Remaining Risks
 
-- Preview smoke has not been run yet.
+- Build log secret review for the Preview deployment remains PARTIAL unless
+  explicitly confirmed later by the operator.
 - Production deployment has not happened from this feature branch.
 - Rich taxonomy display in public detail remains deferred.
 - Existing legacy observations remain intentionally unlinked.
@@ -157,5 +176,5 @@ Not changed:
 ## Next Step
 
 ```text
-Phase 24F-2 - push feature branch for Vercel Preview and run Preview smoke
+Phase 24F-3 - merge into main, run Production deployment smoke, create Phase 24 archive, and close Phase 24
 ```
