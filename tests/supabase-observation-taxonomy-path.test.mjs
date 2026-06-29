@@ -33,3 +33,19 @@ test('Supabase taxonomy-linked create attempts image cleanup after RPC failure',
   assert.match(section, /cleanupUploadedImageAfterCreateFailure\(uploadedImage\)/);
 });
 
+test('Supabase taxonomy image cleanup is scoped to repository-created uploads', () => {
+  const storageSource = readFileSync(
+    new URL('../src/repositories/supabase/supabaseObservationImageStorage.ts', import.meta.url),
+    'utf8',
+  );
+  const validatorStart = storageSource.indexOf('const isRepositoryOwnedObservationImagePath');
+  const validatorEnd = storageSource.indexOf('export const uploadObservationImage', validatorStart);
+  const validatorSection = storageSource.slice(validatorStart, validatorEnd);
+
+  assert.match(repositorySource, /if \(!uploadedImage\) return/);
+  assert.notEqual(validatorStart, -1);
+  assert.notEqual(validatorEnd, -1);
+  assert.match(validatorSection, /isRepositoryOwnedObservationImagePath/);
+  assert.ok(validatorSection.includes('^observations\\/[0-9a-f-]{36}'));
+  assert.doesNotMatch(validatorSection, /pending/);
+});
