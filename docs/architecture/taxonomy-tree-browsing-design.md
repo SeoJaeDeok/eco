@@ -444,6 +444,38 @@ does not call GBIF, does not read `taxonomy_name_resolutions`, does not select
 `classification_json`, and does not require service-role credentials in
 frontend code.
 
+## Phase 25C Implementation Note
+
+Phase 25C implemented the first visible browsing MVP inside `생태지도`:
+
+- Added a collapsible `분류 탐색` panel to the existing map filter overlay.
+- Root nodes load from `TaxonomyTreeRepository.getRootNodes()`.
+- Child nodes lazy-load one rank at a time from `getChildren(parent)`.
+- Expanding a node does not filter the map/list.
+- Clicking a node label applies the taxonomy filter.
+- The active chip shows `분류 필터: <displayName>` and can clear only the
+  taxonomy filter.
+- The existing full reset clears search, broad taxon, species, and taxonomy
+  filters together.
+- Added `getObservationIdsForSelection(selection)` so map filtering can use
+  approved linked observation ids without loading raw taxonomy JSON into cards.
+- The same filtered collection drives map markers, result count, and the
+  compact `관찰 목록` inside the map overlay.
+- The separate public `관찰목록` page is not changed in this MVP.
+
+Filter semantics remain:
+
+```text
+text/species search AND broad taxon filters AND taxonomy tree filter
+```
+
+Legacy observations with `taxon_id IS NULL` remain visible when no taxonomy
+filter is active and are excluded while a taxonomy filter is active.
+
+No GBIF call, resolver invocation, `taxonomy_name_resolutions` read,
+service-role frontend use, migration, remote SQL, Edge Function redeploy, or
+Production deployment was part of Phase 25C.
+
 ## Deferred Work
 
 - New Navbar taxonomy page.

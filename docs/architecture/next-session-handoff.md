@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24 Production deployment smoke/closeout and Phase 25A taxonomy tree browsing design.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24 Production deployment smoke/closeout and local Phase 25A/25B/25C taxonomy tree work.
 
 Read this together with:
 
@@ -35,6 +35,8 @@ Read this together with:
 - `docs/architecture/taxonomy-tree-visualization-design.md`
 - `docs/architecture/taxonomy-tree-browsing-design.md`
 - `docs/architecture/taxonomy-tree-query-prototypes.md`
+- `docs/architecture/taxonomy-tree-repository-detail-lineage.md`
+- `docs/architecture/taxonomy-tree-map-filter-implementation.md`
 - `docs/eco/project-working-guide.md`
 - `docs/eco/phase-history/index.md`
 
@@ -126,7 +128,96 @@ Read this together with:
 - 24F-3 Production deployment smoke completed on `main`; Phase 24 is deployed to Production, Production Upload UI taxonomy smoke and read-only DB verification passed, one approved no-image Production smoke observation exists in the shared DB, and Phase 24 is archived as Verified.
 - 25A taxonomy tree browsing design completed on `feature/phase-25a-taxonomy-tree-design`; Phase 25 remains open, and no app code, package files, migration SQL, remote SQL, RLS/policies, Edge Function, Storage, Auth, Admin, Kakao, Vercel config, Production UI, merge, or push was performed.
 - 25B taxonomy tree repository and public detail lineage implemented locally on `feature/phase-25b-taxonomy-tree-repository-detail`; Phase 25 remains open, no migration/remote SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel/Production deployment was performed, and no push was performed.
+- 25C taxonomy tree panel and Eco Map filtering implemented locally on `feature/phase-25c-taxonomy-tree-map-filter`; Phase 25 remains open, the `생태지도` screen now has a collapsible `분류 탐색` panel, taxonomy node selection filters map markers and the compact map-side observation list, no migration/remote SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel/Production deployment was performed, and no push was performed.
 
+
+## Phase 25C Taxonomy Tree Panel And Eco Map Filtering
+
+Status: implemented locally. Push status: not pushed.
+
+Current branch:
+
+```text
+feature/phase-25c-taxonomy-tree-map-filter
+```
+
+Base before this phase:
+
+```text
+55321fa docs: record taxonomy tree repository detail work
+```
+
+Earlier Phase 25 commits:
+
+```text
+7ceb868 docs: design taxonomy tree browsing
+a9b7ecf feat: add taxonomy tree repository and detail lineage
+55321fa docs: record taxonomy tree repository detail work
+```
+
+Implementation result:
+
+- Added a collapsible `분류 탐색` panel inside the existing `생태지도` filter overlay.
+- Root nodes load from `TaxonomyTreeRepository.getRootNodes()`.
+- Children lazy-load one rank at a time through `getChildren(parent)`.
+- Expanding a node does not filter results; clicking the node label applies the filter.
+- Active chip copy is `분류 필터: <displayName>`, with a clear button for taxonomy only.
+- Added `getObservationIdsForSelection(selection)` to the taxonomy tree repository contract.
+- Map filtering now combines search/species, broad taxon, and taxonomy selection with AND semantics.
+- The same filtered collection drives map markers, result count, and a compact `관찰 목록` inside the map overlay.
+- Legacy unlinked observations stay visible with no taxonomy filter and are excluded while a taxonomy filter is active.
+- Mock tree fixtures now include sample-observation-linked taxa so the local mock Eco Map can demonstrate selected-node filtering.
+- Public detail lineage behavior from Phase 25B remains compatible.
+
+Documentation added:
+
+```text
+docs/architecture/taxonomy-tree-map-filter-implementation.md
+```
+
+Documentation updated:
+
+```text
+docs/architecture/taxonomy-tree-browsing-design.md
+docs/architecture/taxonomy-tree-query-prototypes.md
+docs/architecture/taxonomy-tree-repository-detail-lineage.md
+docs/architecture/taxonomy-api-resolution-plan.md
+docs/architecture/next-session-handoff.md
+```
+
+Boundaries:
+
+- Map tree UI changed.
+- Map/list filtering inside `생태지도` changed.
+- Tests changed.
+- Docs changed.
+- Detail UI was not substantially changed.
+- Observation create/update behavior did not change.
+- No package file changed.
+- No migration SQL changed and no migration 0012 was created.
+- No remote SQL was run.
+- No `supabase db push` was run.
+- No Edge Function was deployed.
+- No Vercel config changed.
+- No Storage/Auth/Admin/Kakao behavior changed.
+- No live DB data changed.
+- No Production deployment was created.
+
+Verification status:
+
+- `npm.cmd run typecheck`: PASS.
+- `node --loader ./tests/ts-extension-loader.mjs --test tests/*.test.mjs`: PASS, 45 tests.
+- `npm.cmd run build`: PASS.
+- Local app HTTP smoke at `http://127.0.0.1:3002/`: PASS, HTTP 200.
+- Browser click-through smoke: PARTIAL because the in-app browser connector was
+  unavailable in this Codex session; Phase 25D should verify full Preview and
+  Production click-through behavior.
+
+Exact next step:
+
+```text
+Phase 25D - push feature branch for Vercel Preview, run taxonomy tree Preview smoke, merge to main, run Production smoke, and close Phase 25
+```
 
 ## Phase 25B Taxonomy Tree Repository And Detail Lineage
 

@@ -392,3 +392,38 @@ Deferred query work:
 - materialized tree count cache;
 - selected-node observation id RPC;
 - server-side map/list taxonomy filtering and pagination.
+
+## Phase 25C Filter Implementation
+
+Phase 25C kept filtering behind the repository boundary and did not add SQL.
+
+Implemented read path:
+
+```text
+TaxonomyTreeRepository.getObservationIdsForSelection(selection)
+```
+
+Behavior:
+
+- uses the same approved linked summary rows already loaded for tree nodes;
+- filters summaries with the pure `matchesTaxonomyTreeSelection(...)` helper;
+- returns approved taxonomy-linked observation ids for the selected node;
+- does not return pending/rejected ids;
+- does not return legacy null-taxonomy ids;
+- does not read `classification_json`;
+- does not read `taxonomy_name_resolutions`;
+- does not call GBIF or `resolve-taxonomy`.
+
+Eco Map filtering then applies those ids client-side:
+
+```text
+public status guard
+AND text/species search
+AND broad taxon filters
+AND selected taxonomy node id set
+```
+
+This is the MVP path because it avoids migration 0012 and keeps the current
+small approved observation payload simple. The read-only RPC idea remains the
+preferred next scale option if Preview/Production data volume makes client-side
+id filtering too broad.

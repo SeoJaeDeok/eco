@@ -70,6 +70,14 @@ public list rendering, detail modal rendering, search, or taxonomy-tree
 expansion. `public.taxonomy_name_resolutions` remains server-only and is not a
 public browsing data source.
 
+Phase 25C update: the first visible `분류 탐색` panel is implemented inside
+`생태지도`. It uses the Phase 25B taxonomy tree repository and stored
+`taxa` + approved `observations` summaries only. Selecting a node asks the
+repository for approved taxonomy-linked observation ids under that node and
+filters the Eco Map markers and compact map-side list client-side. Browsing,
+expansion, filtering, search, and detail display still do not call GBIF and do
+not read `taxonomy_name_resolutions`.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:

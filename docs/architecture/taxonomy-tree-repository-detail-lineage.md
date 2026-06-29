@@ -156,17 +156,35 @@ Map/list taxonomy filtering is still deferred. Phase 25C should connect node
 selection to map/list filtering without changing the repository contract unless
 it needs an additional read-only method for observation ids.
 
+## Phase 25C Follow-up
+
+Phase 25C implemented the visible Eco Map panel and added one read-only
+repository method:
+
+```ts
+getObservationIdsForSelection(selection)
+```
+
+The method reuses stored approved observation + taxa summaries. It does not
+call GBIF, does not invoke `resolve-taxonomy`, and does not read
+`taxonomy_name_resolutions`.
+
+The Eco Map now uses selected-node observation ids to filter both map markers
+and the compact map-side observation list. Public detail lineage behavior from
+Phase 25B was left compatible and was not expanded beyond regression safety.
+
 ## Known Limitations
 
-- The visible tree panel is not implemented yet.
-- Map/list taxonomy node filtering is not implemented yet.
+- The visible tree panel is now implemented in the Eco Map screen; Preview and
+  Production browser smoke remain for Phase 25D.
+- Map/list taxonomy node filtering is now implemented for the Eco Map screen.
 - Public list payloads still use the existing observation list read; taxonomy
   lineage is added to detail refresh, not every list card.
 - Owner/admin update responses still return the existing observation row shape.
   If an edit happens while a taxonomy-linked detail is open, a later detail
   refresh may be needed to show lineage again.
 - Supabase embedded join behavior should be browser-smoked against the shared
-  project before Phase 25C is considered fully verified.
+  project during Phase 25D Preview/Production verification.
 - Server-side pagination, read-only RPCs, normal views, and materialized views
   remain future scale options.
 
