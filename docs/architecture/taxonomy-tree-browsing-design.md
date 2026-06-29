@@ -476,6 +476,33 @@ No GBIF call, resolver invocation, `taxonomy_name_resolutions` read,
 service-role frontend use, migration, remote SQL, Edge Function redeploy, or
 Production deployment was part of Phase 25C.
 
+## Phase 25D-1 Preview Smoke Note
+
+Phase 25D-1 pushed `feature/phase-25c-taxonomy-tree-map-filter` for Vercel
+Preview only.
+
+Preview operator smoke passed for:
+
+- basic site load;
+- `분류 탐색` panel visibility;
+- expand/collapse;
+- node selection;
+- active taxonomy filter chip;
+- clear taxonomy filter;
+- map/list filtering;
+- search + broad taxon + taxonomy filter combination;
+- detail lineage;
+- legacy detail.
+
+No new observation was created, no Production deployment was triggered, and
+`main` was not merged or pushed.
+
+Read-only DB verification remained PARTIAL/RISK because direct
+`public.taxa` SELECT privilege checks returned false for both `anon` and
+`authenticated`, while `public.observations` SELECT checks returned true and the
+Preview UI smoke passed. Phase 25D-2 should review this grant/RLS result before
+Production merge/closeout.
+
 ## Deferred Work
 
 - New Navbar taxonomy page.
@@ -497,6 +524,10 @@ Production deployment was part of Phase 25C.
 - Supabase embedded joins from observations to taxa should be verified locally;
   if they are awkward under current RLS/column grants, use a read-only RPC in a
   later SQL phase.
+- Phase 25D-1 Preview DB verification found direct `public.taxa` SELECT
+  privilege checks false for both `anon` and `authenticated`; this should be
+  confirmed or corrected in an explicitly approved SQL/RLS step before
+  Production closeout.
 - Child counts may not visually sum to parent counts when some linked taxa are
   missing intermediate ranks. The MVP should document this with calm empty or
   missing-rank copy rather than inventing taxonomy.

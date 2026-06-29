@@ -2,9 +2,10 @@
 
 Phase: 25C - Taxonomy Tree Panel And Eco Map Filtering
 
-Status: implemented locally on `feature/phase-25c-taxonomy-tree-map-filter`.
-No push, merge, migration, remote SQL, Edge Function redeploy, Vercel config
-change, or Production deployment was performed.
+Status: implemented on `feature/phase-25c-taxonomy-tree-map-filter` and pushed
+for Vercel Preview smoke in Phase 25D-1. No merge to `main`, migration, remote
+SQL, Edge Function redeploy, Vercel config change, or Production deployment was
+performed.
 
 ## Goal
 
@@ -163,8 +164,13 @@ Recorded in this phase:
 - Node tests: PASS, 45 tests
 - `npm.cmd run build`: PASS
 - Local app HTTP smoke at `http://127.0.0.1:3002/`: PASS, HTTP 200
-- Browser smoke: PARTIAL until an operator or browser connector confirms full
-  click-through behavior
+- Preview branch push: PASS in Phase 25D-1
+- Vercel Preview status check: PASS in Phase 25D-1
+- Preview browser smoke: PASS for basic site, tree panel, expand/collapse, node
+  selection, active chip, clear filter, map/list filtering, search/broad filter
+  combination, detail lineage, and legacy detail
+- Preview GBIF network inspection: PARTIAL/unknown
+- Preview build log secret review: PARTIAL
 
 No migration, live DB mutation, Edge Function redeploy, Vercel config change,
 or Production deployment was performed.
@@ -177,7 +183,12 @@ or Production deployment was performed.
   Phase 25B, so mock tree counts can be higher than the compact map list count
   if some fixture ids are not present in `sampleObservations`.
 - Full browser verification with a shared Supabase dataset should be completed
-  in Phase 25D Preview smoke.
+  in Phase 25D Preview smoke. Phase 25D-1 completed operator browser smoke for
+  Preview, but Production smoke is still pending.
+- Phase 25D-1 read-only DB verification found `public.taxa` direct SELECT
+  privilege checks false for both `anon` and `authenticated`, even though the
+  Preview UI smoke passed. Review this grant/RLS result before merging to
+  `main`.
 - The separate public observation list page does not yet have its own taxonomy
   tree panel.
 - Read-only RPC/view/materialized cache options remain deferred until
