@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24 Production deployment smoke/closeout, Phase 25A/25B/25C taxonomy tree work, and Phase 25D-1 Vercel Preview smoke.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 25 Production taxonomy tree smoke and closeout.
 
 Read this together with:
 
@@ -38,6 +38,7 @@ Read this together with:
 - `docs/architecture/taxonomy-tree-repository-detail-lineage.md`
 - `docs/architecture/taxonomy-tree-map-filter-implementation.md`
 - `docs/architecture/taxonomy-tree-preview-smoke.md`
+- `docs/architecture/taxonomy-tree-production-smoke.md`
 - `docs/eco/project-working-guide.md`
 - `docs/eco/phase-history/index.md`
 
@@ -127,15 +128,70 @@ Read this together with:
 - 24F-1 Upload Taxonomy UI local smoke completed on `feature/phase-24f1-upload-taxonomy-smoke`; operator manual browser smoke passed, read-only DB verification passed, one approved no-image taxonomy-linked smoke observation exists in the shared DB, no Preview/Production deployment occurred, and no push was performed.
 - 24F-2 Vercel Preview Upload Taxonomy smoke completed on `feature/phase-24f1-upload-taxonomy-smoke`; the feature branch was pushed, Preview deployment succeeded, Preview browser smoke and read-only DB verification passed, one approved no-image Preview smoke observation exists in the shared DB, Production was not intentionally deployed, and main was not merged or pushed.
 - 24F-3 Production deployment smoke completed on `main`; Phase 24 is deployed to Production, Production Upload UI taxonomy smoke and read-only DB verification passed, one approved no-image Production smoke observation exists in the shared DB, and Phase 24 is archived as Verified.
-- 25A taxonomy tree browsing design completed on `feature/phase-25a-taxonomy-tree-design`; Phase 25 remains open, and no app code, package files, migration SQL, remote SQL, RLS/policies, Edge Function, Storage, Auth, Admin, Kakao, Vercel config, Production UI, merge, or push was performed.
-- 25B taxonomy tree repository and public detail lineage implemented locally on `feature/phase-25b-taxonomy-tree-repository-detail`; Phase 25 remains open, no migration/remote SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel/Production deployment was performed, and no push was performed.
-- 25C taxonomy tree panel and Eco Map filtering implemented on `feature/phase-25c-taxonomy-tree-map-filter`; Phase 25 remains open, the `생태지도` screen now has a collapsible `분류 탐색` panel, taxonomy node selection filters map markers and the compact map-side observation list, no migration/remote SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel/Production deployment was performed.
-- 25D-1 Vercel Preview smoke completed on `feature/phase-25c-taxonomy-tree-map-filter`; the feature branch was pushed, Vercel Preview status/HTTP checks passed, operator Preview browser smoke passed, Production was not deployed, `main` was not merged or pushed, and read-only DB verification remains PARTIAL/RISK because direct `public.taxa` SELECT privilege checks returned false for both `anon` and `authenticated`.
+- 25A taxonomy tree browsing design completed on `feature/phase-25a-taxonomy-tree-design`; it was a design-only subphase, and no app code, package files, migration SQL, remote SQL, RLS/policies, Edge Function, Storage, Auth, Admin, Kakao, Vercel config, Production UI, merge, or push was performed.
+- 25B taxonomy tree repository and public detail lineage implemented locally on `feature/phase-25b-taxonomy-tree-repository-detail`; no migration/remote SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel/Production deployment was performed in that subphase.
+- 25C taxonomy tree panel and Eco Map filtering implemented on `feature/phase-25c-taxonomy-tree-map-filter`; the `생태지도` screen gained a collapsible `분류 탐색` panel, taxonomy node selection filters map markers and the compact map-side observation list, and no migration/remote SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel/Production deployment was performed in that subphase.
+- 25D-1 Vercel Preview smoke completed on `feature/phase-25c-taxonomy-tree-map-filter`; the feature branch was pushed, Vercel Preview status/HTTP checks passed, operator Preview browser smoke passed, and the initial `public.taxa` table-level verification ambiguity was later resolved in Phase 25D-2.
+- 25D-2 Production taxonomy tree smoke and Phase 25 closeout completed on `main`; corrected public taxa read verification passed using column-level SELECT privilege plus the `"Public can read accepted taxa"` policy, `main` was fast-forwarded and pushed normally, Vercel Production deployment passed, Production tree smoke passed, Phase 25 was archived as Verified, and no migration/remote mutation SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel config change was performed.
 
+
+## Current State After Phase 25 Closeout
+
+Status: Phase 25 Verified and deployed to Production.
+
+Current `main` includes:
+
+- Phase 25A taxonomy tree browsing design.
+- Phase 25B taxonomy tree repository, aggregation helpers, mock/Supabase
+  repositories, and public detail taxonomy lineage.
+- Phase 25C `생태지도` `분류 탐색` panel, lazy taxonomy children, active filter
+  chip, clear behavior, and map/list taxonomy filtering.
+- Phase 25D Preview and Production smoke documentation.
+
+Production verification:
+
+- Production deployment commit: `7301f49`.
+- Production build: PASS.
+- Production browser smoke: PASS for basic site, tree panel, expand/collapse,
+  lazy children, node selection, active chip, clear filter, map/list filtering,
+  search/broad filter combination, detail lineage, and legacy detail.
+- Corrected Production read-only DB verification: PASS, all expected booleans
+  true.
+- Build log secret review: PARTIAL.
+- Production browser network check for GBIF requests: unknown/PARTIAL, while
+  static scans confirm tree/map/detail paths do not call GBIF or the resolver.
+
+Corrected DB interpretation:
+
+- Phase 25D-1 table-level `public.taxa` SELECT checks returned false.
+- Phase 25D-2 confirmed this was a verification-query mismatch because the
+  applied Phase 24 model uses column-level SELECT grants plus the `"Public can
+  read accepted taxa"` policy.
+- Corrected column privilege and policy checks passed, so this is not a
+  Production blocker.
+
+Boundaries preserved:
+
+- No migration 0012.
+- No remote mutation SQL.
+- No `supabase db push`.
+- No Edge Function redeploy.
+- No Vercel config change.
+- No Storage/Auth/Admin/Kakao setting change.
+- No new public observation was created for tree smoke.
+- No service-role key in frontend code.
+- Public reads remain approved-only.
+- `taxonomy_name_resolutions` remains server-only.
+
+Exact next recommendation:
+
+```text
+Choose the next feature or operations task before starting Phase 26.
+```
 
 ## Phase 25D-1 Vercel Preview Smoke For Taxonomy Tree Map Filtering
 
-Status: Preview smoke documented. Push status: feature branch pushed; `main` not pushed.
+Status: Preview smoke documented. The feature branch was pushed for Preview; `main` was intentionally left unchanged until Phase 25D-2.
 
 Current branch:
 
@@ -188,12 +244,12 @@ Read-only DB verification:
 
 Interpretation:
 
-- Preview UI behavior is PASS for the Phase 25 tree/filter MVP.
-- DB verification is PARTIAL/RISK because direct `public.taxa` SELECT privilege
-  checks did not pass for public roles, even though Preview UI smoke passed.
-- Do not silently merge to Production without reviewing whether this
-  `public.taxa` grant/RLS result is expected or needs an explicitly approved
-  SQL/RLS correction.
+- Preview UI behavior was PASS for the Phase 25 tree/filter MVP.
+- Phase 25D-1 used a table-level `public.taxa` SELECT readiness check that did
+  not match the applied column-level grant model.
+- Phase 25D-2 later corrected this verification with column-level SELECT
+  privilege checks plus the `"Public can read accepted taxa"` policy check; all
+  corrected values passed.
 - No migration, remote SQL, live DB mutation, Edge Function redeploy, Vercel
   Production change, Storage/Auth/Admin/Kakao change, or Production deployment
   was performed in Phase 25D-1.
@@ -212,16 +268,16 @@ docs/architecture/taxonomy-tree-browsing-design.md
 docs/architecture/next-session-handoff.md
 ```
 
-Exact next step:
+Later result:
 
 ```text
-Phase 25D-2 - merge into main, run Production taxonomy tree smoke, create Phase 25 archive, and close Phase 25
+Phase 25D-2 merged the verified feature branch into main, passed Production smoke, created the Phase 25 archive, and closed Phase 25 as Verified.
 ```
 
 ## Phase 25C Taxonomy Tree Panel And Eco Map Filtering
 
-Status: implemented and pushed for Preview. Push status: feature branch pushed;
-`main` not pushed.
+Status: implemented, pushed for Preview, and later merged to `main` in Phase
+25D-2.
 
 Current branch:
 
@@ -301,13 +357,14 @@ Verification status:
   tree panel, expand/collapse, node selection, active chip, clear filter,
   map/list filtering, search/broad filter combination, detail lineage, and
   legacy detail.
-- Preview DB verification: PARTIAL/RISK because direct `public.taxa` SELECT
-  privilege checks returned false for both `anon` and `authenticated`.
+- Preview DB verification initially showed a `public.taxa` table-level SELECT
+  mismatch; Phase 25D-2 corrected the check to column-level privileges plus RLS
+  policy existence, and the corrected values passed.
 
-Exact next step:
+Later result:
 
 ```text
-Phase 25D-2 - merge into main, run Production taxonomy tree smoke, create Phase 25 archive, and close Phase 25
+Phase 25D-2 completed Production taxonomy tree smoke and closed Phase 25 as Verified.
 ```
 
 ## Phase 25B Taxonomy Tree Repository And Detail Lineage

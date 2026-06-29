@@ -78,6 +78,14 @@ filters the Eco Map markers and compact map-side list client-side. Browsing,
 expansion, filtering, search, and detail display still do not call GBIF and do
 not read `taxonomy_name_resolutions`.
 
+Phase 25D update: the taxonomy tree browsing MVP was deployed to Production
+after Vercel Preview smoke, corrected read-only DB verification, fast-forward
+merge into `main`, and Production smoke. The corrected `public.taxa` readiness
+check uses column-level SELECT privilege plus the `"Public can read accepted
+taxa"` policy, matching the applied Phase 24 grant model. No migration, remote
+mutation SQL, Edge Function redeploy, or taxonomy resolver change was made in
+Phase 25.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:
@@ -678,5 +686,7 @@ Phase 25:
 - The Upload UI taxonomy verification flow remains the explicit resolution
   path; browsing, public list/detail, map rendering, and search remain stored
   data reads only.
+- Phase 25D deployed this stored-taxonomy browsing MVP to Production and
+  archived Phase 25 as verified.
 
 한국어 요약: Phase 24는 `학명 확인` 업로드 흐름과 신뢰된 taxonomy 연결 생성까지 완료되었습니다. Phase 25에서는 저장된 `taxa`와 승인된 관찰 기록만 사용해 생태지도 안에서 분류 트리를 탐색합니다.

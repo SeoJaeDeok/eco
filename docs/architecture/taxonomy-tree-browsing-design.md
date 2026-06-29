@@ -500,8 +500,30 @@ No new observation was created, no Production deployment was triggered, and
 Read-only DB verification remained PARTIAL/RISK because direct
 `public.taxa` SELECT privilege checks returned false for both `anon` and
 `authenticated`, while `public.observations` SELECT checks returned true and the
-Preview UI smoke passed. Phase 25D-2 should review this grant/RLS result before
-Production merge/closeout.
+Preview UI smoke passed. Phase 25D-2 reviewed and resolved this as the
+verification-query mismatch documented below.
+
+## Phase 25D-2 Production Closeout Note
+
+Phase 25D-2 resolved the `public.taxa` verification ambiguity before merging to
+Production. The corrected check uses:
+
+- `has_any_column_privilege('anon', 'public.taxa', 'SELECT')`;
+- `has_any_column_privilege('authenticated', 'public.taxa', 'SELECT')`;
+- the `"Public can read accepted taxa"` RLS policy;
+- denied INSERT/UPDATE/DELETE checks for public roles.
+
+The corrected read-only DB verification returned all expected booleans true.
+The earlier table-level `has_table_privilege(..., 'public.taxa', 'SELECT')`
+result is therefore recorded as a verification-query mismatch, not a Production
+blocker.
+
+`main` was fast-forwarded to the verified Phase 25 branch and Production smoke
+passed for the taxonomy tree panel, lazy expansion, node selection, active
+filter chip, map/list filtering, detail lineage, and legacy detail behavior.
+No migration, remote mutation SQL, Edge Function redeploy, Vercel config
+change, Auth/Storage/Admin/Kakao setting change, or new observation creation
+was part of Phase 25D-2.
 
 ## Deferred Work
 
@@ -524,10 +546,9 @@ Production merge/closeout.
 - Supabase embedded joins from observations to taxa should be verified locally;
   if they are awkward under current RLS/column grants, use a read-only RPC in a
   later SQL phase.
-- Phase 25D-1 Preview DB verification found direct `public.taxa` SELECT
-  privilege checks false for both `anon` and `authenticated`; this should be
-  confirmed or corrected in an explicitly approved SQL/RLS step before
-  Production closeout.
+- Phase 25D-1 Preview DB verification used a table-level `public.taxa` SELECT
+  check that did not match the applied column-level grant model. Phase 25D-2
+  corrected this with column privilege and policy checks, which passed.
 - Child counts may not visually sum to parent counts when some linked taxa are
   missing intermediate ranks. The MVP should document this with calm empty or
   missing-rank copy rather than inventing taxonomy.

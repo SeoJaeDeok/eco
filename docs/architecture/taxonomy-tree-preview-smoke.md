@@ -92,11 +92,11 @@ Interpretation:
 
 - Preview UI smoke passed, so the deployed app path was usable in the tested
   scenario.
-- The direct table privilege check for `public.taxa` did not pass for `anon` or
-  `authenticated`.
-- Before merging Phase 25 to `main`, Phase 25D-2 should confirm whether this
-  privilege result is expected under the current RLS/grant model or requires an
-  explicitly approved SQL/RLS correction.
+- The Phase 25D-1 direct table privilege check for `public.taxa` did not pass
+  for `anon` or `authenticated`.
+- Phase 25D-2 later confirmed this was a verification-query mismatch: the
+  applied model uses column-level public SELECT grants plus the `"Public can
+  read accepted taxa"` RLS policy. The corrected verification passed.
 - Phase 25D-1 did not change grants, policies, migrations, or live data.
 
 ## Security Notes
@@ -118,12 +118,13 @@ Interpretation:
 - GBIF network absence was not fully proven by browser network inspection and
   remains PARTIAL for Preview.
 - Build log secret review remains PARTIAL.
-- `public.taxa` direct SELECT privilege checks returned false for both `anon`
-  and `authenticated`; this needs review before Production merge/closeout.
-- Production has not changed and has not been smoked for the Phase 25 tree UI.
+- The Phase 25D-1 table-level `public.taxa` SELECT check was later corrected in
+  Phase 25D-2 to column-level public read readiness plus policy existence. The
+  corrected check passed and is not a Production blocker.
+- Production smoke later passed in Phase 25D-2.
 
 ## Next Step
 
 ```text
-Phase 25D-2 - merge into main, run Production taxonomy tree smoke, create Phase 25 archive, and close Phase 25
+Phase 25D-2 completed Production taxonomy tree smoke, created the Phase 25 archive, and closed Phase 25.
 ```

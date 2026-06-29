@@ -2,10 +2,10 @@
 
 Phase: 25C - Taxonomy Tree Panel And Eco Map Filtering
 
-Status: implemented on `feature/phase-25c-taxonomy-tree-map-filter` and pushed
-for Vercel Preview smoke in Phase 25D-1. No merge to `main`, migration, remote
-SQL, Edge Function redeploy, Vercel config change, or Production deployment was
-performed.
+Status: implemented on `feature/phase-25c-taxonomy-tree-map-filter`,
+fast-forwarded into `main`, and deployed to Production in Phase 25D-2. No
+migration, remote mutation SQL, Edge Function redeploy, or Vercel config change
+was performed.
 
 ## Goal
 
@@ -171,9 +171,15 @@ Recorded in this phase:
   combination, detail lineage, and legacy detail
 - Preview GBIF network inspection: PARTIAL/unknown
 - Preview build log secret review: PARTIAL
+- Corrected public taxa read verification: PASS in Phase 25D-2
+- Production deployment: PASS at commit `7301f49`
+- Production browser smoke: PASS for basic site, tree panel, expand/collapse,
+  lazy children, node selection, active chip, clear filter, map/list filtering,
+  search/broad filter combination, detail lineage, and legacy detail
+- Production DB corrected verification: PASS, all expected booleans true
 
 No migration, live DB mutation, Edge Function redeploy, Vercel config change,
-or Production deployment was performed.
+or Production settings change was performed.
 
 ## Known Limitations
 
@@ -182,13 +188,13 @@ or Production deployment was performed.
 - The mock tree fixture includes extra deterministic taxonomy examples from
   Phase 25B, so mock tree counts can be higher than the compact map list count
   if some fixture ids are not present in `sampleObservations`.
-- Full browser verification with a shared Supabase dataset should be completed
-  in Phase 25D Preview smoke. Phase 25D-1 completed operator browser smoke for
-  Preview, but Production smoke is still pending.
-- Phase 25D-1 read-only DB verification found `public.taxa` direct SELECT
-  privilege checks false for both `anon` and `authenticated`, even though the
-  Preview UI smoke passed. Review this grant/RLS result before merging to
-  `main`.
+- Full browser verification with a shared Supabase dataset passed in Preview
+  and Production. GBIF network absence remains PARTIAL because browser network
+  inspection was not explicitly confirmed, but static scans confirm tree/map
+  paths do not call GBIF or the resolver.
+- Phase 25D-1 read-only DB verification used a table-level `public.taxa` SELECT
+  check. Phase 25D-2 corrected this to column-level public read readiness plus
+  policy existence, and the corrected check passed.
 - The separate public observation list page does not yet have its own taxonomy
   tree panel.
 - Read-only RPC/view/materialized cache options remain deferred until
