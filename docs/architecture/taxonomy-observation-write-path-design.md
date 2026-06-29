@@ -340,16 +340,31 @@ Phase 24E-2A correction:
   `authenticated`, then grants only the create RPC back to `authenticated`.
 - The helper remains internal and is not directly executable by browser roles.
 
+Phase 24E-2C runtime-expression repair:
+
+- The corrected 0010 was manually applied, but the trusted RPC live smoke later
+  failed at runtime with SQLSTATE `42883`.
+- The selected RPC architecture remains unchanged.
+- The failure was caused by `pg_catalog.nullif(...)` and
+  `pg_catalog.coalesce(...)` inside the RPC body.
+- PostgreSQL treats `NULLIF` and `COALESCE` as SQL conditional expressions, not
+  ordinary `pg_catalog` functions.
+- Migration candidate
+  `0011_repair_taxonomy_observation_rpc_runtime_expressions.sql` redefines the
+  same trusted create RPC with runtime-valid `nullif(...)` and `coalesce(...)`,
+  and re-applies the same authenticated-only execute model.
+- The failed smoke did not create an observation.
+
 ## Rollout Plan
 
-1. Phase 24E-2: manually apply `0010` in the intended Supabase project and run
-   RPC smoke with safe test data.
-2. Add repository method for taxonomy-linked create.
-3. Add Upload UI `학명 확인` state and button.
-4. Require a resolved or confirmed taxonomy result before taxonomy-required
+1. Phase 24E-2C: manually apply `0011` and verify the RPC runtime repair.
+2. Rerun Phase 24E-2B trusted RPC smoke with safe test data.
+3. Add repository method for taxonomy-linked create.
+4. Add Upload UI `학명 확인` state and button.
+5. Require a resolved or confirmed taxonomy result before taxonomy-required
    submission.
-5. Verify legacy rows and legacy direct create compatibility.
-6. Defer taxonomy-linked scientific-name edit/re-resolution to a later phase.
+6. Verify legacy rows and legacy direct create compatibility.
+7. Defer taxonomy-linked scientific-name edit/re-resolution to a later phase.
 
 ## Remaining Risks
 

@@ -116,6 +116,7 @@ Read this together with:
 - 24D-2 local taxonomy resolver smoke completed on `feature/phase-24d2-local-resolver-smoke`; local migrations `0001` through `0009` replayed, authenticated local resolver/cache/RLS smoke passed, official local gateway serve remained PARTIAL on Windows, and no remote deployment or UI integration occurred.
 - 24D-3 deployed `resolve-taxonomy` to the Supabase project shared with Production and authenticated live resolver/cache/RLS smoke passed; Phase 24 remains open, upload UI was not integrated, observation taxonomy linkage was not written, Vercel/Production UI was not changed, and no push was performed.
 - 24E-1 taxonomy-linked observation write path design prepared on `feature/phase-24e-taxonomy-observation-write-path`; migration candidate `0010_create_taxonomy_observation_write_path.sql` was added, no remote SQL was applied, Upload UI was not changed, and no push was performed.
+- 24E-2C taxonomy observation RPC runtime repair prepared on `feature/phase-24e2c-rpc-runtime-fix`; migration candidate `0011_repair_taxonomy_observation_rpc_runtime_expressions.sql` was added after the applied 0010 RPC failed at runtime with SQLSTATE `42883`. No remote SQL was applied in the correction step, Upload UI was not changed, and no push was performed.
 
 
 ## Phase 24E-1 Taxonomy Observation Write Path Result
@@ -218,10 +219,43 @@ Phase 24E-2A execute-grant correction:
 - No rollback SQL was run by Codex, no remote SQL was run by Codex, no app UI
   changed, and no Production UI deployment occurred.
 
+Phase 24E-2C runtime-expression correction:
+
+- The operator manually applied the corrected 0010 to the Supabase project
+  shared with Production and post-apply metadata checks passed.
+- The trusted RPC smoke later reached authentication and taxonomy resolution,
+  then failed at `create_observation_with_verified_taxonomy(...)` with
+  SQLSTATE `42883`.
+- Diagnosis confirmed that the 0010 RPC body used `pg_catalog.nullif(...)` and
+  `pg_catalog.coalesce(...)`.
+- PostgreSQL treats `NULLIF` and `COALESCE` as SQL conditional expressions, not
+  ordinary callable `pg_catalog` functions.
+- The failed smoke did not create an observation.
+- 0010 is now immutable and must not be edited or rerun.
+- New migration candidate:
+
+```text
+supabase/migrations/0011_repair_taxonomy_observation_rpc_runtime_expressions.sql
+```
+
+- New apply-readiness document:
+
+```text
+docs/architecture/taxonomy-observation-rpc-runtime-fix-apply-readiness.md
+```
+
+- 0011 uses `CREATE OR REPLACE FUNCTION` for the same trusted create RPC,
+  changes only `pg_catalog.nullif(...)` to `nullif(...)` and
+  `pg_catalog.coalesce(...)` to `coalesce(...)`, and re-applies the same
+  authenticated-only execute model.
+- No remote SQL was applied in Phase 24E-2C.
+- Upload UI, observation repository code, Edge Functions, Vercel, and
+  Production UI were not changed.
+
 Exact next step:
 
 ```text
-Rerun the 0010 preflight, apply the corrected 0010, then run post-apply verification.
+Apply migration 0011 manually, verify RPC runtime repair, then rerun Phase 24E-2B trusted RPC smoke.
 ```
 
 ## Phase 24D-3 Live Resolver Smoke Result

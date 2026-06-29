@@ -26,6 +26,26 @@ Phase 24E-2A execute-grant correction:
 - The internal helper function remains non-public and is not directly
   executable by browser roles.
 
+Phase 24E-2C runtime-expression correction:
+
+- The corrected 0010 was manually applied and its post-apply metadata checks
+  passed.
+- The first trusted RPC live smoke reached authentication and taxonomy
+  resolution, then failed at RPC execution with SQLSTATE `42883`.
+- Diagnosis confirmed the 0010 RPC body used `pg_catalog.nullif(...)` and
+  `pg_catalog.coalesce(...)`.
+- PostgreSQL treats `NULLIF` and `COALESCE` as SQL conditional expressions, not
+  ordinary callable `pg_catalog` functions.
+- 0010 is now immutable and must not be edited or rerun.
+- New migration candidate
+  `0011_repair_taxonomy_observation_rpc_runtime_expressions.sql` replaces the
+  trusted create RPC body with runtime-valid `nullif(...)` and `coalesce(...)`
+  expressions while preserving the same security model and business logic.
+- The failed smoke did not create an observation.
+- See
+  `docs/architecture/taxonomy-observation-rpc-runtime-fix-apply-readiness.md`
+  before applying 0011.
+
 ## Migration
 
 Filename:
@@ -472,7 +492,8 @@ Rollback must not:
 
 ## Smoke Plan After Apply
 
-Phase 24E-2 should run a controlled smoke:
+Phase 24E-2 should run a controlled smoke after 0011 is manually applied and
+verified:
 
 1. Confirm 0010 post-apply checks pass.
 2. Use an approved signed-in test user.
