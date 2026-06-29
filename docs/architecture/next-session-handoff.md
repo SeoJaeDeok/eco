@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24 Production deployment smoke and closeout.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24 Production deployment smoke/closeout and Phase 25A taxonomy tree browsing design.
 
 Read this together with:
 
@@ -33,6 +33,8 @@ Read this together with:
 - `docs/architecture/taxonomy-schema-live-smoke.md`
 - `docs/architecture/taxonomy-resolver-implementation-readiness.md`
 - `docs/architecture/taxonomy-tree-visualization-design.md`
+- `docs/architecture/taxonomy-tree-browsing-design.md`
+- `docs/architecture/taxonomy-tree-query-prototypes.md`
 - `docs/eco/project-working-guide.md`
 - `docs/eco/phase-history/index.md`
 
@@ -122,7 +124,78 @@ Read this together with:
 - 24F-1 Upload Taxonomy UI local smoke completed on `feature/phase-24f1-upload-taxonomy-smoke`; operator manual browser smoke passed, read-only DB verification passed, one approved no-image taxonomy-linked smoke observation exists in the shared DB, no Preview/Production deployment occurred, and no push was performed.
 - 24F-2 Vercel Preview Upload Taxonomy smoke completed on `feature/phase-24f1-upload-taxonomy-smoke`; the feature branch was pushed, Preview deployment succeeded, Preview browser smoke and read-only DB verification passed, one approved no-image Preview smoke observation exists in the shared DB, Production was not intentionally deployed, and main was not merged or pushed.
 - 24F-3 Production deployment smoke completed on `main`; Phase 24 is deployed to Production, Production Upload UI taxonomy smoke and read-only DB verification passed, one approved no-image Production smoke observation exists in the shared DB, and Phase 24 is archived as Verified.
+- 25A taxonomy tree browsing design completed on `feature/phase-25a-taxonomy-tree-design`; Phase 25 remains open, and no app code, package files, migration SQL, remote SQL, RLS/policies, Edge Function, Storage, Auth, Admin, Kakao, Vercel config, Production UI, merge, or push was performed.
 
+
+## Phase 25A Taxonomy Tree Browsing Design
+
+Status: design and data-contract only. Push status: not pushed.
+
+Current branch:
+
+```text
+feature/phase-25a-taxonomy-tree-design
+```
+
+Base before this phase:
+
+```text
+790c473 docs: close phase 24 taxonomy integration
+```
+
+Phase 24 closeout state:
+
+- `main` and `origin/main` were verified at `790c473`.
+- Phase 24 is closed and deployed to Production.
+- Production includes explicit `학명 확인`, GBIF-backed resolver, trusted taxonomy-linked observation create, and taxonomy-linked Production smoke PASS.
+
+Design result:
+
+- The first taxonomy browsing UI should be a collapsible `분류 탐색` panel inside the existing `생태지도` screen.
+- No separate Navbar taxonomy page is part of the MVP.
+- The tree rank order is `계 -> 문 -> 강 -> 목 -> 과 -> 속 -> 종`.
+- Tree data comes from stored `public.taxa` joined to approved `public.observations`.
+- Tree counts count approved taxonomy-linked observations, not standalone taxa rows.
+- Legacy observations with `taxon_id IS NULL` stay valid and visible when no taxonomy tree filter is active.
+- While a taxonomy tree filter is active, legacy unlinked observations are excluded from that filtered result.
+- Current search and broad taxon filters remain and combine with taxonomy selection using AND semantics.
+- GBIF is not called during browsing, map/list/detail rendering, search, or tree expansion.
+- `public.taxonomy_name_resolutions` remains server-only and is not used as a public browsing source.
+- Recommended Phase 25B implementation starts with a `TaxonomyTreeRepository` boundary, deterministic mock fixtures, a narrow Supabase repository read from approved observations joined to public taxa, and public detail taxonomy lineage where the read model is ready.
+- A read-only RPC remains a fallback if repository-level grouping or Supabase embedded joins are not robust enough.
+
+Documentation added:
+
+```text
+docs/architecture/taxonomy-tree-browsing-design.md
+docs/architecture/taxonomy-tree-query-prototypes.md
+```
+
+Documentation updated:
+
+```text
+docs/architecture/taxonomy-api-resolution-plan.md
+docs/architecture/next-session-handoff.md
+```
+
+Boundaries:
+
+- No app code changed.
+- No package files changed.
+- No migration SQL changed and no migration 0012 was created.
+- No remote SQL was run.
+- No `supabase db push` was run.
+- No Edge Function was deployed.
+- No Vercel config changed.
+- No Storage/Auth/Admin/Kakao behavior changed.
+- No live DB data changed.
+- No Production deployment was created.
+
+Exact next step:
+
+```text
+Phase 25B - implement TaxonomyTreeRepository and public detail taxonomy lineage
+```
 
 ## Phase 24E-1 Taxonomy Observation Write Path Result
 

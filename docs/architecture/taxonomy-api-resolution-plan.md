@@ -63,6 +63,13 @@ list/detail compatibility, owner edit, anonymous edit-hidden behavior, and
 read-only DB taxonomy linkage verification. Phase 24 is archived as Verified
 in `docs/eco/phase-history/phase-24.md`.
 
+Phase 25A update: stored taxonomy data now becomes the source for taxonomy tree
+browsing design. Public browsing must use `public.taxa` joined with approved
+`public.observations` only. GBIF is not called during browsing, map rendering,
+public list rendering, detail modal rendering, search, or taxonomy-tree
+expansion. `public.taxonomy_name_resolutions` remains server-only and is not a
+public browsing data source.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:
@@ -647,5 +654,12 @@ Phase 24F:
 Phase 25:
 
 - Collapsible kingdom to species taxonomy tree using stored taxonomy data only.
+- Tree counts come from approved taxonomy-linked observations, not standalone
+  taxa rows.
+- Legacy observations with `taxon_id IS NULL` remain visible when no taxonomy
+  filter is active, but are excluded while a taxonomy tree filter is active.
+- Phase 25A design documents:
+  `docs/architecture/taxonomy-tree-browsing-design.md` and
+  `docs/architecture/taxonomy-tree-query-prototypes.md`.
 
-한국어 요약: 다음은 24D에서 `TaxonomyRepository`와 신뢰된 GBIF resolver를 만드는 단계입니다. 업로드 UI 연결과 taxonomy 필수 제출은 그 다음 단계입니다.
+한국어 요약: Phase 24는 `학명 확인` 업로드 흐름과 신뢰된 taxonomy 연결 생성까지 완료되었습니다. Phase 25에서는 저장된 `taxa`와 승인된 관찰 기록만 사용해 생태지도 안에서 분류 트리를 탐색합니다.
