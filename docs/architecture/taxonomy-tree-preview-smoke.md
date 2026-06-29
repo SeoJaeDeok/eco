@@ -57,6 +57,7 @@ Operator-reported result:
 | Detail lineage | PASS |
 | Legacy detail | PASS |
 | Secret-like console output | PASS, none seen |
+| Raw email exposure | PARTIAL, not separately reported |
 | GBIF request during tree browsing | PARTIAL, not observed/unknown |
 
 No new public observation was created during this smoke.
@@ -104,8 +105,11 @@ Interpretation:
   code.
 - Public UI does not access `taxonomy_name_resolutions`.
 - Frontend code does not use a service-role key.
-- The Preview smoke did not expose raw emails, internal UUIDs, source taxonomy
-  keys, raw JSON, credentials, or function URLs.
+- The operator reported no secret-like console output.
+- Raw email exposure was not separately reported in the operator smoke result
+  and remains PARTIAL.
+- The Preview smoke did not intentionally record internal UUIDs, source
+  taxonomy keys, raw JSON, credentials, or function URLs.
 - Tree counts remain intended to be based on approved taxonomy-linked
   observations only.
 
