@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24D-3 live taxonomy resolver smoke.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 24F-1 Upload Taxonomy UI local smoke.
 
 Read this together with:
 
@@ -119,6 +119,7 @@ Read this together with:
 - 24E-2C taxonomy observation RPC runtime repair prepared on `feature/phase-24e2c-rpc-runtime-fix`; migration candidate `0011_repair_taxonomy_observation_rpc_runtime_expressions.sql` was added after the applied 0010 RPC failed at runtime with SQLSTATE `42883`. No remote SQL was applied in the correction step, Upload UI was not changed, and no push was performed.
 - 24E-2B trusted taxonomy observation create RPC smoke after 0011 completed on `feature/phase-24e2b-trusted-rpc-smoke-after-0011`; one approved taxonomy-linked smoke observation was created through the trusted RPC, DB/security checks passed, browser visual UI smoke remains PARTIAL, Upload UI was not changed, and no push was performed.
 - 24E-3 Upload UI taxonomy verification and trusted RPC create integration implemented locally on `feature/phase-24e3-upload-taxonomy-ui`; Upload now requires explicit `학명 확인`, uses `TaxonomyRepository`, creates through the trusted RPC repository path, locks taxonomy-linked scientific-name edits, and no migration/remote SQL/Edge Function/Vercel/Production UI change was performed.
+- 24F-1 Upload Taxonomy UI local smoke completed on `feature/phase-24f1-upload-taxonomy-smoke`; operator manual browser smoke passed, read-only DB verification passed, one approved no-image taxonomy-linked smoke observation exists in the shared DB, no Preview/Production deployment occurred, and no push was performed.
 
 
 ## Phase 24E-1 Taxonomy Observation Write Path Result
@@ -262,8 +263,8 @@ Phase 24E-3 - connect Upload UI to TaxonomyRepository with explicit 학명 확�
 
 ## Phase 24E-3 Upload Taxonomy UI Integration
 
-Status: implemented locally. Browser visual smoke remains PARTIAL because the
-in-app browser connector was unavailable in this Codex session.
+Status: implemented locally. Phase 24F-1 later completed local manual browser
+smoke and read-only DB verification.
 
 Current branch:
 
@@ -322,10 +323,69 @@ Boundaries:
 - No Storage/Auth/Admin/Kakao setting change.
 - No live DB data was created by Codex in Phase 24E-3.
 
+Follow-up smoke:
+
+- Phase 24F-1 local manual Upload UI smoke passed on
+  `feature/phase-24f1-upload-taxonomy-smoke`.
+- Read-only DB verification passed for the created no-image taxonomy-linked
+  observation.
+- No Preview/Production deployment was performed yet.
+
 Exact next step:
 
 ```text
-Phase 24F - Preview/Production smoke, public detail taxonomy display, and Phase 24 closeout
+Phase 24F-2 - push feature branch for Vercel Preview and run Preview smoke
+```
+
+## Phase 24F-1 Upload Taxonomy UI Local Smoke
+
+Status: PASS for local manual browser smoke and read-only DB verification.
+
+Current branch:
+
+```text
+feature/phase-24f1-upload-taxonomy-smoke
+```
+
+Base before this phase:
+
+```text
+5d8090e docs: record taxonomy upload integration
+```
+
+Result:
+
+- local app was served from `http://127.0.0.1:3002`
+- operator approved one public no-image smoke observation
+- submit was blocked before scientific-name verification
+- exact plant create with `Taraxacum officinale` passed
+- editing the scientific-name field made the form dirty again
+- synonym and variant confirmation behavior passed
+- higher-rank and no-match inputs remained blocked
+- public list/detail compatibility passed
+- owner content edit and anonymous regression passed
+- read-only DB verification passed with booleans/counts only
+
+Documentation added:
+
+```text
+docs/architecture/taxonomy-upload-ui-smoke.md
+```
+
+Boundaries:
+
+- one approved smoke observation exists in the shared DB
+- no migration changed
+- no new migration
+- no Edge Function redeploy
+- no Vercel config change
+- no Preview/Production deployment
+- no push
+
+Exact next step:
+
+```text
+Phase 24F-2 - push feature branch for Vercel Preview and run Preview smoke
 ```
 
 ## Phase 24E-2B Trusted RPC Smoke After 0011

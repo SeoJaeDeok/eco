@@ -39,6 +39,16 @@ directly. Browser visual smoke is PARTIAL because the in-app browser connector
 was unavailable in this Codex session. No migration, remote SQL, Edge Function,
 Vercel, or Production UI change was made.
 
+Phase 24F-1 update: local manual Upload UI smoke passed on
+`feature/phase-24f1-upload-taxonomy-smoke`. The operator verified submit
+blocking before taxonomy verification, exact plant creation with
+`Taraxacum officinale`, dirty-state invalidation, synonym and variant
+confirmation, higher-rank and no-match blocking, public list/detail
+compatibility, and owner/anonymous regression. Read-only DB verification passed
+for the created no-image taxonomy-linked observation. No Preview/Production
+deployment, migration, Edge Function redeploy, Vercel change, or push was
+performed.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:

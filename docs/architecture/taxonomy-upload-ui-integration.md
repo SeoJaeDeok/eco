@@ -149,9 +149,12 @@ Automated coverage added:
 - Supabase taxonomy create includes image cleanup on RPC failure
 - taxonomy-linked edit locks scientific name and broad taxon
 
-Browser automation was attempted but was unavailable in this Codex session due
-to the in-app browser connector failing during setup. Local browser UI smoke is
-therefore PARTIAL.
+Phase 24F-1 later completed the local manual browser smoke. The operator
+verified submit blocking before taxonomy verification, exact plant creation,
+dirty-state invalidation, synonym and variant confirmation, higher-rank and
+no-match blocking, public list/detail compatibility, and owner/anonymous
+regression. Read-only DB verification passed for the created no-image
+taxonomy-linked observation.
 
 ## Boundaries
 
@@ -178,6 +181,28 @@ Not changed:
 - Vercel configuration
 - Production UI
 
+## Phase 24F-1 Local Smoke Result
+
+Recorded in:
+
+```text
+docs/architecture/taxonomy-upload-ui-smoke.md
+```
+
+Result:
+
+- local app served at `http://127.0.0.1:3002`
+- one operator-approved public no-image smoke observation was created
+- `Taraxacum officinale` resolved and created as broad taxon plant
+- changing the scientific-name field invalidated verification
+- `Felis concolor` and `Homo sapines` required explicit confirmation
+- `Homo` and `Xyzabc nonexistentii` remained blocked
+- public list/detail compatibility passed
+- owner content edit and anonymous behavior passed
+- read-only DB checks passed with booleans/counts only
+
+No Preview/Production deployment was performed.
+
 ## Manual Smoke Plan
 
 After this branch is deployed to a safe Preview or tested locally with
@@ -201,15 +226,12 @@ Do not create multiple public live smoke rows without approval.
 
 ## Remaining Risks
 
-- Browser visual smoke is PARTIAL in this Codex session.
-- Live Supabase upload through the new UI path still needs Preview/local
-  authenticated smoke.
+- Preview browser smoke is still needed.
 - Rich taxonomy display in public detail remains deferred.
 - Legacy observations remain intentionally unlinked.
 
 ## Next Recommendation
 
 ```text
-Phase 24F - Preview/Production smoke, public detail taxonomy display, and Phase 24 closeout
+Phase 24F-2 - push feature branch for Vercel Preview and run Preview smoke
 ```
-
