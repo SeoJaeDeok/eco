@@ -149,12 +149,13 @@ Not changed:
 
 - Build logs were not explicitly recorded as reviewed for secrets, so that
   check remains PARTIAL.
-- Production deployment smoke has not been run for Phase 24.
+- Production deployment and Production Upload UI smoke later passed and are
+  recorded in `docs/architecture/taxonomy-upload-ui-production-smoke.md`.
 - Rich public detail taxonomy display remains deferred.
-- Phase 24 history archive remains open until Production smoke passes.
+- Phase 24 history archive is closed after Production smoke.
 
 ## Next Step
 
 ```text
-Phase 24F-3 - merge feature branch into main, push, run Production deployment smoke, and close Phase 24
+Phase 25 - taxonomy tree browsing and richer public taxonomy exploration
 ```

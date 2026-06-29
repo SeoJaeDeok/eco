@@ -228,6 +228,32 @@ No main merge, Production deployment, migration change, remote SQL mutation,
 Edge Function deployment, package change, or Vercel Production setting change
 was performed.
 
+## Phase 24F-3 Production Smoke Result
+
+Recorded in:
+
+```text
+docs/architecture/taxonomy-upload-ui-production-smoke.md
+```
+
+Result:
+
+- the verified Phase 24 feature history was fast-forwarded into `main`
+- `main` was pushed normally to origin
+- Vercel Production deployment from `main` succeeded
+- Production Upload UI taxonomy smoke passed
+- exact plant create with `Taraxacum officinale` passed
+- dirty-state, synonym, variant, higher-rank, and no-match behavior passed
+- public list/detail compatibility passed
+- owner edit and anonymous edit-hidden behavior passed
+- read-only DB verification passed with booleans/counts only
+
+Phase 24 is now closed and archived in:
+
+```text
+docs/eco/phase-history/phase-24.md
+```
+
 ## Manual Smoke Plan
 
 After this branch is deployed to a safe Preview or tested locally with
@@ -251,7 +277,8 @@ Do not create multiple public live smoke rows without approval.
 
 ## Remaining Risks
 
-- Production deployment smoke is still needed.
+- Phase 24 Production deployment smoke passed. Future work should expand
+  taxonomy display/search beyond the Upload create path.
 - Build log secret review for Preview remains PARTIAL unless explicitly
   confirmed later by the operator.
 - Rich taxonomy display in public detail remains deferred.
@@ -260,5 +287,5 @@ Do not create multiple public live smoke rows without approval.
 ## Next Recommendation
 
 ```text
-Phase 24F-3 - merge into main, run Production deployment smoke, create Phase 24 archive, and close Phase 24
+Phase 25 - taxonomy tree browsing and richer public taxonomy exploration
 ```

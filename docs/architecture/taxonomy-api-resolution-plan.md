@@ -49,6 +49,20 @@ for the created no-image taxonomy-linked observation. No Preview/Production
 deployment, migration, Edge Function redeploy, Vercel change, or push was
 performed.
 
+Phase 24F-2 update: the feature branch was pushed, Vercel Preview deployment
+succeeded, Preview Upload UI taxonomy smoke passed, and read-only DB
+verification passed for the Preview-created no-image taxonomy-linked
+observation. Production deployment was not performed in Phase 24F-2.
+
+Phase 24F-3 update: the verified Phase 24 history was fast-forwarded into
+`main`, pushed normally, and deployed to Vercel Production. Production Upload
+UI taxonomy smoke passed for `Taraxacum officinale`, including submit blocking
+before `학명 확인`, exact plant create, dirty-state invalidation,
+synonym/variant confirmation, higher-rank/no-match blocking, public
+list/detail compatibility, owner edit, anonymous edit-hidden behavior, and
+read-only DB taxonomy linkage verification. Phase 24 is archived as Verified
+in `docs/eco/phase-history/phase-24.md`.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:

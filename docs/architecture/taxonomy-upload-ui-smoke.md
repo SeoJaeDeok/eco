@@ -169,12 +169,13 @@ Summary:
 
 - Build log secret review for the Preview deployment remains PARTIAL unless
   explicitly confirmed later by the operator.
-- Production deployment has not happened from this feature branch.
+- Production deployment and Production Upload UI smoke later passed and are
+  recorded in `docs/architecture/taxonomy-upload-ui-production-smoke.md`.
 - Rich taxonomy display in public detail remains deferred.
 - Existing legacy observations remain intentionally unlinked.
 
 ## Next Step
 
 ```text
-Phase 24F-3 - merge into main, run Production deployment smoke, create Phase 24 archive, and close Phase 24
+Phase 25 - taxonomy tree browsing and richer public taxonomy exploration
 ```
