@@ -6,4 +6,5 @@ export type TaxonomyTreeRepositoryKind = ObservationRepositoryKind;
 export interface TaxonomyTreeRepository {
   getRootNodes(): Promise<TaxonomyTreeNode[]>;
   getChildren(parent: TaxonomyTreeParent): Promise<TaxonomyTreeNode[]>;
+  getObservationIdsForSelection(selection: TaxonomyTreeParent): Promise<string[]>;
 }

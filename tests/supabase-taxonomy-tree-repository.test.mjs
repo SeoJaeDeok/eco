@@ -11,6 +11,7 @@ test('Supabase taxonomy tree repository reads approved linked observations only'
   assert.match(repositorySource, /\.from\(OBSERVATIONS_TABLE\)/);
   assert.match(repositorySource, /\.eq\('status', 'approved'\)/);
   assert.match(repositorySource, /\.not\('taxon_id', 'is', null\)/);
+  assert.match(repositorySource, /getObservationIdsForSelection/);
 });
 
 test('Supabase taxonomy tree repository uses public taxa lineage columns without raw JSON', () => {

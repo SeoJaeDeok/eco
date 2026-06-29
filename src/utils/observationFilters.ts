@@ -18,6 +18,7 @@ export interface FilterMapObservationsOptions {
   selectedTaxa: readonly Taxon[];
   searchQuery: string;
   selectedSpeciesKey?: string | null;
+  taxonomyObservationIds?: ReadonlySet<string> | null;
 }
 
 export interface ObservationSpeciesGroup {
@@ -109,15 +110,20 @@ export const countObservationsByTaxon = (observations: Observation[], taxon: Tax
 
 export const filterMapObservations = (
   observations: Observation[],
-  { selectedTaxa, searchQuery, selectedSpeciesKey }: FilterMapObservationsOptions,
+  { selectedTaxa, searchQuery, selectedSpeciesKey, taxonomyObservationIds = null }: FilterMapObservationsOptions,
 ) => {
   return observations.filter((observation) => {
+    const matchesPublicStatus = observation.status === undefined
+      || observation.status === 'sample'
+      || observation.status === 'approved';
     const matchesTaxon = selectedTaxa.length === 0 || selectedTaxa.includes(observation.taxon);
     const matchesSpecies = selectedSpeciesKey
       ? getObservationSpeciesKey(observation) === selectedSpeciesKey
       : matchesObservationSearchQuery(observation, searchQuery);
+    const matchesTaxonomy = taxonomyObservationIds === null
+      || (Boolean(observation.taxonId) && taxonomyObservationIds.has(observation.id));
 
-    return matchesTaxon && matchesSpecies;
+    return matchesPublicStatus && matchesTaxon && matchesSpecies && matchesTaxonomy;
   });
 };
 

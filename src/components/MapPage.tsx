@@ -1,14 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TAXA } from '../constants/taxon';
+import { activeTaxonomyTreeRepository } from '../repositories/taxonomyTreeRepositoryProvider';
 import {
   filterMapObservations,
   getObservationSpeciesGroups,
   type ObservationSpeciesGroup,
 } from '../utils/observationFilters';
 import type { Observation, Taxon } from '../types';
+import type { TaxonomyTreeSelection } from '../features/taxonomy/taxonomyTree';
 import { SearchInput } from './ui/SearchInput';
 import { TaxonFilterButton } from './ui/TaxonFilterButton';
 import { MapPreview } from './MapPreview';
+import { TaxonomyTreePanel } from './map/TaxonomyTreePanel';
 
 interface MapPageProps {
   observations: Observation[];
@@ -28,10 +31,56 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTaxa, setSelectedTaxa] = useState<Taxon[]>([]);
   const [selectedSpeciesKey, setSelectedSpeciesKey] = useState<string | null>(null);
+  const [selectedTaxonomyNode, setSelectedTaxonomyNode] = useState<TaxonomyTreeSelection | null>(null);
+  const [taxonomyObservationIds, setTaxonomyObservationIds] = useState<ReadonlySet<string> | null>(null);
+  const [isLoadingTaxonomyFilter, setIsLoadingTaxonomyFilter] = useState(false);
+  const [taxonomyFilterError, setTaxonomyFilterError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedTaxonomyNode) {
+      setTaxonomyObservationIds(null);
+      setIsLoadingTaxonomyFilter(false);
+      setTaxonomyFilterError(null);
+      return;
+    }
+
+    let isCurrent = true;
+
+    const loadTaxonomyObservationIds = async () => {
+      try {
+        setIsLoadingTaxonomyFilter(true);
+        setTaxonomyFilterError(null);
+        setTaxonomyObservationIds(new Set());
+        const ids = await activeTaxonomyTreeRepository.getObservationIdsForSelection(selectedTaxonomyNode);
+
+        if (!isCurrent) return;
+        setTaxonomyObservationIds(new Set(ids));
+      } catch {
+        if (!isCurrent) return;
+        setTaxonomyObservationIds(new Set());
+        setTaxonomyFilterError('분류 필터를 적용하지 못했습니다. 다시 선택해 주세요.');
+      } finally {
+        if (isCurrent) {
+          setIsLoadingTaxonomyFilter(false);
+        }
+      }
+    };
+
+    void loadTaxonomyObservationIds();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [selectedTaxonomyNode]);
 
   const filteredObservations = useMemo(() => {
-    return filterMapObservations(observations, { selectedTaxa, searchQuery, selectedSpeciesKey });
-  }, [observations, searchQuery, selectedSpeciesKey, selectedTaxa]);
+    return filterMapObservations(observations, {
+      selectedTaxa,
+      searchQuery,
+      selectedSpeciesKey,
+      taxonomyObservationIds: selectedTaxonomyNode ? taxonomyObservationIds ?? new Set() : null,
+    });
+  }, [observations, searchQuery, selectedSpeciesKey, selectedTaxa, selectedTaxonomyNode, taxonomyObservationIds]);
 
   const speciesSuggestions = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -49,7 +98,9 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
     return getObservationSpeciesGroups(observations).find((group) => group.key === selectedSpeciesKey) ?? null;
   }, [observations, selectedSpeciesKey]);
 
-  const hasActiveFilters = Boolean(searchQuery.trim() || selectedSpeciesKey || selectedTaxa.length > 0);
+  const hasActiveFilters = Boolean(
+    searchQuery.trim() || selectedSpeciesKey || selectedTaxa.length > 0 || selectedTaxonomyNode,
+  );
 
   const handleSearchChange = (nextSearchQuery: string) => {
     setSearchQuery(nextSearchQuery);
@@ -73,6 +124,7 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
     setSearchQuery('');
     setSelectedSpeciesKey(null);
     setSelectedTaxa([]);
+    setSelectedTaxonomyNode(null);
   };
 
   return (
@@ -165,9 +217,42 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
             })}
           </fieldset>
 
+          <TaxonomyTreePanel
+            repository={activeTaxonomyTreeRepository}
+            selectedNode={selectedTaxonomyNode}
+            isFilterLoading={isLoadingTaxonomyFilter}
+            filterError={taxonomyFilterError}
+            onSelectNode={(node) => setSelectedTaxonomyNode(node)}
+            onClearSelection={() => setSelectedTaxonomyNode(null)}
+          />
+
           <p className="mt-4 border-t border-zinc-100 pt-3 text-[11px] leading-5 text-zinc-500">
             표시 중 {filteredObservations.length}건 / 전체 {observations.length}건
           </p>
+
+          {filteredObservations.length > 0 && (
+            <div className="mt-3 max-h-44 overflow-y-auto border border-zinc-100 bg-white/70">
+              <p className="border-b border-zinc-100 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+                관찰 목록
+              </p>
+              <div className="divide-y divide-zinc-100">
+                {filteredObservations.map((observation) => (
+                  <button
+                    key={observation.id}
+                    type="button"
+                    onClick={() => onSelect(observation)}
+                    className="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-2 text-left transition-colors hover:bg-zinc-50"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[11px] font-medium text-zinc-800">{observation.name}</span>
+                      <span className="block truncate text-[10px] italic text-zinc-400">{observation.scientificName || observation.location}</span>
+                    </span>
+                    <span className="shrink-0 text-[10px] text-zinc-400">{observation.taxon}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {filteredObservations.length === 0 && (
             <p className="mt-3 border border-zinc-100 bg-white px-3 py-2 text-[11px] leading-5 text-zinc-500">

@@ -18,6 +18,10 @@ const lazySupabaseTaxonomyTreeRepository: TaxonomyTreeRepository = {
     const repository = await loadSupabaseTaxonomyTreeRepository();
     return repository.getChildren(parent);
   },
+  async getObservationIdsForSelection(selection) {
+    const repository = await loadSupabaseTaxonomyTreeRepository();
+    return repository.getObservationIdsForSelection(selection);
+  },
 };
 
 export const getConfiguredTaxonomyTreeRepositoryKind = (): TaxonomyTreeRepositoryKind => {

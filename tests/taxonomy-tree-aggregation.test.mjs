@@ -19,8 +19,8 @@ test('root nodes count approved taxonomy-linked observations only', () => {
   const roots = getTaxonomyTreeRootNodes(mockTaxonomyTreeObservationSummaries);
 
   assert.deepEqual(roots.map((node) => node.displayName), ['Plantae', 'Animalia']);
-  assert.equal(findNode(roots, 'Plantae').observationCount, 3);
-  assert.equal(findNode(roots, 'Animalia').observationCount, 2);
+  assert.equal(findNode(roots, 'Plantae').observationCount, 5);
+  assert.equal(findNode(roots, 'Animalia').observationCount, 4);
   assert.equal(roots[0].rank, 'kingdom');
   assert.equal(roots[0].rankLabelKo, TAXONOMY_RANK_LABELS_KO.kingdom);
 });
@@ -31,7 +31,7 @@ test('children load one rank at a time and do not skip missing ranks', () => {
 
   assert.deepEqual(phyla.map((node) => node.displayName), ['Tracheophyta']);
   assert.equal(phyla[0].rank, 'phylum');
-  assert.equal(phyla[0].observationCount, 2);
+  assert.equal(phyla[0].observationCount, 4);
 });
 
 test('genus children return species nodes with observation counts', () => {
@@ -57,7 +57,7 @@ test('pending rejected and legacy null-taxonomy rows are excluded from tree node
   const roots = getTaxonomyTreeRootNodes(mockTaxonomyTreeObservationSummaries);
   const totalRootCount = roots.reduce((total, node) => total + node.observationCount, 0);
 
-  assert.equal(totalRootCount, 5);
+  assert.equal(totalRootCount, 9);
 });
 
 test('name fallback identity is deterministic and parent scoped', () => {

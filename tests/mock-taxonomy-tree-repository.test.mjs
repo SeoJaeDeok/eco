@@ -19,8 +19,8 @@ test('mock taxonomy tree repository returns deterministic root nodes', async () 
   const roots = await mockTaxonomyTreeRepository.getRootNodes();
 
   assert.deepEqual(roots.map((node) => [node.displayName, node.observationCount]), [
-    ['Plantae', 3],
-    ['Animalia', 2],
+    ['Plantae', 5],
+    ['Animalia', 4],
   ]);
 });
 
@@ -29,7 +29,20 @@ test('mock taxonomy tree repository supports child traversal', async () => {
   const phyla = await mockTaxonomyTreeRepository.getChildren(plantae);
 
   assert.deepEqual(phyla.map((node) => [node.rank, node.displayName, node.observationCount]), [
-    ['phylum', 'Tracheophyta', 2],
+    ['phylum', 'Tracheophyta', 4],
+  ]);
+});
+
+test('mock taxonomy tree repository returns observation ids for a selected node', async () => {
+  const roots = await mockTaxonomyTreeRepository.getRootNodes();
+  const animalia = findNode(roots, 'Animalia');
+  const ids = await mockTaxonomyTreeRepository.getObservationIdsForSelection(animalia);
+
+  assert.deepEqual(ids, [
+    'great-tit',
+    'honeybee',
+    'mock-tree-homo-sapiens',
+    'mock-tree-puma-concolor',
   ]);
 });
 

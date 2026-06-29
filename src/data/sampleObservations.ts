@@ -11,6 +11,7 @@ export const sampleObservations: Observation[] = [
     description: '사람들이 많이 다니는 산책로 주변에서 관찰된 박새입니다. 실제 서비스에서는 이 설명 영역에 관찰 상황, 서식 환경, 주의사항 등을 정리하면 됩니다.',
     coords: { lat: 35.8888, lng: 128.6103 },
     imageUrl: '/observations/obs-great-tit.jpg',
+    taxonId: 'mock-taxon-parus-minor',
   },
   {
     id: 'honeybee',
@@ -22,6 +23,7 @@ export const sampleObservations: Observation[] = [
     description: '개화 식물 주변에서 꽃가루를 모으는 모습이 관찰되었습니다.',
     coords: { lat: 35.8892, lng: 128.6111 },
     imageUrl: '/observations/obs-honeybee.jpg',
+    taxonId: 'mock-taxon-apis-mellifera',
   },
   {
     id: 'geranium',
@@ -44,6 +46,7 @@ export const sampleObservations: Observation[] = [
     description: '흔히 볼 수 있는 십자화과 식물로, 삼각형 열매가 특징입니다.',
     coords: { lat: 35.8896, lng: 128.612 },
     imageUrl: '/observations/obs-0075-capsella.jpg',
+    taxonId: 'mock-taxon-capsella-bursa-pastoris',
   },
   {
     id: 'butterfly',
@@ -66,5 +69,6 @@ export const sampleObservations: Observation[] = [
     description: '푸른색 꽃이 인상적인 식물입니다. 관찰 카드 디자인 확인용 샘플입니다.',
     coords: { lat: 35.8879, lng: 128.6107 },
     imageUrl: '/observations/obs-0109-dayflower.jpg',
+    taxonId: 'mock-taxon-commelina-communis',
   },
 ];

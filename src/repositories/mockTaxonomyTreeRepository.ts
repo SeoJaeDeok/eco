@@ -1,6 +1,7 @@
 import type { TaxonomyLineage } from '../features/taxonomy/taxonomyCore';
 import {
   getTaxonomyTreeChildren,
+  getTaxonomyTreeObservationIdsForSelection,
   getTaxonomyTreeRootNodes,
   type TaxonomyTreeObservationSummary,
 } from '../features/taxonomy/taxonomyTree';
@@ -102,6 +103,66 @@ const missingRankPlant = createTaxon({
   }),
 });
 
+const apisMellifera = createTaxon({
+  terminalSourceKey: 'mock-terminal-apis-mellifera',
+  acceptedScientificName: 'Apis mellifera Linnaeus, 1758',
+  canonicalName: 'Apis mellifera',
+  lineage: lineage({
+    kingdom: ['mock-kingdom-animalia', 'Animalia'],
+    phylum: ['mock-phylum-arthropoda', 'Arthropoda'],
+    class: ['mock-class-insecta', 'Insecta'],
+    order: ['mock-order-hymenoptera', 'Hymenoptera'],
+    family: ['mock-family-apidae', 'Apidae'],
+    genus: ['mock-genus-apis', 'Apis'],
+    species: ['mock-species-apis-mellifera', 'Apis mellifera'],
+  }),
+});
+
+const parusMinor = createTaxon({
+  terminalSourceKey: 'mock-terminal-parus-minor',
+  acceptedScientificName: 'Parus minor Temminck & Schlegel, 1848',
+  canonicalName: 'Parus minor',
+  lineage: lineage({
+    kingdom: ['mock-kingdom-animalia', 'Animalia'],
+    phylum: ['mock-phylum-chordata', 'Chordata'],
+    class: ['mock-class-aves', 'Aves'],
+    order: ['mock-order-passeriformes', 'Passeriformes'],
+    family: ['mock-family-paridae', 'Paridae'],
+    genus: ['mock-genus-parus', 'Parus'],
+    species: ['mock-species-parus-minor', 'Parus minor'],
+  }),
+});
+
+const capsellaBursaPastoris = createTaxon({
+  terminalSourceKey: 'mock-terminal-capsella-bursa-pastoris',
+  acceptedScientificName: 'Capsella bursa-pastoris (L.) Medik.',
+  canonicalName: 'Capsella bursa-pastoris',
+  lineage: lineage({
+    kingdom: ['mock-kingdom-plantae', 'Plantae'],
+    phylum: ['mock-phylum-tracheophyta', 'Tracheophyta'],
+    class: ['mock-class-magnoliopsida', 'Magnoliopsida'],
+    order: ['mock-order-brassicales', 'Brassicales'],
+    family: ['mock-family-brassicaceae', 'Brassicaceae'],
+    genus: ['mock-genus-capsella', 'Capsella'],
+    species: ['mock-species-capsella-bursa-pastoris', 'Capsella bursa-pastoris'],
+  }),
+});
+
+const commelinaCommunis = createTaxon({
+  terminalSourceKey: 'mock-terminal-commelina-communis',
+  acceptedScientificName: 'Commelina communis L.',
+  canonicalName: 'Commelina communis',
+  lineage: lineage({
+    kingdom: ['mock-kingdom-plantae', 'Plantae'],
+    phylum: ['mock-phylum-tracheophyta', 'Tracheophyta'],
+    class: ['mock-class-magnoliopsida', 'Magnoliopsida'],
+    order: ['mock-order-commelinales', 'Commelinales'],
+    family: ['mock-family-commelinaceae', 'Commelinaceae'],
+    genus: ['mock-genus-commelina', 'Commelina'],
+    species: ['mock-species-commelina-communis', 'Commelina communis'],
+  }),
+});
+
 export const mockTaxonomyTreeObservationSummaries: readonly TaxonomyTreeObservationSummary[] = [
   {
     observationId: 'mock-tree-taraxacum-1',
@@ -134,6 +195,30 @@ export const mockTaxonomyTreeObservationSummaries: readonly TaxonomyTreeObservat
     taxon: missingRankPlant,
   },
   {
+    observationId: 'honeybee',
+    status: 'approved',
+    taxonId: 'mock-taxon-apis-mellifera',
+    taxon: apisMellifera,
+  },
+  {
+    observationId: 'great-tit',
+    status: 'approved',
+    taxonId: 'mock-taxon-parus-minor',
+    taxon: parusMinor,
+  },
+  {
+    observationId: 'capsella',
+    status: 'approved',
+    taxonId: 'mock-taxon-capsella-bursa-pastoris',
+    taxon: capsellaBursaPastoris,
+  },
+  {
+    observationId: 'dayflower',
+    status: 'approved',
+    taxonId: 'mock-taxon-commelina-communis',
+    taxon: commelinaCommunis,
+  },
+  {
     observationId: 'mock-tree-legacy-unlinked',
     status: 'approved',
     taxonId: null,
@@ -160,5 +245,9 @@ export const mockTaxonomyTreeRepository: TaxonomyTreeRepository = {
 
   async getChildren(parent) {
     return getTaxonomyTreeChildren(mockTaxonomyTreeObservationSummaries, parent);
+  },
+
+  async getObservationIdsForSelection(selection) {
+    return getTaxonomyTreeObservationIdsForSelection(mockTaxonomyTreeObservationSummaries, selection);
   },
 };

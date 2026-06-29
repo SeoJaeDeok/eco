@@ -1,6 +1,7 @@
 import type { TaxonomyLineage } from '../../features/taxonomy/taxonomyCore';
 import {
   getTaxonomyTreeChildren,
+  getTaxonomyTreeObservationIdsForSelection,
   getTaxonomyTreeRootNodes,
   type TaxonomyTreeObservationSummary,
   type TaxonomyTreeTaxonSummary,
@@ -153,5 +154,10 @@ export const supabaseTaxonomyTreeRepository: TaxonomyTreeRepository = {
   async getChildren(parent) {
     const summaries = await loadApprovedLinkedSummaries();
     return getTaxonomyTreeChildren(summaries, parent);
+  },
+
+  async getObservationIdsForSelection(selection) {
+    const summaries = await loadApprovedLinkedSummaries();
+    return getTaxonomyTreeObservationIdsForSelection(summaries, selection);
   },
 };

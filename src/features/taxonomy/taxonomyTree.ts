@@ -253,3 +253,14 @@ export const getTaxonomyTreeChildren = (
 
   return getTaxonomyTreeNodesForRank(summaries, childRank, parent);
 };
+
+export const getTaxonomyTreeObservationIdsForSelection = (
+  summaries: readonly TaxonomyTreeObservationSummary[],
+  selection: TaxonomyTreeSelection | TaxonomyTreeParent,
+) => {
+  return summaries
+    .filter(isApprovedTaxonomyLinkedObservation)
+    .filter((summary) => matchesTaxonomyTreeSelection(summary.taxon, selection))
+    .map((summary) => summary.observationId)
+    .sort((a, b) => a.localeCompare(b, 'en'));
+};
