@@ -20,6 +20,10 @@ export interface Observation {
   imagePath?: string;
   observerId?: string;
   observerDisplayName?: string;
+  taxonId?: string;
+  taxonomyMatchType?: string;
+  taxonomyConfidence?: number | null;
+  taxonomyVerifiedAt?: string;
   status?: ObservationStatus;
   isFixed?: boolean;
 }
@@ -34,6 +38,15 @@ export interface CreateObservationInput {
   coords: Coordinates;
   imageFile?: File;
   imagePreviewUrl?: string;
+}
+
+export interface VerifiedTaxonomyObservationInput extends CreateObservationInput {
+  scientificName: string;
+  taxonomy: {
+    taxonId: string;
+    reportedScientificName: string;
+    broadTaxon: Taxon;
+  };
 }
 
 export interface OwnerObservationUpdateInput {

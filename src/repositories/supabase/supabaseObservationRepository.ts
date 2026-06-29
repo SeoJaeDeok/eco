@@ -10,13 +10,16 @@ import {
   mapObservationRowsToObservations,
 } from './observationMappers';
 import {
+  removeUploadedObservationImage,
   resolveObservationImageSignedUrl,
   uploadObservationImage,
+  type UploadedObservationImage,
 } from './supabaseObservationImageStorage';
 import { getSupabaseClient } from './supabaseClient';
 
 const OBSERVATIONS_TABLE = 'observations';
 const PROFILES_TABLE = 'profiles';
+const TAXONOMY_CREATE_RPC = 'create_observation_with_verified_taxonomy';
 
 interface SupabaseContributionProfileRow {
   display_name: string | null;
@@ -40,6 +43,21 @@ const createImageDisplayFieldsById = async (rows: ObservationDbRow[]) => {
 const mapObservationRowWithSignedImageUrl = async (row: ObservationDbRow) => {
   const signedImageUrl = await resolveObservationImageSignedUrl(row.image_path);
   return mapObservationRowToObservation(row, signedImageUrl ? { imageUrl: signedImageUrl } : undefined);
+};
+
+const normalizeObservedDateForRpc = (value: string) => {
+  const trimmed = value.trim();
+  const dateMatch = trimmed.match(/^\d{4}-\d{2}-\d{2}/);
+  return dateMatch ? dateMatch[0] : trimmed;
+};
+
+const cleanupUploadedImageAfterCreateFailure = async (uploadedImage: UploadedObservationImage | undefined) => {
+  if (!uploadedImage) return;
+
+  const removed = await removeUploadedObservationImage(uploadedImage);
+  if (!removed) {
+    console.warn('taxonomy_create_image_cleanup_failed');
+  }
 };
 
 const requireCurrentUserId = async () => {
@@ -137,6 +155,45 @@ export const supabaseObservationRepository: ObservationRepository = {
     }
 
     return mapObservationRowWithSignedImageUrl(data as ObservationDbRow);
+  },
+
+  async createObservationWithVerifiedTaxonomy(input) {
+    const contributor = await getCurrentContributor();
+    let uploadedImage: UploadedObservationImage | undefined;
+
+    try {
+      uploadedImage = input.imageFile
+        ? await uploadObservationImage(input.imageFile, { ownerId: contributor.userId })
+        : undefined;
+
+      const { data, error } = await getSupabaseClient()
+        .rpc(TAXONOMY_CREATE_RPC, {
+          p_name: input.name,
+          p_reported_scientific_name: input.taxonomy.reportedScientificName,
+          p_taxon_id: input.taxonomy.taxonId,
+          p_location: input.location,
+          p_observed_date: normalizeObservedDateForRpc(input.date),
+          p_latitude: input.coords.lat,
+          p_longitude: input.coords.lng,
+          p_description: input.description ?? null,
+          p_image_path: uploadedImage?.path ?? null,
+          p_image_mime_type: uploadedImage?.mimeType ?? null,
+          p_image_size_bytes: uploadedImage?.sizeBytes ?? null,
+        });
+
+      if (error) {
+        await cleanupUploadedImageAfterCreateFailure(uploadedImage);
+        throw createRepositoryError('Failed to create taxonomy-linked observation through Supabase RPC.', error);
+      }
+
+      return mapObservationRowWithSignedImageUrl(data as ObservationDbRow);
+    } catch (error) {
+      if (!(error instanceof Error && error.message === 'Failed to create taxonomy-linked observation through Supabase RPC.')) {
+        await cleanupUploadedImageAfterCreateFailure(uploadedImage);
+      }
+
+      throw createRepositoryError('Failed to create taxonomy-linked observation in Supabase.', error);
+    }
   },
 
   async updateOwnObservation(id, input) {

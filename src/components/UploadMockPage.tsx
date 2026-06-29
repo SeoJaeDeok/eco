@@ -1,25 +1,36 @@
-import { useState, type ChangeEvent } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import {
   MAX_OBSERVATION_IMAGE_SIZE_MB,
   MAX_OBSERVATION_IMAGE_SIZE_BYTES,
   isAllowedObservationImageMimeType,
 } from '../constants/upload';
 import { createDefaultUploadFormValues, createImagePreviewUrl, createObservationInputFromForm } from '../features/upload/uploadForm';
+import {
+  canSubmitWithVerifiedTaxonomy,
+  createInitialTaxonomyVerificationState,
+  getTaxonomySubmitBlockMessage,
+  getTaxonomyVerificationStateAfterScientificNameChange,
+  type UploadTaxonomyVerificationState,
+} from '../features/upload/uploadTaxonomyVerification';
 import { activeObservationRepository, getConfiguredObservationRepositoryKind } from '../repositories/observationRepositoryProvider';
+import { activeTaxonomyRepository } from '../repositories/taxonomyRepositoryProvider';
 import { validateObservationInput } from '../utils/observationValidation';
 import type { ObservationRepository } from '../repositories/observationRepository';
+import type { TaxonomyRepository, TaxonomyResolutionResult } from '../repositories/taxonomyRepository';
 import type { Coordinates, CreateObservationInput, Observation } from '../types';
 import { UploadFormActions } from './upload/UploadFormActions';
 import { UploadImagePicker } from './upload/UploadImagePicker';
 import { UploadLocationSection } from './upload/UploadLocationSection';
 import { UploadObservationFields } from './upload/UploadObservationFields';
+import { UploadTaxonomyVerificationPanel } from './upload/UploadTaxonomyVerificationPanel';
 import { PageHeader } from './ui/PageHeader';
 
-const SUPABASE_DIRECT_CREATE_SUCCESS_MESSAGE = '관찰 기록이 등록되었습니다. 공개 목록에 바로 표시됩니다.';
+const TAXONOMY_CREATE_SUCCESS_MESSAGE = '학명 확인이 끝난 관찰 기록을 등록했습니다. 공개 목록에 바로 표시됩니다.';
 
 interface UploadMockPageProps {
   onCancel: () => void;
-  createObservation?: ObservationRepository['createObservation'];
+  createObservationWithVerifiedTaxonomy?: ObservationRepository['createObservationWithVerifiedTaxonomy'];
+  taxonomyRepository?: TaxonomyRepository;
   onObservationCreated?: (observation: Observation) => void;
 }
 
@@ -33,12 +44,109 @@ const OVERSIZED_IMAGE_ALERT_MESSAGE = `사진은 ${ACCEPTED_IMAGE_FORMATS_LABEL}
 
 export const UploadMockPage = ({
   onCancel,
-  createObservation = activeObservationRepository.createObservation,
+  createObservationWithVerifiedTaxonomy = activeObservationRepository.createObservationWithVerifiedTaxonomy,
+  taxonomyRepository = activeTaxonomyRepository,
   onObservationCreated,
 }: UploadMockPageProps) => {
   const [formData, setFormData] = useState(createDefaultUploadFormValues);
+  const [taxonomyState, setTaxonomyState] = useState<UploadTaxonomyVerificationState>(() => (
+    createInitialTaxonomyVerificationState('')
+  ));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const latestScientificNameRef = useRef(formData.scientificName);
   const isSupabaseRepository = getConfiguredObservationRepositoryKind() === 'supabase';
+
+  const applyTaxonomyResult = (result: TaxonomyResolutionResult) => {
+    if (result.status === 'resolved') {
+      setTaxonomyState({ status: 'resolved', result });
+      setFormData((current) => ({ ...current, taxon: result.broadTaxon }));
+      return;
+    }
+
+    if (result.status === 'needsConfirmation') {
+      setTaxonomyState({ status: 'needsConfirmation', result });
+      return;
+    }
+
+    if (result.status === 'blocked') {
+      setTaxonomyState({ status: 'blocked', result });
+      return;
+    }
+
+    setTaxonomyState({ status: 'error', result });
+  };
+
+  const handleFormChange = (values: ReturnType<typeof createDefaultUploadFormValues>) => {
+    if (values.scientificName !== latestScientificNameRef.current) {
+      latestScientificNameRef.current = values.scientificName;
+      setTaxonomyState(getTaxonomyVerificationStateAfterScientificNameChange(values.scientificName));
+    }
+
+    setFormData(values);
+  };
+
+  const handleTaxonomyCheck = async () => {
+    const requestedScientificName = formData.scientificName;
+
+    if (!requestedScientificName.trim() || taxonomyState.status === 'resolving') {
+      setTaxonomyState(createInitialTaxonomyVerificationState(requestedScientificName));
+      return;
+    }
+
+    try {
+      setTaxonomyState({ status: 'resolving' });
+      const result = await taxonomyRepository.resolveScientificName({ scientificName: requestedScientificName });
+
+      if (latestScientificNameRef.current !== requestedScientificName) {
+        setTaxonomyState(getTaxonomyVerificationStateAfterScientificNameChange(latestScientificNameRef.current));
+        return;
+      }
+
+      applyTaxonomyResult(result);
+    } catch {
+      setTaxonomyState({
+        status: 'error',
+        result: {
+          status: 'error',
+          reason: 'upstream_failure',
+          retryable: true,
+          messageKey: 'taxonomy.error',
+        },
+      });
+    }
+  };
+
+  const handleConfirmCandidate = async () => {
+    if (taxonomyState.status !== 'needsConfirmation') return;
+
+    const requestedScientificName = formData.scientificName;
+    const candidateKey = taxonomyState.result.candidate.acceptedSourceTaxonKey;
+
+    try {
+      setTaxonomyState({ status: 'resolving' });
+      const result = await taxonomyRepository.confirmScientificName({
+        scientificName: requestedScientificName,
+        acceptedSourceTaxonKey: candidateKey,
+      });
+
+      if (latestScientificNameRef.current !== requestedScientificName) {
+        setTaxonomyState(getTaxonomyVerificationStateAfterScientificNameChange(latestScientificNameRef.current));
+        return;
+      }
+
+      applyTaxonomyResult(result);
+    } catch {
+      setTaxonomyState({
+        status: 'error',
+        result: {
+          status: 'error',
+          reason: 'invalid_confirmation',
+          retryable: false,
+          messageKey: 'taxonomy.error',
+        },
+      });
+    }
+  };
 
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -88,13 +196,28 @@ export const UploadMockPage = ({
       return;
     }
 
+    if (!canSubmitWithVerifiedTaxonomy(taxonomyState)) {
+      alert(getTaxonomySubmitBlockMessage(taxonomyState));
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      const createdObservation = await createObservation(input);
+      const verifiedResult = taxonomyState.result;
+      const createdObservation = await createObservationWithVerifiedTaxonomy({
+        ...input,
+        scientificName: verifiedResult.reportedScientificName,
+        taxon: verifiedResult.broadTaxon,
+        taxonomy: {
+          taxonId: verifiedResult.taxonId,
+          reportedScientificName: verifiedResult.reportedScientificName,
+          broadTaxon: verifiedResult.broadTaxon,
+        },
+      });
       onObservationCreated?.(createdObservation);
-      alert(isSupabaseRepository ? SUPABASE_DIRECT_CREATE_SUCCESS_MESSAGE : MOCK_UPLOAD_ALERT_MESSAGE);
-    } catch (error) {
-      console.error('Failed to create observation.', error);
+      alert(isSupabaseRepository ? TAXONOMY_CREATE_SUCCESS_MESSAGE : MOCK_UPLOAD_ALERT_MESSAGE);
+    } catch {
+      console.warn('observation_create_failed');
       alert(UPLOAD_FAILURE_ALERT_MESSAGE);
     } finally {
       setIsSubmitting(false);
@@ -117,11 +240,28 @@ export const UploadMockPage = ({
       />
 
       <div className="space-y-5 text-left">
-        <UploadObservationFields formData={formData} onChange={setFormData}>
+        <UploadObservationFields
+          formData={formData}
+          onChange={handleFormChange}
+          isTaxonLocked={taxonomyState.status === 'resolved'}
+          taxonHelpText={taxonomyState.status === 'resolved' ? '학명 확인 결과에서 자동으로 정한 분류군입니다.' : undefined}
+          onScientificNameEnter={handleTaxonomyCheck}
+        >
+          <UploadTaxonomyVerificationPanel
+            state={taxonomyState}
+            scientificName={formData.scientificName}
+            onCheck={handleTaxonomyCheck}
+            onConfirmCandidate={handleConfirmCandidate}
+          />
           <UploadImagePicker imagePreviewUrl={formData.imagePreviewUrl} onImageChange={handleImageChange} />
           <UploadLocationSection coords={formData.coords} onLocationSelect={handleLocationSelect} />
         </UploadObservationFields>
-        <UploadFormActions onCancel={onCancel} onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+        <UploadFormActions
+          onCancel={onCancel}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          isSubmitDisabled={!canSubmitWithVerifiedTaxonomy(taxonomyState)}
+        />
       </div>
     </div>
   );

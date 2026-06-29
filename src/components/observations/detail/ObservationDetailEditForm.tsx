@@ -42,6 +42,7 @@ export const ObservationDetailEditForm = ({
 }: ObservationDetailEditFormProps) => {
   const [values, setValues] = useState<ObservationEditFormValues>(() => createFormValues(observation));
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const isTaxonomyLinked = Boolean(observation.taxonId);
 
   const updateField = <Key extends keyof ObservationEditFormValues>(
     key: Key,
@@ -70,8 +71,10 @@ export const ObservationDetailEditForm = ({
 
     onSubmit({
       name: values.name,
-      scientificName: values.scientificName.trim() ? values.scientificName : undefined,
-      taxon: values.taxon,
+      scientificName: isTaxonomyLinked
+        ? (observation.scientificName || undefined)
+        : (values.scientificName.trim() ? values.scientificName : undefined),
+      taxon: isTaxonomyLinked ? observation.taxon : values.taxon,
       location: values.location,
       date: values.date,
       description: values.description.trim() ? values.description : undefined,
@@ -108,9 +111,15 @@ export const ObservationDetailEditForm = ({
           id="observation-edit-scientific-name"
           type="text"
           value={values.scientificName}
-          onChange={handleInputChange('scientificName')}
-          className={`${fieldClassName} italic`}
+          onChange={isTaxonomyLinked ? undefined : handleInputChange('scientificName')}
+          disabled={isTaxonomyLinked}
+          className={`${fieldClassName} italic disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400`}
         />
+        {isTaxonomyLinked && (
+          <p className="mt-2 text-[11px] leading-5 text-zinc-400">
+            학명 확인이 끝난 기록은 학명을 직접 바꾸지 않습니다. 다른 내용을 수정할 수 있습니다.
+          </p>
+        )}
       </div>
 
       <div>
@@ -120,12 +129,17 @@ export const ObservationDetailEditForm = ({
             <button
               type="button"
               key={taxon}
-              onClick={() => updateField('taxon', taxon)}
+              onClick={() => {
+                if (!isTaxonomyLinked) {
+                  updateField('taxon', taxon);
+                }
+              }}
+              disabled={isTaxonomyLinked}
               className={`border px-3 py-1.5 text-[10px] font-light transition-all ${
                 values.taxon === taxon
                   ? 'border-black bg-black text-white'
                   : 'border-zinc-100 bg-white text-zinc-400 hover:border-zinc-300'
-              }`}
+              } disabled:cursor-not-allowed disabled:opacity-70`}
             >
               {taxon}
             </button>

@@ -31,6 +31,10 @@ const lazySupabaseObservationRepository: ObservationRepository = {
     const repository = await loadSupabaseObservationRepository();
     return repository.createObservation(input);
   },
+  async createObservationWithVerifiedTaxonomy(input) {
+    const repository = await loadSupabaseObservationRepository();
+    return repository.createObservationWithVerifiedTaxonomy(input);
+  },
   async updateOwnObservation(id, input) {
     const repository = await loadSupabaseObservationRepository();
     return repository.updateOwnObservation(id, input);

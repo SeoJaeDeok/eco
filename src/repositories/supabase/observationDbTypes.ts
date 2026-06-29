@@ -19,6 +19,10 @@ export interface ObservationDbRow {
   status: ObservationDbStatus;
   observer_id: string | null;
   observer_display_name: string | null;
+  taxon_id: string | null;
+  taxonomy_match_type: string | null;
+  taxonomy_confidence: number | null;
+  taxonomy_verified_at: string | null;
   created_at: string;
   updated_at: string;
 }

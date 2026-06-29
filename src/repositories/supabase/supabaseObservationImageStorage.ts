@@ -81,6 +81,10 @@ const createObservationImagePath = (
   return `pending/${clientGeneratedId}/${randomId}.${extension}`;
 };
 
+const isRepositoryOwnedObservationImagePath = (path: string) => {
+  return /^observations\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|jpeg|png|webp)$/i.test(path.trim());
+};
+
 export const uploadObservationImage = async (
   file: File,
   options: UploadObservationImageOptions = {},
@@ -107,6 +111,21 @@ export const uploadObservationImage = async (
     mimeType,
     sizeBytes: file.size,
   };
+};
+
+export const removeUploadedObservationImage = async (
+  image: UploadedObservationImage,
+): Promise<boolean> => {
+  if (!isRepositoryOwnedObservationImagePath(image.path)) {
+    return false;
+  }
+
+  const { error } = await getSupabaseClient()
+    .storage
+    .from(getObservationImageBucket())
+    .remove([image.path]);
+
+  return !error;
 };
 
 export const createObservationImageSignedUrl = async (

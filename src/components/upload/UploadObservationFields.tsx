@@ -5,10 +5,20 @@ import type { CreateObservationFormValues } from '../../types';
 interface UploadObservationFieldsProps {
   formData: CreateObservationFormValues;
   onChange: (values: CreateObservationFormValues) => void;
+  isTaxonLocked?: boolean;
+  taxonHelpText?: string;
+  onScientificNameEnter?: () => void;
   children?: ReactNode;
 }
 
-export const UploadObservationFields = ({ formData, onChange, children }: UploadObservationFieldsProps) => {
+export const UploadObservationFields = ({
+  formData,
+  onChange,
+  isTaxonLocked = false,
+  taxonHelpText,
+  onScientificNameEnter,
+  children,
+}: UploadObservationFieldsProps) => {
   const updateField = <Key extends keyof CreateObservationFormValues>(key: Key, value: CreateObservationFormValues[Key]) => {
     onChange({ ...formData, [key]: value });
   };
@@ -22,18 +32,36 @@ export const UploadObservationFields = ({ formData, onChange, children }: Upload
             <button
               type="button"
               key={taxon}
-              onClick={() => updateField('taxon', taxon)}
-              className={`px-3 py-1.5 text-[10px] font-light border transition-all ${formData.taxon === taxon ? 'bg-black text-white border-black' : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-300'}`}
+              onClick={() => {
+                if (!isTaxonLocked) {
+                  updateField('taxon', taxon);
+                }
+              }}
+              disabled={isTaxonLocked}
+              className={`px-3 py-1.5 text-[10px] font-light border transition-all disabled:cursor-not-allowed ${formData.taxon === taxon ? 'bg-black text-white border-black' : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-300'} ${isTaxonLocked ? 'opacity-70' : ''}`}
             >
               {taxon}
             </button>
           ))}
         </div>
+        {taxonHelpText && <p className="mt-2 text-[11px] leading-5 text-zinc-400">{taxonHelpText}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input type="text" placeholder="국명 / 종명 *" value={formData.name} onChange={(e) => updateField('name', e.target.value)} className="w-full border border-zinc-100 p-2.5 text-xs focus:outline-none focus:border-black bg-white" />
-        <input type="text" placeholder="학명 (선택사항)" value={formData.scientificName} onChange={(e) => updateField('scientificName', e.target.value)} className="w-full border border-zinc-100 p-2.5 text-xs focus:outline-none focus:border-black bg-white italic" />
+        <input
+          type="text"
+          placeholder="학명 *"
+          value={formData.scientificName}
+          onChange={(e) => updateField('scientificName', e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && onScientificNameEnter) {
+              e.preventDefault();
+              onScientificNameEnter();
+            }
+          }}
+          className="w-full border border-zinc-100 p-2.5 text-xs focus:outline-none focus:border-black bg-white italic"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -39,6 +39,22 @@ export const mockObservationRepository: ObservationRepository = {
     imageUrl: input.imagePreviewUrl ?? '',
     status: 'pending',
   }),
+  createObservationWithVerifiedTaxonomy: async (input) => ({
+    id: `mock-taxonomy-${Date.now()}`,
+    name: input.name,
+    scientificName: input.taxonomy.reportedScientificName,
+    taxon: input.taxonomy.broadTaxon,
+    location: input.location,
+    date: input.date,
+    description: input.description ?? '',
+    coords: input.coords,
+    imageUrl: input.imagePreviewUrl ?? '',
+    taxonId: input.taxonomy.taxonId,
+    taxonomyMatchType: 'MOCK_VERIFIED',
+    taxonomyConfidence: 99,
+    taxonomyVerifiedAt: new Date().toISOString(),
+    status: 'approved',
+  }),
   updateOwnObservation: async (id, input) => {
     const existingObservation = getMockObservations().find((observation) => observation.id === id);
 

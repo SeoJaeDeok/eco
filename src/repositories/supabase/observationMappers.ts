@@ -49,6 +49,10 @@ export const mapObservationRowToObservation = (
     ...(row.image_path ? { imagePath: row.image_path } : {}),
     ...(row.observer_id ? { observerId: row.observer_id } : {}),
     ...(observerDisplayName ? { observerDisplayName } : {}),
+    ...(row.taxon_id ? { taxonId: row.taxon_id } : {}),
+    ...(row.taxonomy_match_type ? { taxonomyMatchType: row.taxonomy_match_type } : {}),
+    ...(row.taxonomy_verified_at ? { taxonomyVerifiedAt: row.taxonomy_verified_at } : {}),
+    taxonomyConfidence: row.taxonomy_confidence,
     status: row.status,
   };
 };
