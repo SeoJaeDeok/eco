@@ -20,6 +20,23 @@ import { getSupabaseClient } from './supabaseClient';
 const OBSERVATIONS_TABLE = 'observations';
 const PROFILES_TABLE = 'profiles';
 const TAXONOMY_CREATE_RPC = 'create_observation_with_verified_taxonomy';
+const OBSERVATION_DETAIL_SELECT = `
+  *,
+  taxa!observations_taxon_id_fkey (
+    source,
+    accepted_scientific_name,
+    canonical_name,
+    terminal_rank,
+    taxonomic_status,
+    kingdom_name,
+    phylum_name,
+    class_name,
+    order_name,
+    family_name,
+    genus_name,
+    species_name
+  )
+`;
 
 interface SupabaseContributionProfileRow {
   display_name: string | null;
@@ -116,7 +133,7 @@ export const supabaseObservationRepository: ObservationRepository = {
   async getObservationById(id) {
     const { data, error } = await getSupabaseClient()
       .from(OBSERVATIONS_TABLE)
-      .select('*')
+      .select(OBSERVATION_DETAIL_SELECT)
       .eq('id', id)
       .eq('status', 'approved')
       .maybeSingle();

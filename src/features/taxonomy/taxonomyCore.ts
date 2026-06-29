@@ -11,6 +11,30 @@ export type StandardTaxonomyRank =
   | 'genus'
   | 'species';
 
+export type TaxonomyRank = StandardTaxonomyRank;
+
+export type TaxonomyRankLabelKo = '계' | '문' | '강' | '목' | '과' | '속' | '종';
+
+export const TAXONOMY_RANK_ORDER: readonly TaxonomyRank[] = [
+  'kingdom',
+  'phylum',
+  'class',
+  'order',
+  'family',
+  'genus',
+  'species',
+];
+
+export const TAXONOMY_RANK_LABELS_KO: Record<TaxonomyRank, TaxonomyRankLabelKo> = {
+  kingdom: '계',
+  phylum: '문',
+  class: '강',
+  order: '목',
+  family: '과',
+  genus: '속',
+  species: '종',
+};
+
 export interface TaxonomyLineageRank {
   key: string | null;
   name: string | null;
@@ -77,6 +101,20 @@ export const normalizeScientificNameInput = (value: unknown): ScientificNameNorm
 };
 
 const normalizeRankName = (value: string | null | undefined) => value?.trim().toLocaleLowerCase('en-US') ?? '';
+
+export const formatTaxonomySourceLabel = (source: string | null | undefined) => {
+  const trimmedSource = source?.trim();
+
+  if (!trimmedSource) {
+    return null;
+  }
+
+  if (trimmedSource.toLocaleLowerCase('en-US').includes('gbif')) {
+    return 'GBIF / Catalogue of Life XR';
+  }
+
+  return trimmedSource;
+};
 
 export const deriveBroadTaxonFromLineage = (lineage: Partial<TaxonomyLineage>): Taxon => {
   const className = normalizeRankName(lineage.class?.name);

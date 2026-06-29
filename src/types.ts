@@ -1,3 +1,5 @@
+import type { TaxonomyRank, TaxonomyRankLabelKo } from './features/taxonomy/taxonomyCore';
+
 export type Taxon = '식물' | '포유류' | '조류' | '곤충' | '양서/파충류' | '균류' | '기타';
 
 export type ObservationStatus = 'sample' | 'pending' | 'approved' | 'rejected';
@@ -5,6 +7,22 @@ export type ObservationStatus = 'sample' | 'pending' | 'approved' | 'rejected';
 export interface Coordinates {
   lat: number;
   lng: number;
+}
+
+export interface ObservationTaxonomyLineageRank {
+  rank: TaxonomyRank;
+  rankLabelKo: TaxonomyRankLabelKo;
+  name: string | null;
+}
+
+export interface ObservationTaxonomyLineage {
+  reportedScientificName: string;
+  acceptedScientificName: string;
+  canonicalName: string | null;
+  terminalRank: string;
+  taxonomicStatus: string | null;
+  sourceLabel: string | null;
+  ranks: ObservationTaxonomyLineageRank[];
 }
 
 export interface Observation {
@@ -24,6 +42,7 @@ export interface Observation {
   taxonomyMatchType?: string;
   taxonomyConfidence?: number | null;
   taxonomyVerifiedAt?: string;
+  taxonomy?: ObservationTaxonomyLineage;
   status?: ObservationStatus;
   isFixed?: boolean;
 }

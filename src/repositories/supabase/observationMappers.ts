@@ -1,6 +1,17 @@
+import {
+  formatTaxonomySourceLabel,
+  TAXONOMY_RANK_LABELS_KO,
+  TAXONOMY_RANK_ORDER,
+  type TaxonomyRank,
+} from '../../features/taxonomy/taxonomyCore';
 import type { CreateObservationInput, Observation, OwnerObservationUpdateInput } from '../../types';
 import { normalizeObserverDisplayName } from '../../utils/observerDisplay';
-import type { ObservationContentUpdateRow, ObservationDbRow, ObservationInsertRow } from './observationDbTypes';
+import type {
+  ObservationContentUpdateRow,
+  ObservationDbRow,
+  ObservationInsertRow,
+  PublicTaxonDbRow,
+} from './observationDbTypes';
 
 interface ObservationImageInsertFields {
   path: string;
@@ -27,11 +38,59 @@ const resolveObservationImageUrl = (row: ObservationDbRow, displayFields?: Obser
   return displayFields?.imageUrl ?? row.image_url ?? '';
 };
 
+const getEmbeddedTaxonRow = (value: ObservationDbRow['taxa']) => {
+  if (!value) {
+    return null;
+  }
+
+  return Array.isArray(value) ? value[0] ?? null : value;
+};
+
+const getTaxonRankName = (taxon: PublicTaxonDbRow, rank: TaxonomyRank) => {
+  switch (rank) {
+    case 'kingdom':
+      return taxon.kingdom_name;
+    case 'phylum':
+      return taxon.phylum_name;
+    case 'class':
+      return taxon.class_name;
+    case 'order':
+      return taxon.order_name;
+    case 'family':
+      return taxon.family_name;
+    case 'genus':
+      return taxon.genus_name;
+    case 'species':
+      return taxon.species_name;
+  }
+};
+
+export const mapPublicTaxonDbRowToObservationTaxonomyLineage = (
+  taxon: PublicTaxonDbRow,
+  reportedScientificName: string,
+): Observation['taxonomy'] => ({
+  reportedScientificName,
+  acceptedScientificName: taxon.accepted_scientific_name,
+  canonicalName: taxon.canonical_name,
+  terminalRank: taxon.terminal_rank,
+  taxonomicStatus: taxon.taxonomic_status,
+  sourceLabel: formatTaxonomySourceLabel(taxon.source),
+  ranks: TAXONOMY_RANK_ORDER.map((rank) => ({
+    rank,
+    rankLabelKo: TAXONOMY_RANK_LABELS_KO[rank],
+    name: getTaxonRankName(taxon, rank),
+  })),
+});
+
 export const mapObservationRowToObservation = (
   row: ObservationDbRow,
   displayFields?: ObservationDisplayFields,
 ): Observation => {
   const observerDisplayName = normalizeObserverDisplayName(row.observer_display_name);
+  const taxon = getEmbeddedTaxonRow(row.taxa);
+  const taxonomy = row.taxon_id && taxon
+    ? mapPublicTaxonDbRowToObservationTaxonomyLineage(taxon, row.scientific_name ?? '')
+    : null;
 
   return {
     id: row.id,
@@ -52,6 +111,7 @@ export const mapObservationRowToObservation = (
     ...(row.taxon_id ? { taxonId: row.taxon_id } : {}),
     ...(row.taxonomy_match_type ? { taxonomyMatchType: row.taxonomy_match_type } : {}),
     ...(row.taxonomy_verified_at ? { taxonomyVerifiedAt: row.taxonomy_verified_at } : {}),
+    ...(taxonomy ? { taxonomy } : {}),
     taxonomyConfidence: row.taxonomy_confidence,
     status: row.status,
   };
