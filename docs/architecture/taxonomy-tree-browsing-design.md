@@ -426,6 +426,24 @@ Tree-specific requirements:
 5. Later scale phase: add read-only RPC/view/materialization if data volume or
    mobile performance requires it.
 
+## Phase 25B Implementation Note
+
+Phase 25B implemented the repository/data foundation described above:
+
+- Added shared taxonomy rank labels and tree node contracts.
+- Added pure tree aggregation helpers that count approved taxonomy-linked
+  observations only.
+- Added mock and Supabase `TaxonomyTreeRepository` implementations.
+- Kept tree reads behind the repository/provider boundary.
+- Added stored taxonomy lineage to public observation detail refresh.
+- Kept the full `생태지도` tree panel and map/list taxonomy filtering deferred
+  to Phase 25C.
+
+The Supabase tree repository uses stored `observations` + `taxa` data only. It
+does not call GBIF, does not read `taxonomy_name_resolutions`, does not select
+`classification_json`, and does not require service-role credentials in
+frontend code.
+
 ## Deferred Work
 
 - New Navbar taxonomy page.

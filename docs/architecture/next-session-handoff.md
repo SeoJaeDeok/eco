@@ -125,7 +125,85 @@ Read this together with:
 - 24F-2 Vercel Preview Upload Taxonomy smoke completed on `feature/phase-24f1-upload-taxonomy-smoke`; the feature branch was pushed, Preview deployment succeeded, Preview browser smoke and read-only DB verification passed, one approved no-image Preview smoke observation exists in the shared DB, Production was not intentionally deployed, and main was not merged or pushed.
 - 24F-3 Production deployment smoke completed on `main`; Phase 24 is deployed to Production, Production Upload UI taxonomy smoke and read-only DB verification passed, one approved no-image Production smoke observation exists in the shared DB, and Phase 24 is archived as Verified.
 - 25A taxonomy tree browsing design completed on `feature/phase-25a-taxonomy-tree-design`; Phase 25 remains open, and no app code, package files, migration SQL, remote SQL, RLS/policies, Edge Function, Storage, Auth, Admin, Kakao, Vercel config, Production UI, merge, or push was performed.
+- 25B taxonomy tree repository and public detail lineage implemented locally on `feature/phase-25b-taxonomy-tree-repository-detail`; Phase 25 remains open, no migration/remote SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel/Production deployment was performed, and no push was performed.
 
+
+## Phase 25B Taxonomy Tree Repository And Detail Lineage
+
+Status: implemented locally. Push status: not pushed.
+
+Current branch:
+
+```text
+feature/phase-25b-taxonomy-tree-repository-detail
+```
+
+Base before this phase:
+
+```text
+7ceb868 docs: design taxonomy tree browsing
+```
+
+Implementation result:
+
+- Added taxonomy rank labels and tree domain contracts for 계/문/강/목/과/속/종.
+- Added pure taxonomy tree aggregation helpers.
+- Added `TaxonomyTreeRepository` with `getRootNodes()` and `getChildren(parent)`.
+- Added deterministic mock tree fixtures and repository behavior.
+- Added Supabase tree repository using approved `observations` joined to public `taxa`.
+- Supabase tree reads use stored data only, filter `status = 'approved'`, filter `taxon_id IS NOT NULL`, and avoid `classification_json`.
+- Tree/detail code does not call GBIF, does not invoke `resolve-taxonomy`, and does not read `taxonomy_name_resolutions`.
+- Public observation detail refresh can now include safe stored taxonomy lineage.
+- Legacy rows without `taxon_id` remain compatible and can show `분류 정보 미연결` in the detail taxonomy block.
+- The visible `생태지도` tree panel and map/list taxonomy filtering remain deferred.
+
+Documentation added:
+
+```text
+docs/architecture/taxonomy-tree-repository-detail-lineage.md
+```
+
+Documentation updated:
+
+```text
+docs/architecture/taxonomy-tree-browsing-design.md
+docs/architecture/taxonomy-tree-query-prototypes.md
+docs/architecture/taxonomy-api-resolution-plan.md
+docs/architecture/next-session-handoff.md
+```
+
+Boundaries:
+
+- App code changed only for repository/type/helper/detail-lineage foundation.
+- Tests changed.
+- Docs changed.
+- No package file changed.
+- No migration SQL changed and no migration 0012 was created.
+- No remote SQL was run.
+- No `supabase db push` was run.
+- No Edge Function was deployed.
+- No Vercel config changed.
+- No Storage/Auth/Admin/Kakao behavior changed.
+- No live DB data changed.
+- No Production deployment was created.
+
+Verification status:
+
+- `npm.cmd run typecheck`: PASS during implementation.
+- `node --loader ./tests/ts-extension-loader.mjs --test tests/*.test.mjs`: PASS during implementation, 35 tests.
+- `npm.cmd run build`: PASS during implementation.
+- Deno `fmt --check`, `lint`, `check`, and `test` for the existing
+  `resolve-taxonomy` function: PASS during implementation.
+- Local app HTTP smoke at `http://127.0.0.1:3002/`: PASS, HTTP 200.
+- Browser/detail lineage smoke: PARTIAL. The local mock sample list does not
+  include an existing taxonomy-linked detail row, and Codex did not read
+  `.env.local` or create a new live observation in this phase.
+
+Exact next step:
+
+```text
+Phase 25C - add collapsible taxonomy exploration panel to 생태지도 and connect taxonomy node selection to map/list filtering
+```
 
 ## Phase 25A Taxonomy Tree Browsing Design
 

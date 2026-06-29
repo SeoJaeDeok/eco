@@ -358,3 +358,37 @@ Add focused tests for:
 - current search AND broad taxon AND taxonomy filter composition;
 - no GBIF calls in tree repository tests;
 - detail lineage handles both linked and legacy rows.
+
+## Phase 25B Query Implementation
+
+Phase 25B used the repository-level SELECT direction, not an RPC or view.
+
+Implemented behavior:
+
+- `SupabaseTaxonomyTreeRepository` reads approved linked observations from
+  `public.observations`.
+- It joins `public.taxa` with `taxa!observations_taxon_id_fkey`.
+- It filters `status = 'approved'`.
+- It filters `taxon_id IS NOT NULL`.
+- It selects flattened lineage key/name columns for tree grouping.
+- It excludes `classification_json`.
+- It does not read `taxonomy_name_resolutions`.
+- It groups rows in TypeScript through pure helpers.
+- It caches the loaded summary rows in memory for the current session.
+
+Detail lineage implementation:
+
+- Public `getObservationById` now joins safe `taxa` display columns for the
+  selected approved observation.
+- The detail read intentionally does not select source taxon keys, source
+  checklist keys, or raw JSON.
+- Legacy approved observations with `taxon_id IS NULL` still return without
+  lineage.
+
+Deferred query work:
+
+- read-only RPC for children;
+- read-only view;
+- materialized tree count cache;
+- selected-node observation id RPC;
+- server-side map/list taxonomy filtering and pagination.

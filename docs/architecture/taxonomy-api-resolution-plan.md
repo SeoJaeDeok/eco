@@ -661,5 +661,14 @@ Phase 25:
 - Phase 25A design documents:
   `docs/architecture/taxonomy-tree-browsing-design.md` and
   `docs/architecture/taxonomy-tree-query-prototypes.md`.
+- Phase 25B implementation adds `TaxonomyTreeRepository` and public detail
+  taxonomy lineage using stored `public.taxa` plus approved
+  `public.observations`.
+- Phase 25B tree/detail reads do not call GBIF, do not invoke the
+  `resolve-taxonomy` Edge Function, and do not read
+  `public.taxonomy_name_resolutions`.
+- The Upload UI taxonomy verification flow remains the explicit resolution
+  path; browsing, public list/detail, map rendering, and search remain stored
+  data reads only.
 
 한국어 요약: Phase 24는 `학명 확인` 업로드 흐름과 신뢰된 taxonomy 연결 생성까지 완료되었습니다. Phase 25에서는 저장된 `taxa`와 승인된 관찰 기록만 사용해 생태지도 안에서 분류 트리를 탐색합니다.
