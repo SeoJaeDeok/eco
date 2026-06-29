@@ -355,10 +355,23 @@ Phase 24E-2C runtime-expression repair:
   and re-applies the same authenticated-only execute model.
 - The failed smoke did not create an observation.
 
+Phase 24E-2B smoke after 0011:
+
+- The selected RPC architecture was verified against the shared Supabase DB.
+- A signed-in approved test user resolved `Taraxacum officinale` and created
+  one approved observation through the trusted RPC.
+- The observation has non-null taxonomy linkage and metadata.
+- Owner content edit still works, and direct scientific-name edit on the
+  taxonomy-linked row is blocked safely.
+- Anonymous RPC execution and direct browser taxonomy writes remain denied.
+- The browser visual list/detail smoke remains PARTIAL, but public approved API
+  compatibility passed.
+
 ## Rollout Plan
 
 1. Phase 24E-2C: manually apply `0011` and verify the RPC runtime repair.
-2. Rerun Phase 24E-2B trusted RPC smoke with safe test data.
+2. Phase 24E-2B: trusted RPC smoke with safe test data. Completed with browser
+   visual UI checks still PARTIAL.
 3. Add repository method for taxonomy-linked create.
 4. Add Upload UI `학명 확인` state and button.
 5. Require a resolved or confirmed taxonomy result before taxonomy-required

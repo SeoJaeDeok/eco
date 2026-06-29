@@ -20,6 +20,15 @@ Phase 24D-3 update: `resolve-taxonomy` was deployed to the Supabase project shar
 
 Phase 24E-1 update: the selected observation write-path architecture is a narrow authenticated SECURITY DEFINER RPC, not broad browser taxonomy column grants. Migration candidate `0010_create_taxonomy_observation_write_path.sql` creates `public.create_observation_with_verified_taxonomy(...)`, which verifies the signed-in user, trusted cached taxonomy identity, and optional owner image path before inserting an approved observation with taxonomy linkage. Upload UI integration and remote SQL apply remain deferred to Phase 24E-2 or later.
 
+Phase 24E-2B/2C update: migration 0011 repaired the trusted RPC runtime
+expressions after 0010 failed with SQLSTATE `42883`. The operator manually
+applied 0011 and post-apply checks passed. A live trusted RPC smoke then
+created one approved taxonomy-linked observation for `Taraxacum officinale`.
+DB verification, owner content edit, scientific-name edit protection,
+anonymous RPC denial, and taxonomy permission checks passed. Browser visual UI
+smoke remains PARTIAL, and Upload UI integration remains deferred to Phase
+24E-3.
+
 ## Phase 24B Schema Update
 
 Phase 24B prepared the schema/RLS migration candidate in:

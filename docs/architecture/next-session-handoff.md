@@ -117,6 +117,7 @@ Read this together with:
 - 24D-3 deployed `resolve-taxonomy` to the Supabase project shared with Production and authenticated live resolver/cache/RLS smoke passed; Phase 24 remains open, upload UI was not integrated, observation taxonomy linkage was not written, Vercel/Production UI was not changed, and no push was performed.
 - 24E-1 taxonomy-linked observation write path design prepared on `feature/phase-24e-taxonomy-observation-write-path`; migration candidate `0010_create_taxonomy_observation_write_path.sql` was added, no remote SQL was applied, Upload UI was not changed, and no push was performed.
 - 24E-2C taxonomy observation RPC runtime repair prepared on `feature/phase-24e2c-rpc-runtime-fix`; migration candidate `0011_repair_taxonomy_observation_rpc_runtime_expressions.sql` was added after the applied 0010 RPC failed at runtime with SQLSTATE `42883`. No remote SQL was applied in the correction step, Upload UI was not changed, and no push was performed.
+- 24E-2B trusted taxonomy observation create RPC smoke after 0011 completed on `feature/phase-24e2b-trusted-rpc-smoke-after-0011`; one approved taxonomy-linked smoke observation was created through the trusted RPC, DB/security checks passed, browser visual UI smoke remains PARTIAL, Upload UI was not changed, and no push was performed.
 
 
 ## Phase 24E-1 Taxonomy Observation Write Path Result
@@ -255,7 +256,75 @@ docs/architecture/taxonomy-observation-rpc-runtime-fix-apply-readiness.md
 Exact next step:
 
 ```text
-Apply migration 0011 manually, verify RPC runtime repair, then rerun Phase 24E-2B trusted RPC smoke.
+Phase 24E-3 - connect Upload UI to TaxonomyRepository with explicit 학명 확인 button and trusted RPC create path
+```
+
+## Phase 24E-2B Trusted RPC Smoke After 0011
+
+Status: PASS for trusted RPC create, DB verification, owner content edit, and
+security checks. Browser visual UI smoke remains PARTIAL.
+
+Current branch:
+
+```text
+feature/phase-24e2b-trusted-rpc-smoke-after-0011
+```
+
+Base before this smoke:
+
+```text
+7ad786a fix: repair taxonomy observation rpc runtime expressions
+```
+
+Result:
+
+- Migration 0011 was manually applied to the Supabase project shared with
+  Production before this smoke, and post-apply checks passed.
+- The deployed `resolve-taxonomy` function resolved `Taraxacum officinale` as
+  an accepted species with broad project taxon `식물`.
+- `public.create_observation_with_verified_taxonomy(...)` created one approved
+  smoke observation with non-null `taxon_id`, taxonomy match metadata, and no
+  image URL/path.
+- Owner content edit through the allowed description field passed.
+- Direct scientific-name edit on the taxonomy-linked row was blocked safely.
+- Anonymous RPC execution was denied.
+- Browser taxonomy table writes remain denied, `public.taxa` public read
+  remains ready, and `taxonomy_name_resolutions` remains server-only.
+- Public approved API compatibility passed for the smoke row.
+- Browser visual list/detail/edit-control smoke was not run in Codex and
+  remains PARTIAL.
+
+Documentation added:
+
+```text
+docs/architecture/taxonomy-observation-write-path-live-smoke.md
+```
+
+Updated:
+
+```text
+docs/architecture/taxonomy-observation-rpc-runtime-fix-apply-readiness.md
+docs/architecture/taxonomy-observation-write-path-apply-readiness.md
+docs/architecture/taxonomy-observation-write-path-design.md
+docs/architecture/taxonomy-api-resolution-plan.md
+docs/architecture/next-session-handoff.md
+```
+
+Boundaries:
+
+- No Upload UI integration.
+- No `학명 확인` button.
+- No app route change.
+- No repository code change.
+- No migration SQL change after 0011.
+- No Edge Function redeploy.
+- No Storage/Auth/Admin/Kakao/Vercel change.
+- Production UI unchanged.
+
+Exact next step:
+
+```text
+Phase 24E-3 - connect Upload UI to TaxonomyRepository with explicit 학명 확인 button and trusted RPC create path
 ```
 
 ## Phase 24D-3 Live Resolver Smoke Result

@@ -46,6 +46,20 @@ Phase 24E-2C runtime-expression correction:
   `docs/architecture/taxonomy-observation-rpc-runtime-fix-apply-readiness.md`
   before applying 0011.
 
+Phase 24E-2B smoke after 0011:
+
+- The operator manually applied 0011 and post-apply checks passed.
+- A temporary local PowerShell harness let the operator enter the approved test
+  credentials outside chat.
+- The deployed resolver returned a resolved accepted species result for
+  `Taraxacum officinale`.
+- The trusted RPC created one approved taxonomy-linked smoke observation.
+- Read-only verification confirmed non-null taxonomy linkage and metadata,
+  owner content edit, scientific-name edit protection, anonymous RPC denial,
+  and preserved taxonomy table write denials.
+- Browser visual UI smoke remains PARTIAL; public API compatibility for the
+  approved row passed.
+
 ## Migration
 
 Filename:

@@ -2,8 +2,8 @@
 
 Phase: 24E-2C - Repair Taxonomy Observation RPC Runtime Expressions
 
-Status: migration candidate prepared. No remote SQL has been applied in this
-correction step.
+Status: migration applied and verified by operator. Trusted RPC create smoke
+was rerun after this repair.
 
 ## Problem Statement
 
@@ -418,5 +418,13 @@ After 0011 is manually applied and post-apply checks pass:
 
 ## Remote Status
 
-No remote SQL was run in Phase 24E-2C. The shared Supabase DB is unchanged until
-the operator manually applies 0011.
+The operator manually applied 0011 to the Supabase project shared with
+Production and reported all post-apply checks as passing. 0011 is now
+immutable and must not be edited, rerun, or replaced.
+
+After 0011, Phase 24E-2B trusted RPC smoke created one approved taxonomy-linked
+observation through `public.create_observation_with_verified_taxonomy(...)`.
+The create, DB verification, owner content edit, scientific-name edit
+protection, anonymous RPC denial, and taxonomy permission checks passed. The
+browser visual UI check remains PARTIAL and should be covered before or during
+Phase 24E-3.
