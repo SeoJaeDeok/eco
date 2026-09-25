@@ -8,8 +8,9 @@
 - Status: implemented locally; automated checks PASS; real Kakao visual smoke
   PARTIAL. Phase 26 remains open. No completed phase archive was created.
 - No push, merge, deployment, database mutation, coordinate edit, migration,
-  RLS, Storage, Auth, taxonomy, package, app-key, allowed-domain, or Vercel
-  setting change. No new observation was created.
+  RLS, Storage, Auth, taxonomy, app-key, allowed-domain, or Vercel setting
+  change. No new observation was created. The original marker fix changed no
+  packages; the later dependency-only patch is recorded below.
 - Play Store, PWA, TWA, clustering, and provider replacement are out of scope.
 
 **한국어:** 로컬 코드 수정과 자동 검증을 진행했습니다. 실제 카카오 지도 확대·축소
@@ -115,6 +116,41 @@ paths still render their original static components.
 
 ## Verification
 
+### Dependency Audit Follow-Up
+
+The queued controlled Production release was stopped before integration when
+the full npm audit reported two high-severity package entries. The operator then
+authorized only a narrow dependency repair, explicitly suspending merge/push/
+deployment for this step. Earlier release-readiness replies do not override it.
+
+- `813a819` and marker candidate `7793928` had identical package files:
+  `vite@8.0.16 -> postcss@8.5.15 -> nanoid@3.3.12`, one copy each.
+- The two package entries contain four actual advisories, not two independent
+  flaws. See [the dependency audit](phase-26-dependency-audit.md) for exact IDs,
+  patched ranges, primary references and the execution-path assessment.
+- `69300fd` changes only `package-lock.json`: PostCSS `8.5.28`, nanoid `3.3.19`,
+  within existing supported ranges. No direct dependency or major upgrade;
+  `package.json`, marker/layout code, tests and settings are unchanged.
+- Clean installation, full audit including dev (all severities 0), typecheck,
+  51 Node tests, build and diff/security checks pass. Generated CSS is identical
+  to the pre-update build; browser rendering remains PARTIAL.
+- The known domain restriction prevents real Kakao localhost/Preview testing.
+  The operator chose future controlled Production verification; do not require
+  local/Preview visual PASS as its prerequisite or claim visual success now.
+- `main`, local `origin/main`, and local safety branch
+  `backup/before-phase-26-kakao-production` remain `813a819`. No push or
+  deployment occurred. Phase 26 stays open.
+- The old two-commit revert plan for `7345326` and `7793928` is incomplete for
+  the expanded dependency-patched release. Re-review the exact release range
+  and rollback target before a newly authorized deployment. `813a819` is an
+  operational baseline, not a vulnerability-free dependency baseline.
+
+**한국어:** 빌드 도구 두 개만 호환되는 보안 패치로 갱신했고, 전체 감사에서 취약점은
+0건입니다. 마커 코드는 그대로입니다. 배포는 하지 않았으며, 다음 배포 전에는 새 커밋
+범위와 복구 계획을 다시 확인해야 합니다. 실제 카카오 지도 화면 검증은 아직 남아 있습니다.
+
+### Original Marker Regression Evidence
+
 | Check | Result | Evidence / limitation |
 | --- | --- | --- |
 | Before-fix focused regressions | 4 FAIL, 2 PASS | Anchor geometry contract, camera preservation twice, and size lifecycle failed on old source |
@@ -153,6 +189,12 @@ git ls-files -- .env .env.local .env.production dist node_modules
 ```
 
 ## Remaining Manual Smoke (No Save/Submit)
+
+These are the original interaction checks. Real localhost/Preview Kakao smoke
+is currently unavailable because of the operator-reported domain restriction.
+Use the same interactions on the existing Production origin only during a
+separately authorized controlled release, after re-reviewing rollback readiness.
+No Production testing/deployment is performed in the dependency-only step.
 
 1. 로컬 앱의 생태지도를 열고 실제 카카오 지도가 표시되는지 확인합니다. 정적
    대체 지도라면 카카오 줌 검증으로 인정하지 않습니다. 기존 관찰 중 가운데,

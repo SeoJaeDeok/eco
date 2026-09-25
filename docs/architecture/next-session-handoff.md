@@ -2,13 +2,15 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 25 closeout and the local Phase 26A Kakao marker alignment fix.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 25 closeout, the local Phase 26A Kakao marker alignment fix, and its dependency-audit repair.
 
 ## Current Work: Phase 26A Kakao Marker Zoom Alignment Fix
 
 - Branch: `fix/phase-26-kakao-marker-zoom-alignment`.
 - Base: clean `main` and local `origin/main` at `813a819`.
 - Code/test commit: `7345326 fix: keep kakao observation markers aligned during zoom`.
+- Original marker documentation: `7793928 docs: record kakao marker zoom regression checks`.
+- Dependency-only patch: `69300fd fix: patch vulnerable transitive dependencies`.
 - Status: local implementation and automated verification passed; real Kakao
   visual smoke PARTIAL. Phase 26 is open, with no completed archive.
 - See `docs/architecture/kakao-marker-zoom-alignment-fix.md` for evidence,
@@ -27,10 +29,44 @@ This document helps a new ChatGPT/Codex session quickly understand the current p
   measurement, touch pinch, filter/detail and browser fallback smoke remain
   PARTIAL. Mocked SDK tests are not visual proof.
 - No DB records/coordinates, migrations, RLS, Storage, Auth, taxonomy rules,
-  package files, Kakao key/domain, or deployment settings changed.
+  Kakao key/domain, or deployment settings changed. The original marker fix
+  changed no packages; the later audit repair changes only two transitive
+  package entries in `package-lock.json`, not `package.json` or app/test code.
 - No push, merge or deployment. Production remains the Phase 25 baseline.
-- Next: run the documented local real-map smoke and record safe results before
-  marking Phase 26A verified or planning a separately authorized deployment.
+- Current instruction supersedes the queued deployment: dependency diagnosis,
+  minimal patch, checks and local commits only. Do not merge/push/deploy even
+  if earlier rollback-target/immediate-test confirmations arrive.
+- Next: resume controlled-release preparation only after new authorization.
+  Re-review the expanded commit range and rollback target, then reconfirm
+  operator immediate-test readiness. Real local/Preview Kakao checks remain
+  PARTIAL due to domain restrictions; they are not a prerequisite for the
+  operator's chosen future Production verification. Do not close Phase 26 yet.
+
+### Dependency Audit Repair Checkpoint
+
+- See `docs/architecture/phase-26-dependency-audit.md` for exact advisories,
+  execution-path assessment and test evidence.
+- The original audit failed with two high-classified transitive package
+  entries, covering four advisories. Both `813a819` and `7793928` had the same
+  affected dependency versions; the marker fix did not introduce them.
+- Chain: `vite@8.0.16 -> postcss -> nanoid`. PostCSS `8.5.15 -> 8.5.28` and
+  nanoid `3.3.12 -> 3.3.19` are supported patch updates; all other packages
+  and the root manifest remain unchanged. No application exploit was established.
+- Clean `npm.cmd ci --include=dev`, full audit including dev (total 0,
+  low/moderate/high/critical all 0), typecheck, all 51 Node tests, build,
+  diff/whitespace/EOF/secret-like checks: PASS. Compiled CSS matches the
+  pre-update artifact. Browser rendering and real Kakao smoke remain PARTIAL.
+- Initial clean-install Windows file locking was resolved by stopping the
+  task's previous local Vite server and retrying. No DB/deployment action was
+  involved; no new browser dependency was installed.
+- Local `main`, local `origin/main`, and unpushed safety branch
+  `backup/before-phase-26-kakao-production` remain at `813a819`.
+- The old planned release contained only `7345326` and `7793928`. Its old
+  two-commit revert is not a complete rollback of the new release including
+  the dependency patch and its documentation. Re-inspect the exact ordered
+  range and recovery target before deployment; execute no rollback now.
+- `813a819` is the previous operational baseline, not a vulnerability-free
+  dependency baseline. A full dependency rollback would restore the findings.
 
 **한국어:** 점 중심을 좌표에 맞추고 필터·크기 변경 때 지도 상태가 흔들리는 경로를
 수정했습니다. 실제 카카오 지도 수동 검증은 남아 있으며 운영 사이트는 바뀌지 않았습니다.
