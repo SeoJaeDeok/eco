@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Eco Map local layout fixture</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import React from 'react';
+      import { createRoot } from 'react-dom/client';
+      import { MapPage } from '../../src/components/MapPage.tsx';
+      import { activeTaxonomyTreeRepository } from '../../src/repositories/taxonomyTreeRepositoryProvider.ts';
+      import { getActiveMapProviderKind } from '../../src/features/map/mapProvider.ts';
+      import { createMapFilterLayoutFixture } from './map-filter-layout.mjs';
+      import '../../src/index.css';
+
+      // Only this local test page replaces the repository. Production does not import it.
+      if (import.meta.env.VITE_OBSERVATION_REPOSITORY !== 'mock' || getActiveMapProviderKind() !== 'static') {
+        throw new Error('This fixture requires local mock/static mode.');
+      }
+      const fixture = createMapFilterLayoutFixture();
+      Object.assign(activeTaxonomyTreeRepository, fixture.repository);
+      function Fixture() {
+        const [selected, setSelected] = React.useState(null);
+        return React.createElement(React.Fragment, null,
+          React.createElement('div', { className: 'absolute top-2 left-4 right-4 text-xs' },
+            '로컬 합성 자료 / 건수는 배치 확인용',
+            React.createElement('p', { role: 'status', className: '[overflow-wrap:anywhere]' },
+              selected ? `선택: ${selected.name}` : '선택 없음')),
+          React.createElement(MapPage, { observations: fixture.observations, onSelect: setSelected }));
+      }
+      createRoot(document.getElementById('root')).render(React.createElement(Fixture));
+    </script>
+  </body>
+</html>
