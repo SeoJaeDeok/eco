@@ -2,7 +2,38 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after the Phase 25 Production taxonomy tree smoke and closeout.
+This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 25 closeout and the local Phase 26A Kakao marker alignment fix.
+
+## Current Work: Phase 26A Kakao Marker Zoom Alignment Fix
+
+- Branch: `fix/phase-26-kakao-marker-zoom-alignment`.
+- Base: clean `main` and local `origin/main` at `813a819`.
+- Code/test commit: `7345326 fix: keep kakao observation markers aligned during zoom`.
+- Status: local implementation and automated verification passed; real Kakao
+  visual smoke PARTIAL. Phase 26 is open, with no completed archive.
+- See `docs/architecture/kakao-marker-zoom-alignment-fix.md` for evidence,
+  limitations, coordinate trace, and six manual smoke steps.
+- Confirmed code defect: the SDK centered the combined dot/name-label box,
+  rather than the dot. Content now has a fixed centered hit area, an
+  out-of-flow label, and inner-dot-only hover/focus scaling.
+- Filtering no longer resets the overview camera. Explicit center/zoom prop
+  changes remain supported independently.
+- Overview, location picker, and detail preview now observe real container
+  size changes and cancel resize work on unmount, without recentering.
+- Before-fix focused tests: 4 failed / 2 passed. After-fix: all 6 passed.
+  Full Node suite: 51 passed. Typecheck/build/diff/security checks passed.
+- Local dev server HTTP 200 was confirmed. In-app browser tooling failed
+  before connecting; real Kakao activation, zoom/pan/resize, visual anchor
+  measurement, touch pinch, filter/detail and browser fallback smoke remain
+  PARTIAL. Mocked SDK tests are not visual proof.
+- No DB records/coordinates, migrations, RLS, Storage, Auth, taxonomy rules,
+  package files, Kakao key/domain, or deployment settings changed.
+- No push, merge or deployment. Production remains the Phase 25 baseline.
+- Next: run the documented local real-map smoke and record safe results before
+  marking Phase 26A verified or planning a separately authorized deployment.
+
+**한국어:** 점 중심을 좌표에 맞추고 필터·크기 변경 때 지도 상태가 흔들리는 경로를
+수정했습니다. 실제 카카오 지도 수동 검증은 남아 있으며 운영 사이트는 바뀌지 않았습니다.
 
 Read this together with:
 
@@ -183,7 +214,7 @@ Boundaries preserved:
 - Public reads remain approved-only.
 - `taxonomy_name_resolutions` remains server-only.
 
-Exact next recommendation:
+Historical recommendation at Phase 25 closeout (superseded by current Phase 26A work above):
 
 ```text
 Choose the next feature or operations task before starting Phase 26.
