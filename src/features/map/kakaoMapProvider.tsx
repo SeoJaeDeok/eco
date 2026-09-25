@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getTaxonColor } from '../../constants/taxon';
 import type { Coordinates, Observation } from '../../types';
 import { StaticEcoMap } from '../../components/map/StaticEcoMap';
 import { StaticLocationPicker } from '../../components/map/StaticLocationPicker';
 import { StaticPositionPreview } from '../../components/map/StaticPositionPreview';
 import { DEFAULT_MAP_CENTER } from './mapProjection';
+import { observeKakaoMapLayout } from './kakaoMapLayout';
 import type { EcoLocationPickerProps, EcoMapProps, MapProviderAdapter, StaticPositionPreviewProps } from './mapTypes';
 import {
   hasKakaoMapJavascriptKey,
@@ -85,11 +86,13 @@ const createObservationMarkerContent = (
   button.style.position = 'relative';
   button.style.display = 'flex';
   button.style.alignItems = 'center';
-  button.style.gap = '6px';
-  button.style.minWidth = '36px';
-  button.style.minHeight = '36px';
-  button.style.margin = '-8px';
-  button.style.padding = '8px';
+  button.style.justifyContent = 'center';
+  // The SDK anchors this fixed box; the label must not affect its center.
+  button.style.boxSizing = 'border-box';
+  button.style.width = '36px';
+  button.style.height = '36px';
+  button.style.margin = '0';
+  button.style.padding = '0';
   button.style.border = '0';
   button.style.background = 'transparent';
   button.style.cursor = onSelectObservation ? 'pointer' : 'default';
@@ -97,6 +100,8 @@ const createObservationMarkerContent = (
 
   const dot = document.createElement('span');
   dot.style.display = 'block';
+  dot.style.flexShrink = '0';
+  dot.style.boxSizing = 'border-box';
   dot.style.width = isSelected ? '22px' : '18px';
   dot.style.height = isSelected ? '22px' : '18px';
   dot.style.borderRadius = '9999px';
@@ -104,10 +109,15 @@ const createObservationMarkerContent = (
   dot.style.backgroundColor = getTaxonColor(observation.taxon);
   dot.style.boxShadow = '0 4px 12px rgba(24, 24, 27, 0.2)';
   dot.style.transition = 'transform 160ms ease';
+  dot.style.transformOrigin = 'center';
 
   const label = document.createElement('span');
   label.textContent = observation.name;
   label.setAttribute('aria-hidden', 'true');
+  label.style.position = 'absolute';
+  label.style.left = '100%';
+  label.style.top = '50%';
+  label.style.transform = 'translateY(-50%)';
   label.style.whiteSpace = 'nowrap';
   label.style.background = 'rgba(255, 255, 255, 0.92)';
   label.style.border = '1px solid rgba(244, 244, 245, 1)';
@@ -190,7 +200,7 @@ const KakaoEcoMap = ({
   const mapClickCleanupRef = useRef<(() => void) | null>(null);
   const onMapClickRef = useRef(onMapClick);
   const [status, setStatus] = useState<KakaoLoadStatus>(() => (hasKakaoMapJavascriptKey() ? 'loading' : 'fallback'));
-  const mapCenter = useMemo(() => getMapCenter(observations, center), [center, observations]);
+  const mapCenter = getMapCenter(observations, center);
 
   useEffect(() => {
     onMapClickRef.current = onMapClick;
@@ -203,6 +213,7 @@ const KakaoEcoMap = ({
     }
 
     let isCurrent = true;
+    let stopObservingLayout: (() => void) | undefined;
 
     const initializeMap = async () => {
       try {
@@ -222,7 +233,7 @@ const KakaoEcoMap = ({
         maps.event.addListener(map, 'click', handleMapClick);
         mapClickCleanupRef.current = () => maps.event.removeListener(map, 'click', handleMapClick);
 
-        window.setTimeout(() => map.relayout(), 0);
+        stopObservingLayout = observeKakaoMapLayout(containerRef.current, map);
         setStatus('ready');
       } catch {
         if (isCurrent) setStatus('fallback');
@@ -233,6 +244,7 @@ const KakaoEcoMap = ({
 
     return () => {
       isCurrent = false;
+      stopObservingLayout?.();
       mapClickCleanupRef.current?.();
       mapClickCleanupRef.current = null;
       clearObservationOverlays(overlaysRef.current);
@@ -244,12 +256,17 @@ const KakaoEcoMap = ({
   useEffect(() => {
     const maps = mapsRef.current;
     const map = mapRef.current;
-    if (!maps || !map || status !== 'ready') return;
+    if (!maps || !map || status !== 'ready' || !center || !isValidCoordinates(center)) return;
 
-    map.setCenter(createLatLng(maps, mapCenter));
+    map.setCenter(createLatLng(maps, center));
+  }, [center?.lat, center?.lng, status]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== 'ready' || zoom === undefined) return;
+
     map.setLevel(getMapLevel(zoom));
-    window.setTimeout(() => map.relayout(), 0);
-  }, [mapCenter, status, zoom]);
+  }, [status, zoom]);
 
   useEffect(() => {
     const maps = mapsRef.current;
@@ -327,6 +344,7 @@ const KakaoLocationPicker = ({ value, center = DEFAULT_MAP_CENTER, onChange, cla
     }
 
     let isCurrent = true;
+    let stopObservingLayout: (() => void) | undefined;
 
     const initializeMap = async () => {
       try {
@@ -368,7 +386,7 @@ const KakaoLocationPicker = ({ value, center = DEFAULT_MAP_CENTER, onChange, cla
         maps.event.addListener(map, 'click', handleMapClick);
         mapClickCleanupRef.current = () => maps.event.removeListener(map, 'click', handleMapClick);
 
-        window.setTimeout(() => map.relayout(), 0);
+        stopObservingLayout = observeKakaoMapLayout(containerRef.current, map);
         setStatus('ready');
       } catch {
         if (isCurrent) setStatus('fallback');
@@ -379,6 +397,7 @@ const KakaoLocationPicker = ({ value, center = DEFAULT_MAP_CENTER, onChange, cla
 
     return () => {
       isCurrent = false;
+      stopObservingLayout?.();
       mapClickCleanupRef.current?.();
       mapClickCleanupRef.current = null;
       markerRef.current?.setMap(null);
@@ -395,7 +414,7 @@ const KakaoLocationPicker = ({ value, center = DEFAULT_MAP_CENTER, onChange, cla
     const position = createLatLng(maps, value);
     markerRef.current?.setPosition(position);
     map.setCenter(position);
-  }, [status, value]);
+  }, [status, value?.lat, value?.lng]);
 
   if (status === 'fallback') {
     return <StaticLocationPicker value={value} center={center} onChange={onChange} className={className} />;
@@ -428,6 +447,7 @@ const KakaoPositionPreview = ({ coordinates, taxon }: StaticPositionPreviewProps
     }
 
     let isCurrent = true;
+    let stopObservingLayout: (() => void) | undefined;
 
     const initializeMap = async () => {
       try {
@@ -452,7 +472,7 @@ const KakaoPositionPreview = ({ coordinates, taxon }: StaticPositionPreviewProps
           zIndex: 20,
         });
 
-        window.setTimeout(() => map.relayout(), 0);
+        stopObservingLayout = observeKakaoMapLayout(containerRef.current, map);
         setStatus('ready');
       } catch {
         if (isCurrent) setStatus('fallback');
@@ -463,6 +483,7 @@ const KakaoPositionPreview = ({ coordinates, taxon }: StaticPositionPreviewProps
 
     return () => {
       isCurrent = false;
+      stopObservingLayout?.();
       overlayRef.current?.setMap(null);
       overlayRef.current = null;
       mapRef.current = null;
@@ -478,7 +499,7 @@ const KakaoPositionPreview = ({ coordinates, taxon }: StaticPositionPreviewProps
     const position = createLatLng(maps, coordinates);
     map.setCenter(position);
     overlay.setPosition(position);
-  }, [coordinates, status]);
+  }, [coordinates.lat, coordinates.lng, status]);
 
   if (status === 'fallback') {
     return <StaticPositionPreview coordinates={coordinates} taxon={taxon} />;
