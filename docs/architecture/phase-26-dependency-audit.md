@@ -2,17 +2,32 @@
 
 ## Status And Preserved Baseline
 
-- Checked on 2026-09-25, on `fix/phase-26-kakao-marker-zoom-alignment`.
+- Dependency diagnosis recorded on 2026-09-25 on
+  `fix/phase-26-kakao-marker-zoom-alignment`; detailed evidence below is historical.
 - Dependency commit: `69300fd fix: patch vulnerable transitive dependencies`.
 - Original marker commits remain `7345326` and `7793928`; application and test
-  files are unchanged by this dependency task.
-- Local `main`, local `origin/main`, and the unpushed safety branch
-  `backup/before-phase-26-kakao-production` remain at `813a819`.
-- The latest operator instruction supersedes the queued deployment continuation:
-  no merge, push, deployment, or rollback is authorized in this step, even if
-  earlier rollback-target/immediate-test confirmations arrive.
-- Dependency verification passed locally. Phase 26 remains open; real Kakao
-  visual smoke is still PARTIAL. No Production change occurred.
+  files were unchanged by the dependency correction.
+- Remediation was included in Production release `d7d5e27`, later fast-forwarded
+  into main and pushed normally after final checks and operator readiness.
+  Vercel reported success. The operator confirmed the original marker defect
+  resolved on the Production site; Phase 26 is now closed for that defect.
+- Chain and patch: `vite -> postcss -> nanoid`; PostCSS `8.5.15 -> 8.5.28`,
+  nanoid `3.3.12 -> 3.3.19`. Only the lockfile changed, not `package.json`.
+  Both affected versions existed at baseline `813a819`, before the marker fix.
+- During the dependency-only checkpoint main/origin/main remained `813a819`
+  and deployment was prohibited. Later release authorization superseded that
+  temporary pause. The fix branch is preserved at `d7d5e27` and local safety
+  branch `backup/before-phase-26-kakao-production` remains at `813a819`.
+- Recorded pre-release full audit including dev: all severities zero. Clean
+  installation, typecheck, 51 tests, build and CSS comparison passed as detailed
+  below; these are checkpoint results, not a permanent security guarantee.
+- Docs-only closeout reran typecheck, 51 tests, build and full audit including
+  dev once: PASS, zero audit findings. It did not rerun clean installation or
+  CSS comparison, update dependencies or change app code. No rollback was
+  performed by Codex or reported by the operator.
+- Localhost/Preview real-Kakao checks and individually unreported Production
+  cases remain PARTIAL. The docs-only closeout deployment is separate from the
+  visually tested `d7d5e27`; its status is checked after push, not assumed here.
 
 ## Original Audit Evidence
 
@@ -136,27 +151,29 @@ node --loader ./tests/ts-extension-loader.mjs --test tests/*.test.mjs
 Zero findings describes this registry audit at this checkpoint, not a guarantee
 of no unknown vulnerabilities. No low/moderate findings remain in this report.
 
-## Release And Recovery Must Be Reviewed Again
+## Release And Recovery Outcome
 
-The dependency blocker is resolved locally, so controlled-release preparation
-can resume in a separately authorized step. This step does not merge, push,
-deploy, execute a rollback, or close Phase 26. No DB records/coordinates,
-migrations, RLS, Auth, Storage, taxonomy rules, Kakao settings, packages outside
-the two transitive patches, or Vercel configuration changed.
+After the dependency-only pause, the separately authorized controlled release
+reviewed the complete four-commit range from `813a819` to `d7d5e27`. The operator
+confirmed rollback-target access and immediate-test readiness before normal
+main integration/push. Vercel success and the subsequent operator-confirmed
+Production resolution are recorded in the marker document and Phase 26 archive.
 
-The old plan introduced only `7345326` and `7793928`. The candidate now also
-includes `69300fd` and the dependency-audit documentation commit. The old
-two-commit revert command is **not a complete rollback of this expanded release**.
-Before deployment, re-inspect actual main/origin state, exact candidate, ordered
-release range, operator-accessible working deployment, and recovery target.
-Preserve later unrelated work and the fix/backup branches; do not blindly revert
-HEAD or execute the previous plan. Keeping the security patch during a marker-only
-rollback would be a distinct, explicitly reviewed recovery choice.
+The old plan introduced only `7345326` and `7793928`; the deployed release also
+includes `69300fd` and `d7d5e27`. Its old two-commit revert is **not a complete
+rollback of this expanded release**. The reviewed preferred Git recovery would
+reverse only marker commit `7345326` while retaining the dependency patch. A
+reverse-patch check passed without changing the worktree. No actual revert or
+deployment rollback was executed by Codex or reported by the operator.
 
 `813a819` is the previous **operational baseline**, not a vulnerability-free
 dependency baseline: fully restoring its dependencies restores the findings.
-Earlier rollback-target/test-readiness replies do not authorize deployment in
-this step. Reconfirm the recovery path and immediate Production test readiness
-when release work is authorized again. Local/Preview real-Kakao PASS is not a
-precondition under the operator's domain-limited testing decision; those checks
-stay PARTIAL. Real Production visual checks and any mobile gaps remain pending.
+Any future recovery needs a newly reviewed range and explicit approval, must
+preserve unrelated later work and historical docs, and must not blindly revert
+HEAD or all release commits. No recovery is part of documentation closeout.
+
+No DB records/coordinates, migrations, RLS, Auth, Storage, taxonomy rules,
+Kakao settings or Vercel configuration changed during this phase. The closeout
+changes documentation only; no additional dependency remediation was performed.
+See [Phase 26 archive](../eco/phase-history/phase-26.md) for the qualified Verified
+status and remaining device/browser checks. Wait for the operator's next task.

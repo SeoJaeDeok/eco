@@ -2,19 +2,28 @@
 
 ## Status And Scope
 
-- Base: clean `main` and local `origin/main` at `813a819`.
-- Branch: `fix/phase-26-kakao-marker-zoom-alignment`.
+- Previous operational baseline: `813a819`.
+- Implementation branch: `fix/phase-26-kakao-marker-zoom-alignment`, preserved.
+- Production-tested application release: `d7d5e27`, fast-forwarded into `main`
+  and pushed normally after pre-release checks and operator readiness.
 - Code/test commit: `7345326 fix: keep kakao observation markers aligned during zoom`.
-- Status: implemented locally; automated checks PASS; real Kakao visual smoke
-  PARTIAL. Phase 26 remains open. No completed phase archive was created.
-- No push, merge, deployment, database mutation, coordinate edit, migration,
-  RLS, Storage, Auth, taxonomy, app-key, allowed-domain, or Vercel setting
-  change. No new observation was created. The original marker fix changed no
-  packages; the later dependency-only patch is recorded below.
+- Status: Verified and closed for the reported zoom-alignment defect, based on
+  operator-confirmed Production visual PASS. Individual unreported browser/device
+  checks remain PARTIAL. See [Phase 26 archive](../eco/phase-history/phase-26.md).
+- No database mutation, saved-coordinate edit, migration, RLS, Storage, Auth,
+  taxonomy, app-key, allowed-domain, or Vercel setting change was required.
+  No observation was created or edited for verification. The original marker
+  fix changed no packages; the separate dependency patch was included in release.
+- No rollback was reported as performed. The fix branch and local
+  `backup/before-phase-26-kakao-production` at `813a819` are preserved.
+- Closeout changes documentation only; application, tests and package files
+  remain identical to `d7d5e27`. The closeout commit is not the visually tested
+  release and its own deployment status must be checked separately.
 - Play Store, PWA, TWA, clustering, and provider replacement are out of scope.
 
-**한국어:** 로컬 코드 수정과 자동 검증을 진행했습니다. 실제 카카오 지도 확대·축소
-검증이 남아 있어 완료 단계로 기록하지 않으며, 운영 사이트는 바뀌지 않았습니다.
+**한국어:** 운영자가 Production에서 원래 확대·축소 시 마커 위치 문제의 해결을
+확인했습니다. 이 결함은 검증 완료로 종료합니다. 개별 기기와 추가 조합 테스트까지
+모두 통과했다는 뜻은 아니며, 이번 종료 작업에서는 문서만 변경합니다.
 
 ## Symptom And Evidence
 
@@ -39,20 +48,22 @@ defect, plus related camera/layout issues:
    documents automatic window resize handling, so this does not establish a
    defect for every ordinary browser resize.
 
-Real zoom-time drift, cumulative error, and its complete relationship to these
-defects were **not visually reproduced** in this session. There is no measured
-pixel error/tolerance and no claim that SDK animation alignment was verified.
-The available in-app browser tool failed before connecting on both attempts.
-No new browser dependency was installed.
+During local implementation, real zoom-time drift and cumulative error were
+**not visually reproduced**: the in-app browser failed before connecting, and
+no browser dependency was installed. Localhost/Preview real-Kakao verification
+also remained unavailable under the operator's domain/configuration limitation.
+The later operator-confirmed Production result below resolves the original
+reported defect. No numerical pixel error/tolerance was measured, and detailed
+animation-time, repeated-cycle or device-specific behavior is not inferred.
 
 Git history shows the affected provider predates Phase 25 (its last changes were
 `b5fc8f3` and `bb074c4`). There is no evidence that Phase 25 introduced the anchor
 defect. Taxonomy panel open/close uses an absolutely positioned panel and need
 not resize the underlying map; real dimension changes determine relayout.
 
-**한국어:** 이름표까지 포함한 상자의 가운데를 지도 좌표에 맞추던 문제를 확인했습니다.
-점 자체의 중심과 좌표가 달라질 수 있습니다. 다만 실제 화면에서 보고된 모든 현상이
-이 원인만으로 설명되는지는 수동 확대·축소 검증이 필요합니다.
+**한국어:** 이름표까지 포함한 상자의 가운데를 지도 좌표에 맞추던 코드 문제를
+확인했습니다. 수정 후 원래 증상이 해결됐다는 운영자 확인을 받았지만, 모든 기기의
+세부 동작이나 픽셀 단위 오차까지 측정한 것은 아닙니다.
 
 ## Coordinate And Anchor Decisions
 
@@ -118,10 +129,11 @@ paths still render their original static components.
 
 ### Dependency Audit Follow-Up
 
-The queued controlled Production release was stopped before integration when
+Historically, the queued controlled Production release was stopped before integration when
 the full npm audit reported two high-severity package entries. The operator then
 authorized only a narrow dependency repair, explicitly suspending merge/push/
-deployment for this step. Earlier release-readiness replies do not override it.
+deployment during that dependency-only step. A later separate authorization
+resumed the controlled release after verification and readiness confirmation.
 
 - `813a819` and marker candidate `7793928` had identical package files:
   `vite@8.0.16 -> postcss@8.5.15 -> nanoid@3.3.12`, one copy each.
@@ -131,25 +143,30 @@ deployment for this step. Earlier release-readiness replies do not override it.
 - `69300fd` changes only `package-lock.json`: PostCSS `8.5.28`, nanoid `3.3.19`,
   within existing supported ranges. No direct dependency or major upgrade;
   `package.json`, marker/layout code, tests and settings are unchanged.
-- Clean installation, full audit including dev (all severities 0), typecheck,
-  51 Node tests, build and diff/security checks pass. Generated CSS is identical
-  to the pre-update build; browser rendering remains PARTIAL.
+- Historical clean installation, full audit including dev (all severities 0),
+  typecheck, 51 Node tests, build and diff/security checks passed. Generated CSS
+  matched the pre-update build; that comparison was not browser verification.
 - The known domain restriction prevents real Kakao localhost/Preview testing.
-  The operator chose future controlled Production verification; do not require
-  local/Preview visual PASS as its prerequisite or claim visual success now.
-- `main`, local `origin/main`, and local safety branch
-  `backup/before-phase-26-kakao-production` remain `813a819`. No push or
-  deployment occurred. Phase 26 stays open.
+  The operator chose controlled Production verification, now confirmed for the
+  original defect. Localhost/Preview checks remain PARTIAL, not retroactive PASS.
+- Release `d7d5e27` included the marker and dependency patches. Main was
+  fast-forwarded from `813a819` and pushed normally; Vercel reported success.
+  No rollback was executed by Codex or reported by the operator. The safety
+  branch remains `813a819`.
 - The old two-commit revert plan for `7345326` and `7793928` is incomplete for
-  the expanded dependency-patched release. Re-review the exact release range
-  and rollback target before a newly authorized deployment. `813a819` is an
-  operational baseline, not a vulnerability-free dependency baseline.
+  the expanded dependency-patched release. Recovery was re-reviewed before
+  release, preferring a separately approved reversal of `7345326` while keeping
+  `69300fd`. This was preparation only. `813a819` is an operational baseline,
+  not a vulnerability-free dependency baseline.
 
 **한국어:** 빌드 도구 두 개만 호환되는 보안 패치로 갱신했고, 전체 감사에서 취약점은
-0건입니다. 마커 코드는 그대로입니다. 배포는 하지 않았으며, 다음 배포 전에는 새 커밋
-범위와 복구 계획을 다시 확인해야 합니다. 실제 카카오 지도 화면 검증은 아직 남아 있습니다.
+0건이었습니다. 보안 패치는 마커 수정과 함께 `d7d5e27`로 배포됐습니다. 원래 문제의
+Production 확인은 통과했으며, 준비한 복구 절차를 실행한 것으로 기록하지 않습니다.
 
 ### Original Marker Regression Evidence
+
+This table records the original local implementation checks, not the later
+Production confirmation or newly executed closeout checks.
 
 | Check | Result | Evidence / limitation |
 | --- | --- | --- |
@@ -188,15 +205,53 @@ git diff --check
 git ls-files -- .env .env.local .env.production dist node_modules
 ```
 
-## Remaining Manual Smoke (No Save/Submit)
+## Production Verification And Closeout
 
-These are the original interaction checks. Real localhost/Preview Kakao smoke
-is currently unavailable because of the operator-reported domain restriction.
-Use the same interactions on the existing Production origin only during a
-separately authorized controlled release, after re-reviewing rollback readiness.
-No Production testing/deployment is performed in the dependency-only step.
+The operator explicitly confirmed that the original marker-position problem
+during Kakao zoom was checked on the Production site and is now resolved.
+Record this as **operator-confirmed Production visual PASS for `d7d5e27`**.
+It is not an individually completed response to the whole earlier checklist.
 
-1. 로컬 앱의 생태지도를 열고 실제 카카오 지도가 표시되는지 확인합니다. 정적
+| Check | Result | Evidence / limitation |
+| --- | --- | --- |
+| Release deployment `d7d5e27` | PASS | Normal main push; exact-commit Vercel success and Production-labelled deployment status; operator subsequently checked the Production site |
+| Original zoom marker-alignment defect | PASS, operator visual confirmation | Reported issue considered resolved; no numerical measurement |
+| Mobile pinch / device and browser matrix | PARTIAL | Not explicitly recorded |
+| Upload picker zoom/pan selection behavior | PARTIAL, browser | Mocked regression PASS is separate; no individual Production result recorded |
+| Resize / taxonomy panel / filter camera combinations | PARTIAL, browser | Not explicitly recorded individually |
+| Label hover/focus/selected states | PARTIAL, browser | Not explicitly recorded individually |
+| Marker/detail identity after filtering / fallback browser rendering | PARTIAL, browser | Relevant mocks pass; no individual Production result recorded |
+| Wheel versus controls / pan cycles / animation-time alignment | PARTIAL for individual cases | General original-defect confirmation does not enumerate these cases |
+| Localhost / Preview real Kakao | PARTIAL | Domain/configuration limitation; not a release prerequisite under the operator decision |
+| Build log secret review | PARTIAL | No explicit full log review recorded |
+| Rollback | Not performed / not reported | Recovery preparation is not execution |
+
+During docs-only closeout, typecheck, all 51 Node tests, build and full npm audit
+including dev were rerun once and passed; audit counts were again all zero.
+Documentation diff, Markdown, whitespace/EOF, forbidden-path and secret-like
+checks passed. Clean installation and CSS equality remain historical evidence,
+not newly repeated closeout checks. No code, tests, package files or settings
+were changed during closeout. No DB action was taken.
+
+The separate `docs: close phase 26 kakao marker alignment` commit may trigger
+another deployment. At document preparation its deployment was not yet observed;
+use the actual post-push status/final report, not Git push alone. Source/lockfile
+equivalence to `d7d5e27` is not a claim that the docs-only build was visually
+tested. Its actual hash is recorded in Git/final report, without self-amending.
+
+**한국어:** 원래 마커 위치 문제는 운영자 확인으로 PASS입니다. 모바일 확대, 업로드
+위치 선택기, 필터·크기 변경 조합 등 개별 결과는 기록이 없어 PARTIAL로 남깁니다.
+종료 문서 배포와 실제 지도를 확인한 배포는 구분하며, 롤백은 실행하지 않았습니다.
+
+## Optional Follow-up Checks (No Save/Submit)
+
+The original defect is closed. These interaction cases remain an optional
+follow-up list where no individual result was recorded; they are not all marked
+PASS by the general operator confirmation. Localhost/Preview remains restricted.
+Future tests require an appropriate permitted environment; do not create or
+submit observations. No new phase or further fix starts automatically.
+
+1. 허용된 테스트 환경의 생태지도를 열고 실제 카카오 지도가 표시되는지 확인합니다. 정적
    대체 지도라면 카카오 줌 검증으로 인정하지 않습니다. 기존 관찰 중 가운데,
    가장자리, 다른 위치의 점을 가능하면 세 개 고릅니다.
 2. 휠·트랙패드로 여러 단계 확대·축소하고 지도를 끈 뒤 다시 확대합니다. 원래
@@ -217,8 +272,9 @@ No Production testing/deployment is performed in the dependency-only step.
 For developer-assisted measurement later, compare the rendered circle center
 against an independent SDK-managed reference at the same geographic coordinate
 or the current container projection after interactions settle. Never report
-unchanged `getPosition()` alone as visual proof. Animation-time and settled
-alignment must be observed separately before closing Phase 26A.
+unchanged `getPosition()` alone as visual proof. Separate animation-time and
+settled measurements would be additional evidence, not a completed check being
+claimed as part of this operator-confirmed closeout.
 
 ## Official References
 
@@ -229,5 +285,5 @@ alignment must be observed separately before closing Phase 26A.
 - [Zoom event example](https://apis.map.kakao.com/web/sample/addMapZoomChangedEvent/):
   documented `zoom_changed` event; no custom zoom-positioning listener needed.
 
-Read during this task. No live observations, private coordinates, SDK request
+Read during the implementation task. No live observations, private coordinates, SDK request
 URLs, environment values, or credentials are recorded here.

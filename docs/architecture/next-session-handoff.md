@@ -2,45 +2,65 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session quickly understand the current project state after Phase 25 closeout, the local Phase 26A Kakao marker alignment fix, and its dependency-audit repair.
+This document helps a new ChatGPT/Codex session understand the current project state after Phase 26 Production marker-alignment verification and documentation-only closeout.
 
-## Current Work: Phase 26A Kakao Marker Zoom Alignment Fix
+## Current State After Phase 26 Closeout
 
-- Branch: `fix/phase-26-kakao-marker-zoom-alignment`.
-- Base: clean `main` and local `origin/main` at `813a819`.
+- Status: Phase 26 Verified and closed for the originally reported Kakao
+  marker-position defect during zoom. The operator checked the Production site
+  and confirmed the issue resolved. This is operator-confirmed visual PASS,
+  not a claim that every earlier checklist item or device was individually tested.
+- Current branch: `main`. At closeout start, local main and fetched origin/main
+  matched Production-tested application release `d7d5e27` with a clean worktree.
+- Previous operational baseline: `813a819`.
 - Code/test commit: `7345326 fix: keep kakao observation markers aligned during zoom`.
 - Original marker documentation: `7793928 docs: record kakao marker zoom regression checks`.
 - Dependency-only patch: `69300fd fix: patch vulnerable transitive dependencies`.
-- Status: local implementation and automated verification passed; real Kakao
-  visual smoke PARTIAL. Phase 26 is open, with no completed archive.
-- See `docs/architecture/kakao-marker-zoom-alignment-fix.md` for evidence,
-  limitations, coordinate trace, and six manual smoke steps.
+- Deployed release: `d7d5e27 docs: record phase 26 dependency audit` includes
+  both corrections. Main was fast-forwarded and pushed normally after final
+  checks, rollback-target access and immediate-test readiness confirmation.
+  Vercel reported success; the operator subsequently verified the original
+  defect on Production. No rollback was reported as performed.
+- Archive: `docs/eco/phase-history/phase-26.md`. Supporting evidence and
+  limitations: `docs/architecture/kakao-marker-zoom-alignment-fix.md` and
+  `docs/architecture/phase-26-dependency-audit.md`.
 - Confirmed code defect: the SDK centered the combined dot/name-label box,
   rather than the dot. Content now has a fixed centered hit area, an
-  out-of-flow label, and inner-dot-only hover/focus scaling.
-- Filtering no longer resets the overview camera. Explicit center/zoom prop
-  changes remain supported independently.
-- Overview, location picker, and detail preview now observe real container
-  size changes and cancel resize work on unmount, without recentering.
-- Before-fix focused tests: 4 failed / 2 passed. After-fix: all 6 passed.
-  Full Node suite: 51 passed. Typecheck/build/diff/security checks passed.
-- Local dev server HTTP 200 was confirmed. In-app browser tooling failed
-  before connecting; real Kakao activation, zoom/pan/resize, visual anchor
-  measurement, touch pinch, filter/detail and browser fallback smoke remain
-  PARTIAL. Mocked SDK tests are not visual proof.
-- No DB records/coordinates, migrations, RLS, Storage, Auth, taxonomy rules,
-  Kakao key/domain, or deployment settings changed. The original marker fix
-  changed no packages; the later audit repair changes only two transitive
-  package entries in `package-lock.json`, not `package.json` or app/test code.
-- No push, merge or deployment. Production remains the Phase 25 baseline.
-- Current instruction supersedes the queued deployment: dependency diagnosis,
-  minimal patch, checks and local commits only. Do not merge/push/deploy even
-  if earlier rollback-target/immediate-test confirmations arrive.
-- Next: resume controlled-release preparation only after new authorization.
-  Re-review the expanded commit range and rollback target, then reconfirm
-  operator immediate-test readiness. Real local/Preview Kakao checks remain
-  PARTIAL due to domain restrictions; they are not a prerequisite for the
-  operator's chosen future Production verification. Do not close Phase 26 yet.
+  out-of-flow label, and inner-dot-only hover/focus scaling. CustomOverlay
+  continues to own geographic positioning; no saved coordinate changed.
+- Filtering no longer unnecessarily resets the camera. Explicit center/zoom
+  changes remain supported. Overview/picker/detail preview share size-change
+  relayout and lifecycle cleanup; these behaviors have mocked regression coverage.
+- Preserved fix branch: `fix/phase-26-kakao-marker-zoom-alignment` at `d7d5e27`.
+- Preserved local safety branch: `backup/before-phase-26-kakao-production` at
+  `813a819`; it was not pushed or deleted.
+- No DB records, coordinates, migrations, RLS, Storage, Auth, taxonomy rules,
+  Kakao keys/domains or Vercel configuration were changed by the phase.
+
+### Verification Limits And Closeout Deployment
+
+- Historical focused tests: old implementation 4 failed / 2 passed;
+  corrected implementation all 6 passed. Pre-release typecheck, 51 Node tests,
+  build and full dependency audit passed. Mocks do not establish visual PASS.
+- Localhost/Preview real-Kakao smoke remains PARTIAL due to domain/configuration
+  limits. Controlled Production verification was the explicit operator choice.
+- Mobile pinch, picker behavior, resize/filter/panel combinations, hover/focus/
+  selected label states, individual pan/control cycles and post-filter detail
+  identity remain PARTIAL or not explicitly recorded as browser checks.
+  No numerical pixel error was measured. Build-log secret review is PARTIAL.
+- Docs-only closeout reran typecheck, all 51 Node tests, build and full audit
+  including dev once: PASS, zero audit findings. Documentation checks passed.
+  Clean installation/CSS equality are historical, not new closeout checks.
+- Closeout commit: `docs: close phase 26 kakao marker alignment`; identify its
+  actual hash through Git/final report, not by amending a self-reference.
+  Only five intended documentation files change; application, tests, packages,
+  backend and deployment configuration remain identical to `d7d5e27`.
+- This docs-only main push may trigger another deployment. At document
+  preparation that deployment had not yet been observed. Check its actual
+  post-push status; do not infer success from Git push or describe that later
+  build as visually tested. Production visual PASS remains tied to `d7d5e27`.
+- Next: wait for the operator to choose the next feature or operations task
+  before Phase 27. Do not start another fix, rollout or feature automatically.
 
 ### Dependency Audit Repair Checkpoint
 
@@ -52,29 +72,32 @@ This document helps a new ChatGPT/Codex session quickly understand the current p
 - Chain: `vite@8.0.16 -> postcss -> nanoid`. PostCSS `8.5.15 -> 8.5.28` and
   nanoid `3.3.12 -> 3.3.19` are supported patch updates; all other packages
   and the root manifest remain unchanged. No application exploit was established.
-- Clean `npm.cmd ci --include=dev`, full audit including dev (total 0,
-  low/moderate/high/critical all 0), typecheck, all 51 Node tests, build,
-  diff/whitespace/EOF/secret-like checks: PASS. Compiled CSS matches the
-  pre-update artifact. Browser rendering and real Kakao smoke remain PARTIAL.
+- Historical clean `npm.cmd ci --include=dev`, full audit including dev
+  (all severities 0), typecheck, 51 tests, build and security checks: PASS.
+  Compiled CSS matched the pre-update artifact. The patch is now deployed in
+  `d7d5e27`; the historical zero-findings result is not a permanent guarantee.
 - Initial clean-install Windows file locking was resolved by stopping the
   task's previous local Vite server and retrying. No DB/deployment action was
   involved; no new browser dependency was installed.
-- Local `main`, local `origin/main`, and unpushed safety branch
-  `backup/before-phase-26-kakao-production` remain at `813a819`.
 - The old planned release contained only `7345326` and `7793928`. Its old
-  two-commit revert is not a complete rollback of the new release including
-  the dependency patch and its documentation. Re-inspect the exact ordered
-  range and recovery target before deployment; execute no rollback now.
+  two-commit revert is not a complete rollback of the expanded release.
+  Recovery was reviewed to prefer reversing `7345326` while retaining the
+  security patch, only with separate approval. Nothing was reverted. Future
+  recovery must re-inspect the actual range and preserve later unrelated work.
 - `813a819` is the previous operational baseline, not a vulnerability-free
   dependency baseline. A full dependency rollback would restore the findings.
 
-**한국어:** 점 중심을 좌표에 맞추고 필터·크기 변경 때 지도 상태가 흔들리는 경로를
-수정했습니다. 실제 카카오 지도 수동 검증은 남아 있으며 운영 사이트는 바뀌지 않았습니다.
+**한국어:** 운영자가 원래 마커 위치 문제의 해결을 확인해 Phase 26을 종료했습니다.
+실제 확인한 앱 배포는 `d7d5e27`이며, 종료 문서 배포는 별도로 확인합니다. 개별적으로
+기록되지 않은 테스트는 PARTIAL로 남기고, Phase 27은 운영자의 다음 선택을 기다립니다.
 
 Read this together with:
 
 - `AGENTS.md`
 - `README.md`
+- `docs/eco/phase-history/phase-26.md`
+- `docs/architecture/kakao-marker-zoom-alignment-fix.md`
+- `docs/architecture/phase-26-dependency-audit.md`
 - `docs/architecture/supabase-setup.md`
 - `docs/architecture/admin-approval-flow.md`
 - `docs/architecture/supabase-storage-image-upload-design.md`
@@ -200,9 +223,9 @@ Read this together with:
 - 25C taxonomy tree panel and Eco Map filtering implemented on `feature/phase-25c-taxonomy-tree-map-filter`; the `생태지도` screen gained a collapsible `분류 탐색` panel, taxonomy node selection filters map markers and the compact map-side observation list, and no migration/remote SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel/Production deployment was performed in that subphase.
 - 25D-1 Vercel Preview smoke completed on `feature/phase-25c-taxonomy-tree-map-filter`; the feature branch was pushed, Vercel Preview status/HTTP checks passed, operator Preview browser smoke passed, and the initial `public.taxa` table-level verification ambiguity was later resolved in Phase 25D-2.
 - 25D-2 Production taxonomy tree smoke and Phase 25 closeout completed on `main`; corrected public taxa read verification passed using column-level SELECT privilege plus the `"Public can read accepted taxa"` policy, `main` was fast-forwarded and pushed normally, Vercel Production deployment passed, Production tree smoke passed, Phase 25 was archived as Verified, and no migration/remote mutation SQL/RLS/Edge Function/Storage/Auth/Admin/Kakao/Vercel config change was performed.
+- Phase 26 Kakao marker zoom alignment and dependency security patch closed as Verified; Production release `d7d5e27` resolved the originally reported defect according to operator visual confirmation. Unreported individual browser/device checks remain PARTIAL; see `docs/eco/phase-history/phase-26.md`. Closeout changes documentation only and does not start Phase 27.
 
-
-## Current State After Phase 25 Closeout
+## Historical State After Phase 25 Closeout
 
 Status: Phase 25 Verified and deployed to Production.
 
@@ -250,7 +273,7 @@ Boundaries preserved:
 - Public reads remain approved-only.
 - `taxonomy_name_resolutions` remains server-only.
 
-Historical recommendation at Phase 25 closeout (superseded by current Phase 26A work above):
+Historical recommendation at Phase 25 closeout (superseded by Phase 26 closeout above):
 
 ```text
 Choose the next feature or operations task before starting Phase 26.

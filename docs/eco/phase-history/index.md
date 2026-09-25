@@ -55,8 +55,9 @@ This archive is intentionally split into one Markdown file per phase. That struc
 | 23 | Vercel Deployment And Production Smoke | Verified with partial production regression checks | Prepared and deployed the Vite SPA through Vercel, configured SPA fallback, integrated the verified release into main, and verified the first HTTPS production deployment. | [phase-23.md](phase-23.md) |
 | 24 | Scientific Name Taxonomy Resolution And Verified Observation Create | Verified | Implemented GBIF-backed scientific-name verification, taxonomy cache/schema, trusted observation create path, Upload UI 학명 확인 flow, and verified local/Preview/Production smoke. | [phase-24.md](phase-24.md) |
 | 25 | Taxonomy Tree Browsing And Eco Map Filtering | Verified | Added stored-taxonomy tree browsing inside 생태지도, taxonomy node filtering for map/list results, public detail lineage, and verified Preview/Production smoke without DB or Edge Function changes. | [phase-25.md](phase-25.md) |
+| 26 | Kakao Marker Zoom Alignment And Dependency Security Patch | Verified | Corrected dot/label anchoring, camera preservation and resize handling; patched two transitive dependencies; operator confirmed the original zoom defect resolved in Production, with unreported device/interaction checks remaining PARTIAL. | [phase-26.md](phase-26.md) |
 
-**한국어:** 위 표는 완료된 Phase 1~23의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 24 이후는 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
+**한국어:** 위 표는 완료된 Phase 1~26의 핵심 제목, 상태, 요약, 링크를 한눈에 찾기 위한 목록입니다. Phase 27 이후는 운영자가 작업을 선택하고 해당 phase가 완료되거나 명시적으로 종료된 뒤 같은 형식으로 추가합니다.
 
 ## Adding A New Completed Phase
 
