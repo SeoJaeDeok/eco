@@ -2,9 +2,46 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session understand Phase 27A local map-filter layout work after the verified Phase 26 closeout.
+This document helps a new ChatGPT/Codex session continue Phase 27B public auth refresh work while preserving Phase 27A and the verified Phase 26 closeout.
 
-## Current Work: Phase 27A Map Filter Layout
+## Current Work: Phase 27B Auth Success Refresh
+
+- Base: `a95d2b7` on Phase 27A, not main. Working branch:
+  `feature/phase-27b-auth-success-refresh`. Main stays `2059adb`.
+- App public login/logout/signup callbacks now await repository results and
+  request one actual reload through a guarded application helper. Failures do
+  not reload; duplicate pending requests and repeat completion are blocked.
+- Existing SDK session persistence, default global sign-out scope, repositories,
+  admin callbacks and Phase 26/27A application code remain unchanged. The source
+  has no app-level onAuthStateChange subscription; none was added as a reload trigger.
+- A dedicated five-minute sessionStorage record carries only an allowlisted public
+  page, notice code, timestamp and version. main.tsx consumes it before StrictMode.
+  No account input/session copy, full URL, draft/photo or observation data is saved.
+- Signup confirmation notice survives reload without claiming signed-in status.
+  Blocked storage/navigation leaves the successful result and notice in place
+  with a manual refresh button. Logout failure has a visible public alert.
+- Typecheck, 78 Node tests (18 new auth tests), build, full dev-inclusive audit
+  (0 findings), and diff/format/privacy checks PASS. Tests execute actual App
+  callbacks with injected repositories/reload, not live Supabase authentication.
+- Browser bootstrap failed before inspection. Actual browser reload/session
+  retention, live signup paths and real Kakao local smoke remain PARTIAL.
+  No real account sign-in, new account, email delivery or observation write was run.
+- Existing local app server remains on port 3003 (HTTP 200 only). See
+  `docs/architecture/auth-success-page-refresh.md` for details and manual steps.
+- Code/test commit: `af7c854 feat: refresh page after successful public auth actions`.
+  Documentation: `docs: record phase 27b auth refresh`; use Git/final report for its hash.
+  No main merge, push, deployment, package/config/backend changes or Phase 27 archive.
+- Operator-confirmed Phase 27A manual verification: filter collapse/reopen,
+  result-area collapse, default-summary hiding and deep taxonomy layout PASS.
+  This is not evidence of all devices, precise viewport geometry or Kakao zoom/pan.
+- Next planned task: Phase 27C introduction-page related-site links, not started.
+  Wait for the operator's next approved request; retain auth live checks as PARTIAL.
+
+**한국어:** 공개 인증 성공 뒤 한 번 새로고침하고 원래 공개 화면과 가입 안내를 복원하도록
+구현했습니다. 자동 검사는 통과했지만 실제 계정·브라우저 검증은 남아 있습니다.
+Phase 27A는 사용자가 수동 확인했다고 보고했습니다. 다음 작업은 별도 요청 후 진행합니다.
+
+## Previous Work: Phase 27A Map Filter Layout
 
 - Baseline: clean `main` at `2059adb`; local main/origin tracking ref unchanged.
 - Working branch: `feature/phase-27a-map-filter-layout`.
@@ -12,7 +49,7 @@ This document helps a new ChatGPT/Codex session understand Phase 27A local map-f
 - Initial documentation commit: `3d58aad docs: record phase 27a map filter layout`.
 - Results follow-up: `6aa6631 fix: collapse map results with filter panel`.
 - Summary-only follow-up: `fix: hide unfiltered summary when map filters collapse`;
-  use Git/final report for its hash. Continued on the same branch; no new phase/branch, amend,
+  commit `a95d2b7`. Continued on the same branch; no new phase/branch, amend,
   main merge, push or deployment.
 - Implemented only the outer Eco Map filter disclosure and deep taxonomy layout.
   Initial state is expanded; hiding controls keeps their React state mounted.
@@ -67,6 +104,9 @@ This document helps a new ChatGPT/Codex session understand Phase 27A local map-f
   remains `813a819`. No branch was removed or overwritten.
 - Phase 27 is in progress, without a completed archive. Next: perform the manual
   layout checks while PARTIAL, then choose the next approved Phase 27 subtask.
+- Subsequent operator report at Phase 27B start confirms the requested Phase 27A
+  layout behaviors manually. Detailed device/viewport/keyboard and real Kakao
+  checks were not individually recorded; earlier automated/browser records remain historical.
 
 **한국어:** 사용자 요청으로 결과 건수와 지도 안의 작은 목록도 함께 접히도록 바꿨습니다.
 지도·요약·해제 버튼은 유지되며, 다시 열면 필터와 트리 상태 및 최신 결과가 보입니다.

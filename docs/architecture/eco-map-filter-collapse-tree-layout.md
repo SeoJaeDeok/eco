@@ -21,6 +21,18 @@
 통과했지만 실제 화면 확인은 남아 있으므로 완전한 시각 검증이나 배포 준비 완료로
 표현하지 않습니다.
 
+## Subsequent Operator Verification
+
+At Phase 27B start, the operator reported completing manual verification of
+filter collapse/reopen, combined result-area collapse, hidden default `전체 관찰`
+summary and deep taxonomy tree layout: **operator-confirmed manual PASS**.
+This supplements the earlier unavailable-tool browser record below. It does not
+establish all device/viewport coverage, measured geometry, keyboard behavior or
+real Kakao zoom/pan verification. Phase 27A code remains unchanged during 27B.
+
+한국어: 요청한 필터·결과 접기와 분류 트리 배치는 사용자 수동 확인 완료로 기록합니다.
+실제 Kakao 확대·축소나 모든 기기를 확인했다는 뜻은 아닙니다.
+
 ## Audited Cause
 
 The existing overlay combined search/species, broad taxa, taxonomy browsing,
