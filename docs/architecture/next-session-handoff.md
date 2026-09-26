@@ -2,9 +2,51 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session continue Phase 27B public auth refresh work while preserving Phase 27A and the verified Phase 26 closeout.
+This document helps a new ChatGPT/Codex session continue from Phase 27C related-site links while preserving Phase 27A/27B and the verified Phase 26 closeout.
 
-## Current Work: Phase 27B Auth Success Refresh
+## Current Work: Phase 27C Introduction Related Sites
+
+- Base: `c2d592f` on Phase 27B, including Phase 27A. Branch:
+  `feature/phase-27c-intro-resource-links`. Main/local origin ref remain `2059adb`.
+- Existing IntroPage now renders `생물 정보 찾아보기` below the species grid.
+  Exactly three static official homepage links: 국립생물자원관, 한반도의 생물다양성,
+  GBIF. Existing content, search and map-navigation button are unchanged.
+- Native anchors with target `_blank`, rel `noopener noreferrer`, visible
+  new-tab notices, named descriptions and focus-visible outlines. One mobile
+  column, three wide-screen columns, wrapping text. No new page/Navbar entry.
+- No API, resolver, iframe, remote media/favicon, prefetch, tracking or tab-return
+  reload logic. Public official homepage URLs are intentionally recorded in the
+  feature, tests and docs; they are not project secrets.
+- Official sources checked on 2026-09-26. NIBR homepage/directory and GBIF
+  official training/technical docs support the descriptions. NIBR homepage tool
+  access PASS; species root title-only extraction and GBIF 403/fetch errors mean
+  complete destination access remains PARTIAL, not evidence of closed sites.
+- Typecheck, 85 Node tests (7 new), build, full dev-inclusive audit (0 findings)
+  and diff/format/privacy checks PASS. New tests render actual IntroPage through
+  React server rendering; CSS contracts are not pixel/browser evidence.
+- Browser tool connection failed before inspection. Actual responsive layout,
+  Tab/Enter, outbound links and returning-tab behavior remain PARTIAL. Local normal
+  app HTTP 200 on loopback port 3004 is only resource evidence. No fixture-only
+  screenshot is being treated as real-app verification. Four manual steps are in
+  `docs/architecture/intro-related-sites.md`.
+- Phase 27A and Phase 27B application code is unchanged. Prior operator PASS
+  remains scoped to the reported layout behavior and 11 basic auth checks.
+  New accounts, mail, both signup live paths and blocked-storage live fallback
+  remain NOT_RUN; real Kakao zoom/pan remains PARTIAL.
+- No package, DB/observation, migration/RLS/Edge Function, Auth/Storage/Kakao or
+  Vercel setting change. Existing branches/backups preserved. No main merge,
+  push, deployment or completed Phase 27 archive.
+- Code/test commit: `e22b4d1 feat: add related biodiversity sites to intro page`.
+  Documentation: `docs: record phase 27c related site links`; use Git/final report
+  for its actual hash without amending a self-reference.
+- Next: decide Phase 27 integration verification and deployment plan with the
+  operator. Do not deploy automatically or reuse Phase 26 Production approval.
+
+**한국어:** 소개 하단에 공식 사이트 세 곳을 추가했고 자동 검사 85개를 통과했습니다.
+실제 화면·키보드·링크 클릭 확인은 PARTIAL입니다. 기존 인증·지도 동작과 미검증 항목은
+그대로 보존했습니다. 아직 배포하지 않았으며 다음은 Phase 27 통합 검증·배포 계획 결정입니다.
+
+## Previous Work: Phase 27B Auth Success Refresh
 
 - Base: `a95d2b7` on Phase 27A, not main. Working branch:
   `feature/phase-27b-auth-success-refresh`. Main stays `2059adb`.
@@ -40,22 +82,22 @@ This document helps a new ChatGPT/Codex session continue Phase 27B public auth r
   for the exact manual matrix and remaining live checks.
 - Code/test commit: `af7c854 feat: refresh page after successful public auth actions`.
   Initial documentation: `c4231a7 docs: record phase 27b auth refresh`.
-  Manual-result record: `docs: record phase 27b auth refresh smoke`; use Git/final
-  report for its actual hash. Only the auth-refresh note and this handoff changed.
+  Manual-result record: `c2d592f docs: record phase 27b auth refresh smoke`.
+  Only the auth-refresh note and this handoff changed in that documentation step.
   Typecheck/build rerun PASS; Node tests and audit were not rerun in this docs-only
   step. Diff/Markdown/whitespace/EOF/forbidden-path/secret checks PASS.
   No main merge, push, deployment, package/config/backend changes or Phase 27 archive.
 - Operator-confirmed Phase 27A manual verification: filter collapse/reopen,
   result-area collapse, default-summary hiding and deep taxonomy layout PASS.
   This is not evidence of all devices, precise viewport geometry or Kakao zoom/pan.
-- Next planned task: Phase 27C introduction-page related-site links, not started.
-  Wait for the operator's next approved request; keep remaining live checks at
-  their explicit NOT_RUN/PARTIAL status. Phase 27 is not archived as complete.
+- At this checkpoint the next planned task was Phase 27C introduction-page links.
+  It was subsequently requested and implemented above; remaining live checks
+  keep their explicit NOT_RUN/PARTIAL status. Phase 27 is not archived as complete.
 
 **한국어:** 공개 인증 성공 뒤 한 번 새로고침하고 원래 공개 화면과 가입 안내를 복원하도록
 구현했습니다. 사용자가 로컬 실제 앱의 기본 11개 항목을 수동 PASS로 확인했습니다.
 가입·메일·저장소 차단은 NOT_RUN, 실제 Kakao는 PARTIAL입니다. 과거 자동 테스트와
-이번 사용자 확인은 구분합니다. 미배포 상태이며 Phase 27C는 별도 요청 후 시작합니다.
+당시 사용자 확인은 구분합니다. 미배포 상태이며 이후 승인된 Phase 27C 진행 내용은 위에 있습니다.
 
 ## Previous Work: Phase 27A Map Filter Layout
 
