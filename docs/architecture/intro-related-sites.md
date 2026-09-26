@@ -5,12 +5,15 @@
 - Base: `c2d592f` on Phase 27B, including all Phase 27A work.
 - Branch: `feature/phase-27c-intro-resource-links`; main stays `2059adb`.
 - Code/test commit: `e22b4d1 feat: add related biodiversity sites to intro page`.
-- Implemented locally with automated checks PASS. Actual responsive layout,
-  keyboard navigation and outbound clicks remain PARTIAL.
+- Implemented locally with automated checks PASS. At the subsequent Phase 27D-1
+  review, the operator explicitly confirmed all ten local actual-app manual
+  checks PASS, including narrow/wide layout, keyboard use and outbound clicks.
+- This is operator evidence, not an agent browser run or all-device verification.
 - No main merge, push, Preview/Production deployment or completed Phase 27 archive.
 
 한국어: 기존 소개 화면 아래에 공식 생물 정보 사이트 세 곳을 추가했습니다.
-자동 검사는 통과했지만 실제 화면·링크 클릭 확인은 남아 있습니다. 아직 배포하지 않았습니다.
+자동 검사와 사용자 로컬 실제 앱 확인 10개 항목이 통과했습니다. 가입·실지도 등 다른
+작업의 미확인 항목은 그대로 남겨 두며, 아직 배포하지 않았습니다.
 
 ## Placement And UI
 
@@ -41,15 +44,16 @@ ExternalLink component.
 
 ## Official Source And Connection Evidence
 
-Checked on **2026-09-26 (Asia/Seoul)**. Official-source verification, tool access
-and actual app clicks are different evidence categories. No external-site
-availability is required by the automated tests.
+Official sources/tool access checked on **2026-09-26 (Asia/Seoul)** during Phase
+27C; the subsequent operator result was recorded on the same date in Phase 27D-1.
+Official-source verification, tool access and actual app clicks are different
+evidence categories. No external-site availability is required by automated tests.
 
 | Destination | Official source / description | Tool access | Actual app click |
 | --- | --- | --- | --- |
-| 국립생물자원관 | PASS: official homepage includes biological research and exhibition/education sections | PASS: homepage content retrieved | PARTIAL: not performed |
-| 한반도의 생물다양성 | PASS: NIBR's official site directory links this hostname and describes Korean/scientific-name search and morphology/ecology/distribution | PARTIAL: root returned title metadata but no extracted body; full usable page not verified | PARTIAL: not performed |
-| GBIF | PASS: official GBIF training/technical documentation confirms worldwide biodiversity, species, specimen and observation data | PARTIAL: root access returned 403; supplied about page had a tool fetch error | PARTIAL: not performed |
+| 국립생물자원관 | PASS: official homepage includes biological research and exhibition/education sections | PASS: homepage content retrieved | PASS: operator-confirmed local actual-app click |
+| 한반도의 생물다양성 | PASS: NIBR's official site directory links this hostname and describes Korean/scientific-name search and morphology/ecology/distribution | PARTIAL: root returned title metadata but no extracted body; full usable page not verified | PASS: operator-confirmed local actual-app click |
+| GBIF | PASS: official GBIF training/technical documentation confirms worldwide biodiversity, species, specimen and observation data | PARTIAL: root access returned 403; supplied about page had a tool fetch error | PASS: operator-confirmed local actual-app click |
 
 Sources actually consulted:
 
@@ -67,7 +71,9 @@ Sources actually consulted:
 403/tool errors do not establish a closed site or HTTP 404. No certificate checks
 were disabled and no access restriction was bypassed. Destinations remain the
 three approved homepage URLs, not substitutes from search results. Runtime code
-does not perform these verification requests.
+does not perform these verification requests. The later successful operator
+browser access does not erase the historical tool-specific errors; no new tool
+connection check was performed in D-1.
 
 ## Link Behavior, Accessibility And Privacy
 
@@ -77,15 +83,19 @@ does not perform these verification requests.
   the site's visible heading and that warning; aria-describedby associates the
   description. The decorative icon is aria-hidden.
 - Native Tab/Enter semantics are retained; focus-visible provides an outline.
-  Actual focus painting, Tab traversal and screen-reader output are not proven
-  by server rendering and remain manual checks.
+  The operator confirmed Tab/Enter and visible focus in the local app. Server
+  rendering alone does not prove that result; screen-reader output and exhaustive
+  device coverage have not been reported.
 - No query string, personal/observation data, auth state or arbitrary return URL
   is appended. No new fetch, iframe, remote favicon/image, OG preview, prefetch,
   analytics, resolver or automatic link-health request is introduced.
 - Returning from another tab does not invoke new reload logic. Phase 27B's public
   auth coordinator and all Phase 27A/26 map/filter/provider code are unchanged.
 
-## Verification
+## Historical Phase 27C Verification
+
+The following checks were performed during implementation, before the operator's
+later report. Their original results are preserved, not relabeled as new D-1 runs.
 
 | Check | Result | Evidence |
 | --- | --- | --- |
@@ -114,12 +124,43 @@ React server renderer. They are not a separately copied fixture. HTML output and
 component props establish wiring/contracts, not browser layout or external-site
 availability. No new test tooling/dependency was installed.
 
-## Manual Follow-up
+## Phase 27D-1 Operator Manual Verification
 
-The local mock/static app runs at `http://127.0.0.1:3004/`. Existing servers were
-left alone. No credentials, account creation or observations are needed.
+Environment: local actual introduction page. The operator explicitly clarified
+that all ten Phase 27C items are PASS; this supersedes the unfilled NOT_RUN
+template only for these ten items. No error was reported. Codex did not perform
+a new browser run, account creation, mail action or observation mutation.
 
-1. 로그인하지 않고 로컬 앱의 `소개`를 엽니다. 기존 검색·생물 목록·`생태지도 보기`와
+| Operator-reported check | Result |
+| --- | --- |
+| 로그인 없이 관련 사이트 영역 표시 | PASS |
+| 좁은 화면에서 카드·설명 잘림 없음 | PASS |
+| 넓은 화면에서 배치 정상 | PASS |
+| 국립생물자원관 링크 실제 접속 | PASS |
+| 한반도의 생물다양성 링크 실제 접속 | PASS |
+| GBIF 링크 실제 접속 | PASS |
+| 세 링크 새 탭 동작 | PASS |
+| Tab·Enter와 키보드 초점 표시 | PASS |
+| 원래 앱 탭 복귀 시 불필요한 reload 없음 | PASS |
+| 기존 소개 내용과 버튼 유지 | PASS |
+
+No exact viewport widths, device models, pixel measurements or screen-reader
+results were supplied. Related application/tests remain byte-equivalent to
+`e22b4d1`, so the evidence applies to the reviewed implementation.
+
+D-1 freshly reran typecheck, the full 85-test suite, build and dev-inclusive audit
+(zero findings at that time), plus integration/static/documentation checks.
+See `phase-27-integration-release-readiness.md` for the combined matrix and the
+four additional mock intro-auth scenarios; these are not live auth verification.
+
+## Future Deployment Recheck
+
+The local manual checks above are complete within the reported scope. The steps
+below are a future deployment checklist, not a request to repeat them now or a
+claim that a Preview/Production build was tested. No credentials, account creation
+or observations are needed for related-site checks.
+
+1. 로그인하지 않고 승인된 검증 환경의 `소개`를 엽니다. 기존 검색·생물 목록·`생태지도 보기`와
    하단 `생물 정보 찾아보기`의 세 사이트가 모두 있는지 확인합니다.
 2. 화면 폭을 320 또는 390px와 1280px로 바꿔 이름·설명이 잘리지 않고 가로로 넘치지
    않는지 확인합니다. 좁은 화면은 한 열, 넓은 화면은 세 열이어야 합니다.
@@ -137,5 +178,7 @@ left alone. No credentials, account creation or observations are needed.
 - App shell/auth, map/filter/provider, observation workflows/repositories,
   package.json/lockfile, DB data, migrations/RLS/Edge Functions, Auth/Storage,
   Kakao and Vercel configuration are unchanged. No SQL, Docker or local DB reset.
-- No push/deployment. Next: decide Phase 27 integration verification and release
-  plan separately; do not reuse the earlier Phase 26 Production authorization.
+- D-1 changes documentation only. No push/merge/deployment. Integration review is
+  recorded in `phase-27-integration-release-readiness.md`; the next decision is
+  whether to authorize feature-branch Preview first. Do not reuse the earlier
+  Phase 26 Production authorization or treat manual PASS as deployment approval.

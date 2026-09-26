@@ -2,9 +2,66 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session continue from Phase 27C related-site links while preserving Phase 27A/27B and the verified Phase 26 closeout.
+This document helps a new ChatGPT/Codex session continue from Phase 27D-1 integrated release preparation while preserving Phase 27A/27B/27C and the verified Phase 26 closeout.
 
-## Current Work: Phase 27C Introduction Related Sites
+## Current Work: Phase 27D-1 Integrated Verification And Release Preparation
+
+- Review date: 2026-09-26 (Asia/Seoul). Continue on
+  `feature/phase-27c-intro-resource-links`; no new branch. Started clean at
+  `553d6ba`; fresh `git fetch origin` confirmed main and origin/main both `2059adb`.
+- The nine commits in `2059adb..553d6ba` contain all Phase 27A/27B/27C work.
+  The readiness document lists the exact commits and files. This D-1 local docs
+  commit adds no app/test/package changes; the prepared range covers 18 files.
+- Git comparisons confirm 27A map/tree code and tests unchanged since `a95d2b7`,
+  27B auth code/tests unchanged since `c2d592f`, and 27C intro code/tests unchanged
+  since `e22b4d1`. Prior manual evidence is reused, not described as rerun by Codex.
+- Operator explicitly confirmed all ten Phase 27C local actual-app checks PASS:
+  signed-out visibility, narrow/wide layout, each official destination, new tabs,
+  Tab/Enter/focus, returning without reload and preserved original content/buttons.
+  No error reported. Historical GBIF tool 403 remains a separate access result;
+  no new agent browser run or destination tool recheck occurred in D-1.
+- Prior 27A requested layout behavior PASS and 27B basic 11 local-app checks PASS
+  remain scoped as recorded. New accounts, mail, both signup live paths and actual
+  blocked-storage fallback remain NOT_RUN. Real Kakao zoom/pan remains PARTIAL.
+  Intro-specific auth return is newly mock-checked, not live-verified.
+- Fresh D-1 checks: typecheck PASS, 85 Node tests PASS (0 failed/skipped), build PASS,
+  full dev-inclusive audit 0 findings, diff/format/privacy/boundary checks PASS.
+  Four supplemental mock scenarios reused actual App callbacks from `intro` for
+  login/logout/two signup results and simulated restoration/passive events: PASS.
+  They are separate from the 85-test count and not real SDK/account/browser checks.
+- Code review found no confirmed app defect. Filter disclosure retains mounted
+  state; actual auth reload resets transient UI while restoring the public section.
+  No filter/photo/draft persistence or external-link return reload was added.
+- Phase 26 provider/tests and PostCSS/nanoid lockfile correction remain identical
+  to main. Packages, repositories, standalone list/admin routes, backend and configs
+  are unchanged across Phase 27. Main, fix, Phase 27A/27B and backup branches remain.
+- Recommended plan: feature-branch Preview first after separate authorization;
+  test UI/auth/links there even if real Kakao is unavailable. Only remaining real-map
+  checks may later use a separately approved controlled Production release.
+  Preview variable scope, eligible rollback target and immediate test availability
+  have not been checked/confirmed. No Phase 26 deployment approval is reused.
+- Recovery is a draft, not executed: preserve Phase 26 marker/security corrections.
+  `2059adb` is the current Git baseline, not proof of an available Vercel deployment.
+  Do not reuse the old pre-Phase-26 backup `813a819` or marker revert commands.
+  Re-inspect the exact future release range and use new targeted revert commits
+  only if separately approved. Account-specific rollback/domain assignment needs
+  checking before a real release; no deployment action was performed here.
+- Only three docs changed in D-1: `intro-related-sites.md`, this handoff, and new
+  `phase-27-integration-release-readiness.md`. No SQL/DB/observations, signup/mail,
+  migrations/RPC/RLS/Edge Functions, Auth/Storage/Kakao/Vercel settings or package
+  operation. No Docker/WSL/local-stack reset. No completed Phase 27 archive.
+- Local commit: `docs: prepare phase 27 integrated release`; read its actual hash
+  from Git/final report rather than amending a self-reference. No push, merge,
+  deployment or promotion. Phase 27 is open; preparation is not release approval.
+- Next single decision: whether to authorize feature-branch Preview first in a
+  separate step. Do not automatically execute that plan or begin another feature.
+
+**한국어:** 27A·27B·27C를 함께 점검해 자동 검사 85개를 통과했습니다. 소개 화면의
+사용자 수동 확인 10개도 PASS로 기록했습니다. 가입·메일·저장소 차단은 NOT_RUN,
+실제 Kakao는 PARTIAL로 유지합니다. 아직 미배포이며, 다음은 Preview 우선 검증 방식을
+선택할지 결정하는 단계입니다. 이번 문서 정리가 push나 운영 배포 승인은 아닙니다.
+
+## Previous Work: Phase 27C Introduction Related Sites
 
 - Base: `c2d592f` on Phase 27B, including Phase 27A. Branch:
   `feature/phase-27c-intro-resource-links`. Main/local origin ref remain `2059adb`.
@@ -20,14 +77,17 @@ This document helps a new ChatGPT/Codex session continue from Phase 27C related-
 - Official sources checked on 2026-09-26. NIBR homepage/directory and GBIF
   official training/technical docs support the descriptions. NIBR homepage tool
   access PASS; species root title-only extraction and GBIF 403/fetch errors mean
-  complete destination access remains PARTIAL, not evidence of closed sites.
-- Typecheck, 85 Node tests (7 new), build, full dev-inclusive audit (0 findings)
-  and diff/format/privacy checks PASS. New tests render actual IntroPage through
+  complete tool destination access remained PARTIAL, not evidence of closed sites.
+  Subsequent D-1 operator browser access to all three destinations is PASS above.
+- Historical implementation checks: typecheck, 85 Node tests (7 new), build,
+  full dev-inclusive audit (0 findings) and diff/format/privacy checks PASS.
+  New tests render actual IntroPage through
   React server rendering; CSS contracts are not pixel/browser evidence.
-- Browser tool connection failed before inspection. Actual responsive layout,
-  Tab/Enter, outbound links and returning-tab behavior remain PARTIAL. Local normal
-  app HTTP 200 on loopback port 3004 is only resource evidence. No fixture-only
-  screenshot is being treated as real-app verification. Four manual steps are in
+- At implementation, browser tool connection failed before inspection. Responsive
+  layout, Tab/Enter, outbound links and returning-tab behavior were PARTIAL then;
+  the subsequent operator report supplies scoped manual PASS, not a tool rerun.
+  Local normal app HTTP 200 on loopback port 3004 is only resource evidence. No fixture-only
+  screenshot is being treated as real-app verification. Future recheck steps are in
   `docs/architecture/intro-related-sites.md`.
 - Phase 27A and Phase 27B application code is unchanged. Prior operator PASS
   remains scoped to the reported layout behavior and 11 basic auth checks.
@@ -37,14 +97,14 @@ This document helps a new ChatGPT/Codex session continue from Phase 27C related-
   Vercel setting change. Existing branches/backups preserved. No main merge,
   push, deployment or completed Phase 27 archive.
 - Code/test commit: `e22b4d1 feat: add related biodiversity sites to intro page`.
-  Documentation: `docs: record phase 27c related site links`; use Git/final report
-  for its actual hash without amending a self-reference.
-- Next: decide Phase 27 integration verification and deployment plan with the
-  operator. Do not deploy automatically or reuse Phase 26 Production approval.
+  Documentation: `553d6ba docs: record phase 27c related site links`.
+- The planned integration review was subsequently requested and is recorded above.
+  Do not deploy automatically or reuse Phase 26 Production approval.
 
 **한국어:** 소개 하단에 공식 사이트 세 곳을 추가했고 자동 검사 85개를 통과했습니다.
-실제 화면·키보드·링크 클릭 확인은 PARTIAL입니다. 기존 인증·지도 동작과 미검증 항목은
-그대로 보존했습니다. 아직 배포하지 않았으며 다음은 Phase 27 통합 검증·배포 계획 결정입니다.
+구현 당시 브라우저 도구 검증은 PARTIAL이었지만, 이후 사용자가 실제 화면·키보드·링크
+10개 항목을 PASS로 확인했습니다. 기존 인증·지도 미검증 항목은 그대로 보존했고 아직
+배포하지 않았습니다. 이후 통합 검토 내용은 위 D-1 기록을 따릅니다.
 
 ## Previous Work: Phase 27B Auth Success Refresh
 
