@@ -20,26 +20,42 @@ This document helps a new ChatGPT/Codex session continue Phase 27B public auth r
 - Signup confirmation notice survives reload without claiming signed-in status.
   Blocked storage/navigation leaves the successful result and notice in place
   with a manual refresh button. Logout failure has a visible public alert.
-- Typecheck, 78 Node tests (18 new auth tests), build, full dev-inclusive audit
+- Historical implementation checks: typecheck, 78 Node tests (18 new auth tests),
+  build, full dev-inclusive audit
   (0 findings), and diff/format/privacy checks PASS. Tests execute actual App
   callbacks with injected repositories/reload, not live Supabase authentication.
-- Browser bootstrap failed before inspection. Actual browser reload/session
-  retention, live signup paths and real Kakao local smoke remain PARTIAL.
-  No real account sign-in, new account, email delivery or observation write was run.
-- Existing local app server remains on port 3003 (HTTP 200 only). See
-  `docs/architecture/auth-success-page-refresh.md` for details and manual steps.
+- Codex browser bootstrap failed during implementation; that limitation remains
+  distinct from the later operator report. The operator explicitly confirmed
+  all 11 basic local real-app checks as PASS: existing-account login, exactly one
+  login reload, session retention, upload return, exactly one logout reload,
+  signed-out upload gate, login failure without reload, successful retry,
+  no repeated reload on tab switching, Phase 27A disclosure compatibility,
+  and no public raw email exposure. Safe error summary: none reported.
+- New account creation, confirmation mail, both signup live paths and actual
+  blocked-storage fallback are NOT_RUN. Real Kakao zoom/pan remains PARTIAL.
+  Do not infer signup/all-device/all-auth-path PASS from these basic results.
+  Codex did not perform real account or mail actions in this documentation step.
+- Local app resource returned HTTP 200 on port 3003 during implementation;
+  that alone was not browser evidence. See `docs/architecture/auth-success-page-refresh.md`
+  for the exact manual matrix and remaining live checks.
 - Code/test commit: `af7c854 feat: refresh page after successful public auth actions`.
-  Documentation: `docs: record phase 27b auth refresh`; use Git/final report for its hash.
+  Initial documentation: `c4231a7 docs: record phase 27b auth refresh`.
+  Manual-result record: `docs: record phase 27b auth refresh smoke`; use Git/final
+  report for its actual hash. Only the auth-refresh note and this handoff changed.
+  Typecheck/build rerun PASS; Node tests and audit were not rerun in this docs-only
+  step. Diff/Markdown/whitespace/EOF/forbidden-path/secret checks PASS.
   No main merge, push, deployment, package/config/backend changes or Phase 27 archive.
 - Operator-confirmed Phase 27A manual verification: filter collapse/reopen,
   result-area collapse, default-summary hiding and deep taxonomy layout PASS.
   This is not evidence of all devices, precise viewport geometry or Kakao zoom/pan.
 - Next planned task: Phase 27C introduction-page related-site links, not started.
-  Wait for the operator's next approved request; retain auth live checks as PARTIAL.
+  Wait for the operator's next approved request; keep remaining live checks at
+  their explicit NOT_RUN/PARTIAL status. Phase 27 is not archived as complete.
 
 **한국어:** 공개 인증 성공 뒤 한 번 새로고침하고 원래 공개 화면과 가입 안내를 복원하도록
-구현했습니다. 자동 검사는 통과했지만 실제 계정·브라우저 검증은 남아 있습니다.
-Phase 27A는 사용자가 수동 확인했다고 보고했습니다. 다음 작업은 별도 요청 후 진행합니다.
+구현했습니다. 사용자가 로컬 실제 앱의 기본 11개 항목을 수동 PASS로 확인했습니다.
+가입·메일·저장소 차단은 NOT_RUN, 실제 Kakao는 PARTIAL입니다. 과거 자동 테스트와
+이번 사용자 확인은 구분합니다. 미배포 상태이며 Phase 27C는 별도 요청 후 시작합니다.
 
 ## Previous Work: Phase 27A Map Filter Layout
 

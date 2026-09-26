@@ -5,13 +5,16 @@
 - Based on `a95d2b7`, preserving the complete Phase 27A branch history.
 - Branch: `feature/phase-27b-auth-success-refresh`.
 - Code/test commit: `af7c854 feat: refresh page after successful public auth actions`.
-- Local implementation and automated verification complete; real browser/auth
-  smoke remains PARTIAL. No main merge, push or deployment.
+- Local implementation and automated verification complete. The operator
+  subsequently confirmed the 11 basic local-app smoke checks below as PASS.
+  Signup and blocked-storage live paths remain NOT_RUN; real Kakao remains
+  PARTIAL. This does not verify every auth path. No main merge, push or deployment.
 - Public login, logout and signup success now request one real page reload.
   No provider, database, auth setting, dependency or admin-flow redesign.
 
-한국어: 인증 요청이 성공한 뒤 페이지를 한 번 새로고침합니다. 자동 테스트는 통과했지만
-실제 계정과 브라우저에서 세션이 유지되는지 확인하는 작업은 아직 남아 있습니다.
+한국어: 사용자가 로컬 실제 앱에서 기본 11개 항목의 수동 확인을 완료했습니다.
+로그인·로그아웃 후 1회 새로고침, 로그인 유지, 화면 복원 등을 사용자 확인 PASS로
+기록합니다. 가입·메일·저장소 차단은 미실행이며 실제 Kakao 검증도 남아 있습니다.
 
 ## Audited Auth Path
 
@@ -104,9 +107,13 @@ created. No email is displayed in this notice.
   of an already submitted request. Successful auth reload discards transient
   filter/selection/draft state. No new persistence of drafts/photos was added.
 - If the SDK itself cannot persist a real session because browser storage is
-  blocked, this helper cannot repair that; real-browser behavior remains PARTIAL.
+  blocked, this helper cannot repair that; blocked-storage live checks remain NOT_RUN.
 
-## Verification
+## Historical Implementation Verification
+
+These implementation-time checks were recorded with `af7c854` / `c4231a7`.
+Automated/mocked results and the earlier failed browser-tool connection are not
+operator live results. The later manual smoke section records the new evidence.
 
 | Check | Result | Evidence scope |
 | --- | --- | --- |
@@ -134,7 +141,62 @@ Commands: `npm.cmd run typecheck`,
 Tests exercise real App source with shallow UI boundaries, not a browser/SDK.
 No Docker, WSL, local Supabase stack or remote SQL was used.
 
-## Manual Follow-up
+## Operator Manual Smoke
+
+- Environment: local real application; existing test account only.
+- Evidence: operator-confirmed manual verification, not Codex browser automation.
+- The operator explicitly clarified that all 11 basic checks are PASS, superseding
+  the initial template's NOT_RUN entries for those checks only. The separately
+  listed unexecuted paths remain NOT_RUN/PARTIAL.
+- Safe error summary: none reported. No credentials, account identifiers, browser
+  storage contents or raw logs were requested or recorded.
+
+| Basic local-app check | Operator result |
+| --- | --- |
+| Existing test account login succeeds | PASS |
+| Exactly one page reload after successful login | PASS |
+| Signed-in state survives that reload | PASS |
+| Login from upload returns to upload | PASS |
+| Exactly one page reload after successful logout | PASS |
+| Signed-out upload login gate appears after logout | PASS |
+| Failed login shows an error without reloading | PASS |
+| Normal login retry works after failure | PASS |
+| Switching tabs does not cause unnecessary repeated reloads | PASS |
+| Phase 27A filter collapse/reopen behavior remains intact | PASS |
+| No raw email is exposed on public screens | PASS |
+
+Reload counts were explicitly included in the operator's confirmation, not
+inferred from signed-in UI alone. This report does not establish every browser,
+device, auth event, signup result or storage failure path.
+
+| Remaining live check | Result |
+| --- | --- |
+| New account creation | NOT_RUN |
+| Confirmation email delivery | NOT_RUN |
+| Signup with immediate session | NOT_RUN |
+| Signup requiring email confirmation | NOT_RUN |
+| Blocked-storage fallback in an actual browser | NOT_RUN |
+| Real Kakao zoom/pan regression | PARTIAL |
+
+한국어: 기본 11개 항목만 사용자 수동 PASS입니다. 새 계정·확인메일·가입의 두 live
+경로·저장소 차단은 확인하지 않았습니다. 자동 테스트의 가입 PASS를 실제 가입
+검증으로 바꾸지 않으며, 실제 Kakao 확대·축소도 PARTIAL로 유지합니다.
+
+## Documentation-Only Verification
+
+- This update changes only this document and next-session-handoff.md.
+- Typecheck and build were rerun for the AGENTS.md commit checklist: PASS.
+- Node tests and dependency audit were not rerun: the 78 tests and zero-finding
+  audit above remain historical implementation evidence, not new executions.
+- Diff, Markdown, whitespace/EOF, forbidden tracked paths and secret-like diff
+  checks: PASS. App/tests/packages, Phase 27A/26 code, DB and settings unchanged.
+- No new account, mail, observation action, merge, push or deployment was performed
+  by Codex. No Phase 27 completion archive or automatic Phase 27C start.
+
+## Manual Checklist For Future Rechecks
+
+The operator results above are authoritative for this report. The retained
+checklist is for future rechecks; signup/mail still require separate approval.
 
 1. 로컬 앱에서 기존 승인된 테스트 계정을 직접 입력합니다. 채팅으로 계정 정보를
    보내지 않습니다. 기록하기에서 로그인 후 새로고침이 한 번 일어나고 로그인 상태와
