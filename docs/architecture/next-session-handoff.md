@@ -9,30 +9,45 @@ This document helps a new ChatGPT/Codex session understand Phase 27A local map-f
 - Baseline: clean `main` at `2059adb`; local main/origin tracking ref unchanged.
 - Working branch: `feature/phase-27a-map-filter-layout`.
 - Code/test commit: `c203f7a feat: add collapsible map filters and responsive taxonomy tree`.
-- Documentation commit: `docs: record phase 27a map filter layout`; use Git/final
-  report for its actual hash. No amend, main merge, push or deployment.
+- Initial documentation commit: `3d58aad docs: record phase 27a map filter layout`.
+- Follow-up: `fix: collapse map results with filter panel`; use Git/final report
+  for its actual hash. Continued on the same branch; no new phase/branch, amend,
+  main merge, push or deployment.
 - Implemented only the outer Eco Map filter disclosure and deep taxonomy layout.
   Initial state is expanded; hiding controls keeps their React state mounted.
   Search, species, broad taxa, selected taxonomy, loaded children and expanded
-  branches survive toggles. Chip clear, full reset, result feedback and compact
-  list remain outside the hidden controls.
+  branches survive toggles. By the operator's revised request, result count,
+  compact map-list title/buttons and empty-result feedback now hide with the
+  same toggle. This supersedes the original always-visible-results requirement.
+  Chip clear, full reset and the existing summary/filter status remain visible.
+  Two mounted native-hidden regions share one state and linked aria-controls;
+  hidden results occupy no layout space or native keyboard focus targets.
+  Incoming props still update current results while hidden; selection is not
+  cleared and toggling does not cause taxonomy refetches. The map stays mounted
+  and visible. Standalone observation-list page and detail ownership are unchanged.
 - Tree ancestor margins/padding no longer accumulate. Row indentation is capped
   at 1.5rem total; names wrap in a shrinkable grid beside rank/count controls.
   Native buttons/hidden regions, linked disclosure ids and focus styles support
   keyboard use. Root errors wait for explicit retry instead of repeated requests.
 - Actual repositories, node identities/counts, filtering semantics and Phase 26
   provider/layout code are unchanged. Existing static fallback remains available.
-- Typecheck, build, 58 Node tests (7 new; all 6 Phase 26 tests preserved), full
-  audit including dev (zero findings), and diff/security checks passed.
-  Two new regressions failed against baseline source and pass after correction.
+- Follow-up typecheck, build, 60 Node tests (9 layout tests; all 6 Phase 26 tests
+  preserved), and diff/security checks passed. Three changed disclosure/current-
+  result tests fail against `3d58aad` source in memory and pass after correction.
+  The initial two regressions against `2059adb` and zero-finding full audit remain
+  historical evidence. Audit was not rerun in this no-package-change/no-push follow-up.
 - Browser tooling failed before inspection. 320/390/768/1280 responsive geometry,
   actual keyboard/focus and visual overlap checks remain PARTIAL. Local fixture
   and modules returned HTTP 200, which is not browser-rendering evidence.
 - Real Kakao camera/alignment remains PARTIAL under the existing localhost/Preview
   domain limitation. No key/domain change or Production test/deployment occurred.
-- Local mock/static server: port 3002; fixture path
+- Follow-up browser bootstrap failed before any actual page inspection; native
+  Tab traversal is not proven by the mock hidden-ancestor focus contract.
+- Local mock/static server: port 3003 (existing port 3002 server preserved); fixture path
   `/tests/fixtures/map-filter-layout.html`. Synthetic data and stress counts are
   test-only, absent from the production bundle, and never saved to the shared DB.
+  A fixture-only button replaces local observation props to check hidden-result
+  updates; it performs no observation/repository write.
 - See `docs/architecture/eco-map-filter-collapse-tree-layout.md` for diagnosis,
   exact behavior, test scope and six manual steps.
 - No package, DB/observation, migration/RLS/RPC/Edge Function, Auth/Storage,
@@ -45,8 +60,10 @@ This document helps a new ChatGPT/Codex session understand Phase 27A local map-f
 - Phase 27 is in progress, without a completed archive. Next: perform the manual
   layout checks while PARTIAL, then choose the next approved Phase 27 subtask.
 
-**한국어:** 필터 전체 접기와 분류 트리 폭 문제만 로컬 구현했습니다. 자동 검사는
-통과했지만 실제 반응형 화면 확인은 남아 있습니다. 배포하지 않았고, 수동 확인 후
+**한국어:** 사용자 요청으로 결과 건수와 지도 안의 작은 목록도 함께 접히도록 바꿨습니다.
+지도·요약·해제 버튼은 유지되며, 다시 열면 필터와 트리 상태 및 최신 결과가 보입니다.
+별도 관찰목록 페이지는 바꾸지 않았습니다. 자동 검사는 통과했지만 실제 반응형 화면과
+Tab 이동 확인은 남아 있습니다. 배포하지 않았고, 수동 확인 후
 다음 승인 작업을 선택합니다. 아래 Phase 26 기록은 완료된 단계의 역사적 맥락입니다.
 
 ## Historical State After Phase 26 Closeout

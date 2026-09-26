@@ -18,6 +18,7 @@ const mountMap = async (fixture) => {
   let nextId = 0;
   let mapMounts = 0;
   let mapUnmounts = 0;
+  let observations = fixture.observations;
   const selected = [];
   const equalDeps = (a, b) => a && b && a.length === b.length && a.every((value, index) => Object.is(value, b[index]));
   const state = (initial) => {
@@ -106,7 +107,7 @@ const mountMap = async (fixture) => {
   const render = () => {
     dirty = false;
     instances.forEach((frame) => { frame.seen = false; });
-    tree = renderNode(jsx(Page, { observations: fixture.observations, onSelect: (record) => selected.push(record.id) }));
+    tree = renderNode(jsx(Page, { observations, onSelect: (record) => selected.push(record.id) }));
     for (const [path, frame] of instances) {
       if (!frame.seen) { frame.slots.forEach((slot) => slot.cleanup?.()); instances.delete(path); }
     }
@@ -149,6 +150,13 @@ const mountMap = async (fixture) => {
     get mapMounts() { return mapMounts; }, get mapUnmounts() { return mapUnmounts; },
     get focusPath() { return focusPath; },
     map: () => nodes((node) => node.type === 'map-preview')[0],
+    // A hidden-ancestor focus contract, not a browser Tab-order measurement.
+    focusable: () => nodes((node) => !node.props.disabled && node.props.tabIndex !== -1 && (
+      ['button', 'input', 'select', 'textarea'].includes(node.type)
+      || (node.type === 'a' && node.props.href)
+      || node.props.tabIndex >= 0
+    )),
+    async updateObservations(next) { observations = next; render(); await settle(); },
     async click(node) { node.props.onClick({ currentTarget: { focus() { focusPath = node.path; } } }); await settle(); },
     async search(value) { nodes((node) => node.type === 'input')[0].props.onChange({ target: { value } }); await settle(); },
   };
@@ -159,7 +167,15 @@ const openPath = async (view, fixture) => {
   for (const name of fixture.names.slice(0, 6)) await view.click(view.button(`${name} 하위 분류 펼치기`));
 };
 const ids = (view) => Array.from(view.map().props.observations, (record) => record.id);
-const resultButtons = (view) => view.nodes((node) => node.type === 'button' && node.props.className?.includes('min-h-12'));
+const resultButtons = (view, includeHidden = false) => view.nodes(
+  (node) => node.type === 'button' && node.props.className?.includes('min-h-12'), includeHidden,
+);
+const resultCounts = (view, includeHidden = false) => view.nodes(
+  (node) => node.type === 'p' && view.text(node).startsWith('표시 중 '), includeHidden,
+);
+const resultHeadings = (view, includeHidden = false) => view.nodes(
+  (node) => node.type === 'p' && view.text(node) === '관찰 목록', includeHidden,
+);
 
 test('outer disclosure keeps filters, loaded branches, result IDs and map mount intact', async () => {
   const fixture = createMapFilterLayoutFixture();
@@ -172,12 +188,18 @@ test('outer disclosure keeps filters, loaded branches, result IDs and map mount 
   const before = ids(view);
   const mapArray = view.map().props.observations;
   const calls = { ...fixture.calls };
+  assert.equal(resultCounts(view).length, 1);
+  assert.equal(resultHeadings(view).length, 1);
+  assert.equal(resultButtons(view).length, before.length);
+  await view.click(resultButtons(view)[0]);
   const toggle = view.button('필터 접기');
-  const regionId = toggle.props['aria-controls'];
+  const regionIds = toggle.props['aria-controls'].split(' ');
   await view.click(toggle);
   assert.equal(view.focusPath, toggle.path);
   assert.equal(view.button('필터 열기').props['aria-expanded'], false);
-  assert.equal(view.nodes((node) => node.props.id === regionId, true)[0].props.hidden, true);
+  for (const regionId of regionIds) {
+    assert.equal(view.nodes((node) => node.props.id === regionId, true)[0].props.hidden, true);
+  }
   assert.equal(view.nodes((node) => node.type === 'input').length, 0);
   assert.ok(view.button('전체 보기'));
   assert.ok(view.button('분류 필터 해제'));
@@ -185,12 +207,23 @@ test('outer disclosure keeps filters, loaded branches, result IDs and map mount 
   assert.match(view.text(summary), /검색: layout-short.*선택 종: layout-short.*분류군: 식물/);
   assert.deepEqual(ids(view), before);
   assert.equal(view.map().props.observations, mapArray);
-  assert.equal(resultButtons(view).length, before.length);
-  await view.click(resultButtons(view)[0]);
+  assert.equal(resultCounts(view).length, 0);
+  assert.equal(resultHeadings(view).length, 0);
+  assert.equal(resultButtons(view).length, 0);
+  assert.equal(resultCounts(view, true).length, 1);
+  assert.equal(resultHeadings(view, true).length, 1);
+  assert.equal(resultButtons(view, true).length, before.length);
+  const focusablePaths = new Set(view.focusable().map((node) => node.path));
+  assert.ok(resultButtons(view, true).every((node) => !focusablePaths.has(node.path)));
   assert.deepEqual(view.selected, [before[0]]);
   await view.click(view.button('필터 열기'));
   assert.equal(view.button('Taraxacum 하위 분류 접기').props['aria-expanded'], true);
   assert.equal(view.nodes((node) => node.type === 'input')[0].props.value, 'layout-short');
+  assert.equal(resultCounts(view).length, 1);
+  assert.equal(resultHeadings(view).length, 1);
+  assert.equal(resultButtons(view).length, before.length);
+  assert.deepEqual(ids(view), before);
+  assert.deepEqual(view.selected, [before[0]]);
   assert.deepEqual(fixture.calls, calls);
   assert.equal(view.mapMounts, 1);
   assert.equal(view.mapUnmounts, 0);
@@ -215,6 +248,57 @@ test('chip clear and full reset work while collapsed without resetting the tree'
   assert.equal(view.button('Taraxacum 하위 분류 접기').props['aria-expanded'], true);
   assert.equal(fixture.calls.roots, 1);
   assert.equal(fixture.calls.children, 6);
+});
+
+test('hidden results use fresh observation props without refetching taxonomy or clearing selection', async () => {
+  const fixture = createMapFilterLayoutFixture();
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  await view.search('layout-short');
+  await view.click(view.button('계Plantae'));
+  assert.deepEqual(ids(view), ['layout-short']);
+  await view.click(resultButtons(view)[0]);
+  const calls = { ...fixture.calls };
+  await view.click(view.button('필터 접기'));
+  await view.updateObservations(fixture.updatedObservations);
+  assert.deepEqual(ids(view), ['layout-long']);
+  assert.equal(resultButtons(view).length, 0);
+  assert.equal(resultCounts(view).length, 0);
+  assert.deepEqual(view.selected, ['layout-short']);
+  assert.deepEqual(fixture.calls, calls);
+  await view.click(view.button('필터 열기'));
+  assert.deepEqual(ids(view), ['layout-long']);
+  assert.match(view.text(resultCounts(view)[0]), /^표시 중 1건/);
+  assert.match(view.text(resultButtons(view)[0]), /^layout-short updated/);
+  assert.equal(view.nodes((node) => node.type === 'input')[0].props.value, 'layout-short');
+  assert.equal(view.button('Taraxacum 하위 분류 접기').props['aria-expanded'], true);
+  await view.click(resultButtons(view)[0]);
+  assert.deepEqual(view.selected, ['layout-short', 'layout-long']);
+  assert.deepEqual(fixture.calls, calls);
+  assert.equal(view.mapMounts, 1);
+  assert.equal(view.mapUnmounts, 0);
+});
+
+test('empty-result feedback also hides and restores with the existing disclosure', async () => {
+  const view = await mountMap(createMapFilterLayoutFixture());
+  await view.search('no-matching-fixture');
+  const emptyMessages = (includeHidden = false) => view.nodes(
+    (node) => node.type === 'p' && view.text(node).startsWith('조건에 맞는 등록 관찰 기록이 없습니다.'), includeHidden,
+  );
+  assert.equal(emptyMessages().length, 1);
+  assert.match(view.text(resultCounts(view)[0]), /^표시 중 0건/);
+  await view.click(view.button('필터 접기'));
+  assert.equal(emptyMessages().length, 0);
+  assert.equal(emptyMessages(true).length, 1);
+  assert.equal(resultCounts(view).length, 0);
+  assert.deepEqual(ids(view), []);
+  await view.click(view.button('전체 보기'));
+  assert.equal(ids(view).length, 5);
+  assert.equal(resultButtons(view).length, 0);
+  await view.click(view.button('필터 열기'));
+  assert.equal(emptyMessages().length, 0);
+  assert.equal(resultButtons(view).length, 5);
+  assert.match(view.text(resultCounts(view)[0]), /^표시 중 5건/);
 });
 
 test('seven-rank rows bound total indentation and retain full labels, counts and separate actions', async () => {
@@ -272,7 +356,9 @@ test('disclosures link to mounted regions and hide descendants without role tree
     assert.equal(node.type, 'button');
     assert.equal(node.props.type, 'button');
     assert.match(node.props.className, /focus-visible:/);
-    assert.equal(view.nodes((region) => region.props.id === node.props['aria-controls'], true).length, 1);
+    for (const regionId of node.props['aria-controls'].split(' ')) {
+      assert.equal(view.nodes((region) => region.props.id === regionId, true).length, 1);
+    }
   }
   for (const node of view.nodes((node) => node.type === 'button')) {
     for (let parent = node.parent; parent; parent = parent.parent) assert.notEqual(parent.type, 'button');

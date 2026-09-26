@@ -24,12 +24,18 @@
       Object.assign(activeTaxonomyTreeRepository, fixture.repository);
       function Fixture() {
         const [selected, setSelected] = React.useState(null);
+        const [observations, setObservations] = React.useState(fixture.observations);
         return React.createElement(React.Fragment, null,
           React.createElement('div', { className: 'absolute top-2 left-4 right-4 text-xs' },
             '로컬 합성 자료 / 건수는 배치 확인용',
             React.createElement('p', { role: 'status', className: '[overflow-wrap:anywhere]' },
-              selected ? `선택: ${selected.name}` : '선택 없음')),
-          React.createElement(MapPage, { observations: fixture.observations, onSelect: setSelected }));
+              selected ? `선택: ${selected.name}` : '선택 없음'),
+            React.createElement('button', {
+              type: 'button',
+              onClick: () => setObservations(fixture.updatedObservations),
+              className: 'min-h-8 border border-zinc-300 px-2 focus-visible:outline-2',
+            }, '합성 자료 갱신')),
+          React.createElement(MapPage, { observations, onSelect: setSelected }));
       }
       createRoot(document.getElementById('root')).render(React.createElement(Fixture));
     </script>

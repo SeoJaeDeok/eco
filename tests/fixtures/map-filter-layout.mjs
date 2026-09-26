@@ -36,6 +36,12 @@ export const createMapFilterLayoutFixture = () => {
     location: 'Local fixture', description: 'Synthetic layout test only', date: '2026-01-01',
     coords: { lat: 0, lng: 0 }, imageUrl: '',
   }));
+  // Simulate incoming props while the panel is hidden; no repository write.
+  const updatedObservations = observations.map((observation) => {
+    if (observation.id === 'layout-short') return { ...observation, name: 'layout-refreshed' };
+    if (observation.id === 'layout-long') return { ...observation, name: 'layout-short updated' };
+    return observation;
+  });
   const calls = { roots: 0, children: 0, selection: 0 };
   // Deliberately exaggerated display counts exercise narrow rows; not DB counts.
   const layoutCounts = (nodes) => nodes.map((node) => ({ ...node, observationCount: 12345 }));
@@ -47,5 +53,5 @@ export const createMapFilterLayoutFixture = () => {
       return getTaxonomyTreeObservationIdsForSelection(summaries, selection);
     },
   };
-  return { repository, calls, observations, longName, unbrokenName, names };
+  return { repository, calls, observations, updatedObservations, longName, unbrokenName, names };
 };

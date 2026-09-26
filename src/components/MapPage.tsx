@@ -31,6 +31,7 @@ const getResetButtonClassName = 'min-h-11 text-[10px] font-semibold uppercase tr
 export const MapPage = ({ observations, onSelect }: MapPageProps) => {
   const [areFiltersExpanded, setAreFiltersExpanded] = useState(true);
   const filterControlsId = useId();
+  const filterResultsId = `${filterControlsId}-results`;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTaxa, setSelectedTaxa] = useState<Taxon[]>([]);
   const [selectedSpeciesKey, setSelectedSpeciesKey] = useState<string | null>(null);
@@ -149,7 +150,7 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
             <button
               type="button"
               aria-expanded={areFiltersExpanded}
-              aria-controls={filterControlsId}
+              aria-controls={`${filterControlsId} ${filterResultsId}`}
               onClick={(event) => {
                 event.currentTarget.focus();
                 setAreFiltersExpanded((current) => !current);
@@ -261,39 +262,41 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
             onClearSelection={() => setSelectedTaxonomyNode(null)}
           />
 
-          <p className="mt-4 border-t border-zinc-100 pt-3 text-[11px] leading-5 text-zinc-500">
-            표시 중 {filteredObservations.length}건 / 전체 {observations.length}건
-          </p>
-
-          {filteredObservations.length > 0 && (
-            <div className="mt-3 max-h-44 overflow-y-auto border border-zinc-100 bg-white/70">
-              <p className="border-b border-zinc-100 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
-                관찰 목록
-              </p>
-              <div className="divide-y divide-zinc-100">
-                {filteredObservations.map((observation) => (
-                  <button
-                    key={observation.id}
-                    type="button"
-                    onClick={() => onSelect(observation)}
-                    className="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-2 text-left transition-colors hover:bg-zinc-50"
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate text-[11px] font-medium text-zinc-800">{observation.name}</span>
-                      <span className="block truncate text-[10px] italic text-zinc-400">{observation.scientificName || observation.location}</span>
-                    </span>
-                    <span className="shrink-0 text-[10px] text-zinc-400">{observation.taxon}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {filteredObservations.length === 0 && (
-            <p className="mt-3 border border-zinc-100 bg-white px-3 py-2 text-[11px] leading-5 text-zinc-500">
-              조건에 맞는 등록 관찰 기록이 없습니다. 검색어를 줄이거나 분류군 선택을 조정해 주세요.
+          <div id={filterResultsId} hidden={!areFiltersExpanded}>
+            <p className="mt-4 border-t border-zinc-100 pt-3 text-[11px] leading-5 text-zinc-500">
+              표시 중 {filteredObservations.length}건 / 전체 {observations.length}건
             </p>
-          )}
+
+            {filteredObservations.length > 0 && (
+              <div className="mt-3 max-h-44 overflow-y-auto border border-zinc-100 bg-white/70">
+                <p className="border-b border-zinc-100 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+                  관찰 목록
+                </p>
+                <div className="divide-y divide-zinc-100">
+                  {filteredObservations.map((observation) => (
+                    <button
+                      key={observation.id}
+                      type="button"
+                      onClick={() => onSelect(observation)}
+                      className="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-2 text-left transition-colors hover:bg-zinc-50"
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-[11px] font-medium text-zinc-800">{observation.name}</span>
+                        <span className="block truncate text-[10px] italic text-zinc-400">{observation.scientificName || observation.location}</span>
+                      </span>
+                      <span className="shrink-0 text-[10px] text-zinc-400">{observation.taxon}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {filteredObservations.length === 0 && (
+              <p className="mt-3 border border-zinc-100 bg-white px-3 py-2 text-[11px] leading-5 text-zinc-500">
+                조건에 맞는 등록 관찰 기록이 없습니다. 검색어를 줄이거나 분류군 선택을 조정해 주세요.
+              </p>
+            )}
+          </div>
         </section>
       </div>
     </div>
