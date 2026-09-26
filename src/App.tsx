@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'motion/react';
+import { RotateCw } from 'lucide-react';
+import {
+  AUTH_REFRESH_NOTICES,
+  createPublicAuthRefresh,
+  type AuthRefreshNotice,
+  type AuthRefreshReturn,
+} from './features/auth/publicAuthRefresh';
 import { Navbar } from './components/Navbar';
 import { AppRoutes } from './components/AppRoutes';
 import { ObservationDetail } from './components/ObservationDetail';
@@ -15,16 +22,13 @@ import {
 } from './utils/observationImagePrefetch';
 import { normalizeObserverDisplayName } from './utils/observerDisplay';
 import { countUniqueSpecies } from './utils/observationStats';
-import type { AuthSessionState } from './repositories/authRepository';
+import type { AuthSessionState, AuthSignUpResult } from './repositories/authRepository';
 import type { Observation, OwnerObservationUpdateInput, PageId } from './types';
 
 const ADMIN_HASH = '#admin';
 const PUBLIC_AUTH_CONFIGURED = getConfiguredAuthRepositoryKind() === 'supabase';
 const IS_SUPABASE_OBSERVATION_REPOSITORY = getConfiguredObservationRepositoryKind() === 'supabase';
 const PUBLIC_AUTH_SIGN_UP_ERROR = '회원가입을 완료하지 못했습니다. 입력한 정보와 계정 상태를 확인해 주세요.';
-const PUBLIC_AUTH_SIGN_UP_SUCCESS_NOTICE = '회원가입이 완료되었습니다. 바로 관찰 기록을 등록할 수 있습니다.';
-const PUBLIC_AUTH_SIGN_UP_CONFIRMATION_NOTICE = '회원가입 요청이 접수되었습니다. 이메일 확인을 완료한 뒤 로그인해 주세요.';
-const PUBLIC_AUTH_PROFILE_SETUP_NOTICE = '회원가입은 접수되었지만 관찰자 프로필 준비가 필요합니다. 관리자에게 프로필 설정을 요청해 주세요.';
 const PUBLIC_AUTH_SESSION_ERROR = '로그인 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.';
 const PUBLIC_AUTH_SIGN_IN_ERROR = '로그인에 실패했습니다. 계정 정보를 확인해 주세요.';
 const PUBLIC_AUTH_SIGN_OUT_ERROR = '로그아웃에 실패했습니다. 잠시 후 다시 시도해 주세요.';
@@ -35,16 +39,22 @@ const createEmptyAuthSessionState = (): AuthSessionState => ({
   isAdmin: false,
 });
 
-const getInitialPage = (): PageId => {
+const getInitialPage = (returnPage?: AuthRefreshReturn['page']): PageId => {
   if (typeof window !== 'undefined' && window.location.hash === ADMIN_HASH) {
     return 'admin';
   }
 
-  return 'home';
+  return returnPage ?? 'home';
 };
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState<PageId>(() => getInitialPage());
+interface AppProps {
+  authRefreshReturn?: AuthRefreshReturn | null;
+}
+
+export default function App({ authRefreshReturn = null }: AppProps) {
+  const [currentPage, setCurrentPage] = useState<PageId>(() => getInitialPage(authRefreshReturn?.page));
+  const [authRefresh] = useState(() => createPublicAuthRefresh());
+  const [needsManualAuthRefresh, setNeedsManualAuthRefresh] = useState(false);
   const [observations, setObservations] = useState<Observation[]>([]);
   const [uniqueSpeciesCount, setUniqueSpeciesCount] = useState(0);
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
@@ -56,7 +66,10 @@ export default function App() {
   const [isSigningUpPublic, setIsSigningUpPublic] = useState(false);
   const [isSigningOutPublic, setIsSigningOutPublic] = useState(false);
   const [publicAuthError, setPublicAuthError] = useState<string | null>(null);
-  const [publicAuthNotice, setPublicAuthNotice] = useState<string | null>(null);
+  const [publicAuthNotice, setPublicAuthNotice] = useState<string | null>(() => (
+    getInitialPage() !== 'admin' && authRefreshReturn?.notice
+      ? AUTH_REFRESH_NOTICES[authRefreshReturn.notice] : null
+  ));
   const imageRefreshRetryKeysRef = useRef(new Set<string>());
 
   useEffect(() => {
@@ -99,7 +112,6 @@ export default function App() {
       try {
         setIsCheckingPublicAuth(true);
         setPublicAuthError(null);
-        setPublicAuthNotice(null);
         const nextSessionState = await activeAuthRepository.getSessionState();
 
         if (!isCurrent) return;
@@ -241,33 +253,43 @@ export default function App() {
     return updatedObservation;
   }, [publicAuthState.isAdmin]);
 
+  const finishPublicAuth = useCallback((notice: AuthRefreshNotice | null = null) => {
+    // Keep the dedicated admin route outside the public refresh workflow.
+    const page = window.location.hash === ADMIN_HASH ? 'admin' : currentPage;
+    setNeedsManualAuthRefresh(authRefresh.complete(page, notice) === 'manual');
+  }, [authRefresh, currentPage]);
+
   const handlePublicSignIn = useCallback(async (email: string, password: string) => {
     if (!PUBLIC_AUTH_CONFIGURED) {
       setPublicAuthError('현재 환경에는 공개 로그인 설정이 없습니다.');
       return false;
     }
+    if (!authRefresh.begin()) return false;
 
+    let nextSessionState: AuthSessionState;
     try {
       setIsSigningInPublic(true);
       setPublicAuthError(null);
       setPublicAuthNotice(null);
-      const nextSessionState = await activeAuthRepository.signInWithPassword(email, password);
-      setPublicAuthState(nextSessionState);
-
-      if (!nextSessionState.user) {
-        setPublicAuthError(PUBLIC_AUTH_SIGN_IN_ERROR);
-        return false;
-      }
-
-      return true;
+      setNeedsManualAuthRefresh(false);
+      nextSessionState = await activeAuthRepository.signInWithPassword(email, password);
     } catch {
+      authRefresh.release();
       setPublicAuthState(createEmptyAuthSessionState());
       setPublicAuthError(PUBLIC_AUTH_SIGN_IN_ERROR);
       return false;
     } finally {
       setIsSigningInPublic(false);
     }
-  }, []);
+    setPublicAuthState(nextSessionState);
+    if (!nextSessionState.user) {
+      authRefresh.release();
+      setPublicAuthError(PUBLIC_AUTH_SIGN_IN_ERROR);
+      return false;
+    }
+    finishPublicAuth();
+    return true;
+  }, [authRefresh, finishPublicAuth]);
 
   const handlePublicSignUp = useCallback(async (
     email: string,
@@ -279,32 +301,17 @@ export default function App() {
       setPublicAuthNotice(null);
       return 'failed';
     }
+    if (!authRefresh.begin()) return 'failed';
 
+    let result: AuthSignUpResult;
     try {
       setIsSigningUpPublic(true);
       setPublicAuthError(null);
       setPublicAuthNotice(null);
-      const result = await activeAuthRepository.signUpWithPassword({ email, password, displayName });
-      setPublicAuthState(result.sessionState);
-
-      if (result.requiresEmailConfirmation) {
-        setPublicAuthNotice(PUBLIC_AUTH_SIGN_UP_CONFIRMATION_NOTICE);
-        return 'confirmation-required';
-      }
-
-      if (result.profileSetupRequired) {
-        setPublicAuthNotice(PUBLIC_AUTH_PROFILE_SETUP_NOTICE);
-        return 'profile-setup-required';
-      }
-
-      if (!result.sessionState.user) {
-        setPublicAuthError(PUBLIC_AUTH_SIGN_UP_ERROR);
-        return 'failed';
-      }
-
-      setPublicAuthNotice(PUBLIC_AUTH_SIGN_UP_SUCCESS_NOTICE);
-      return 'signed-in';
+      setNeedsManualAuthRefresh(false);
+      result = await activeAuthRepository.signUpWithPassword({ email, password, displayName });
     } catch {
+      authRefresh.release();
       setPublicAuthState(createEmptyAuthSessionState());
       setPublicAuthError(PUBLIC_AUTH_SIGN_UP_ERROR);
       setPublicAuthNotice(null);
@@ -312,21 +319,38 @@ export default function App() {
     } finally {
       setIsSigningUpPublic(false);
     }
-  }, []);
+    setPublicAuthState(result.sessionState);
+    const outcome = result.requiresEmailConfirmation ? 'confirmation-required'
+      : result.profileSetupRequired ? 'profile-setup-required'
+      : result.sessionState.user ? 'signed-in' : 'failed';
+    if (outcome === 'failed') {
+      authRefresh.release();
+      setPublicAuthError(PUBLIC_AUTH_SIGN_UP_ERROR);
+      return outcome;
+    }
+    setPublicAuthNotice(AUTH_REFRESH_NOTICES[outcome]);
+    finishPublicAuth(outcome);
+    return outcome;
+  }, [authRefresh, finishPublicAuth]);
 
   const handlePublicSignOut = useCallback(async () => {
+    if (!authRefresh.begin()) return;
     try {
       setIsSigningOutPublic(true);
       setPublicAuthError(null);
       setPublicAuthNotice(null);
+      setNeedsManualAuthRefresh(false);
       await activeAuthRepository.signOut();
-      setPublicAuthState(createEmptyAuthSessionState());
     } catch {
+      authRefresh.release();
       setPublicAuthError(PUBLIC_AUTH_SIGN_OUT_ERROR);
+      return;
     } finally {
       setIsSigningOutPublic(false);
     }
-  }, []);
+    setPublicAuthState(createEmptyAuthSessionState());
+    finishPublicAuth();
+  }, [authRefresh, finishPublicAuth]);
 
   const publicAuthDisplayName = normalizeObserverDisplayName(publicAuthState.profile?.displayName) ?? '사용자';
   const canEditSelectedObservation = Boolean(
@@ -372,10 +396,23 @@ export default function App() {
             {observationLoadError}
           </div>
         )}
-        {publicAuthNotice && publicAuthState.user && (
-          <div className="fixed left-1/2 top-24 z-50 -translate-x-1/2 border border-emerald-100 bg-white px-4 py-2 text-xs text-emerald-700 shadow-sm" role="status">
-            {publicAuthNotice}
+        {currentPage !== 'admin' && (publicAuthNotice || needsManualAuthRefresh) && (
+          <div className="fixed left-1/2 top-24 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 border border-emerald-100 bg-white px-4 py-2 text-xs leading-5 text-emerald-700 shadow-sm" role="status">
+            {publicAuthNotice && <p>{publicAuthNotice}</p>}
+            {needsManualAuthRefresh && (
+              <>
+                <p>인증 처리는 완료됐지만 자동 새로고침을 진행하지 못했습니다. 안내를 확인한 뒤 새로고침해 주세요.</p>
+                <button type="button" onClick={() => authRefresh.reloadManually()} className="mt-2 inline-flex min-h-11 items-center gap-2 border border-emerald-200 px-3 text-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2">
+                  <RotateCw size={14} aria-hidden="true" />새로고침
+                </button>
+              </>
+            )}
           </div>
+        )}
+        {currentPage !== 'admin' && publicAuthError && publicAuthState.user && (
+          <p className="fixed left-1/2 top-24 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 border border-red-100 bg-white px-4 py-2 text-xs leading-5 text-red-700 shadow-sm" role="alert">
+            {publicAuthError}
+          </p>
         )}
         <AppRoutes
           currentPage={currentPage}
