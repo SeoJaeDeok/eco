@@ -1,5 +1,37 @@
 # Phase 27D-1 - Integrated Verification And Release Preparation
 
+## Subsequent Phase 27D-2 Preview Result
+
+Recorded on 2026-09-26. The operator subsequently authorized feature-branch Preview
+deployment and confirmed main as Production, all-preview variable scope, no
+unexpected overrides and existing Supabase auth readiness. The normal feature
+push succeeded; local/remote feature matched `acf6cb7`, main/origin/main `2059adb`.
+Dashboard evidence from the operator: Preview, matching candidate, build PASS.
+
+The operator then reported all basic Preview UI/auth/link checks PASS, including
+intro-auth screen restoration. This is new Preview evidence, separate from D-1's
+local manual results and mocks. Agent browser connection failed before inspection.
+See [Phase 27 Preview smoke](phase-27-preview-smoke.md) for the exact matrix.
+
+Signup/mail/storage-blocked live paths remain NOT_RUN. Real Kakao regression and
+build-log secret review remain PARTIAL; a general success report does not establish
+these separately unreported/excluded checks. No account/observation creation or
+settings changes were requested/performed by Codex; only operator existing-account
+Auth session actions were in scope. No main merge/push or Production deployment.
+
+D-2 reran typecheck, 85 Node tests, build, full dev-inclusive audit (zero findings)
+and diff/security checks before push and for the docs follow-up. No code changed.
+The follow-up documentation commit preserves application/test/lockfile equivalence
+to `acf6cb7`; its possible new Preview deployment is not yet observed here and is
+not a newly visually tested release.
+
+Option A below has now been performed within this limited scope. The next decision
+is separate Production authorization and remaining real-map verification, not an
+automatic main push. The D-1 record below is historical; its then-unconfirmed
+Preview settings and push status must not be mistaken for the subsequent result.
+Recovery remains a draft requiring fresh baseline/range/eligible-target checks;
+Phase 26 approval is not reused and no rollback has been executed.
+
 ## Decision And Scope
 
 - Review date: 2026-09-26 (Asia/Seoul).

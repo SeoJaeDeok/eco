@@ -2,9 +2,69 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session continue from Phase 27D-1 integrated release preparation while preserving Phase 27A/27B/27C and the verified Phase 26 closeout.
+This document helps a new ChatGPT/Codex session continue from Phase 27D-2 Preview smoke while preserving Phase 27A/27B/27C and the verified Phase 26 closeout.
 
-## Current Work: Phase 27D-1 Integrated Verification And Release Preparation
+## Current Work: Phase 27D-2 Preview Deployment And Integrated UI Smoke
+
+- Date: 2026-09-26 (Asia/Seoul). Continue on
+  `feature/phase-27c-intro-resource-links`; no new branch. Preview-tested candidate
+  is `acf6cb7`, including all 27A/27B/27C work and the D-1 preparation document.
+- Fresh fetch before push and after the operator smoke report confirmed main and
+  origin/main still `2059adb`. Phase 26 fix `d7d5e27`, backup `813a819`, Phase 27A
+  and Phase 27B branches remain intact. No main checkout/merge/push occurred.
+- The operator confirmed Production branch main, this feature branch Preview,
+  all_preview variable scope, no unexpected override and existing Supabase auth
+  readiness. Names only were discussed; no values/files/settings were inspected
+  or changed. No repository DB deployment workflow or active pre-push hook found.
+- Pre-push typecheck, 85 Node tests, build, full dev-inclusive audit (0 findings)
+  and diff/security/format checks PASS. Existing six Kakao regressions preserved.
+  D-1's four supplemental mock cases are historical, not added to 85 or rerun here.
+- Normal `git push -u origin feature/phase-27c-intro-resource-links` succeeded.
+  Local/remote feature matched `acf6cb7` with upstream tracking and clean tree.
+  The operator confirmed environment Preview, matching commit and build PASS.
+  This is Dashboard confirmation, not a claim derived from Git push or HTTP 200.
+- Agent browser connection failed before inspection. The operator subsequently
+  reported all basic Preview checks PASS: filter/results hiding, default-summary
+  hiding, preserved selections/tree, narrow deep-tree layout, hidden Tab targets,
+  one login/logout reload with session/gate and upload restoration, failure/retry,
+  no passive reload loop, intro-auth return, three links/new tabs and layout/keyboard.
+  No public raw email, secret-like console output or error was reported within
+  that basic smoke. This is new operator Preview evidence, not recycled local PASS.
+- Signup/mail/both signup live branches/storage-blocked browser fallback remain
+  NOT_RUN. Real Kakao and build-log secret review remain PARTIAL because they were
+  not separately confirmed. Do not infer real-map alignment from layout PASS or
+  infer log inspection from the console result. No all-device/pixel claim.
+- Existing approved test-account Auth login/logout in shared Supabase was the
+  service-side scope; the operator entered credentials privately. Default global
+  sign-out behavior was preserved and its other-session effect explained before
+  testing. No new account/mail or observation write was requested/performed by
+  Codex. No browser credential/session dump, SQL or settings change.
+- Smoke record: `docs/architecture/phase-27-preview-smoke.md`. Updated readiness
+  document separates D-1 history from D-2 results. Only those two docs and this
+  handoff changed; src/tests/packages and Phase 26 behavior remain unchanged.
+- Documentation follow-up checks: typecheck, 85 tests, build, full dev-inclusive
+  audit (0 findings), diff/Markdown/whitespace/EOF/forbidden-path/secret scans PASS.
+  Commit message: `docs: record phase 27 preview smoke`; use Git/final report for
+  its hash and normal feature push result. No amend or main push.
+- A documentation-only push may start another Preview build. Its status is not
+  yet observed here. App/tests/lockfile remain identical to tested `acf6cb7`, but
+  do not claim the new documentation commit was visually retested or deployed
+  successfully solely because its Git push succeeds. Do not commit build-status
+  updates repeatedly.
+- Production frontend is not updated by this task. No migration/RPC/RLS/Edge
+  Function, DB/observation, Auth/Storage/Kakao/Vercel setting change, package update,
+  Docker/WSL/local-stack reset, new feature or completed Phase 27 archive.
+- Next decision: separate Production release approval and remaining real-Kakao
+  smoke. Before integration, recheck main/candidate, exact release range, outstanding
+  risks, eligible working deployment/recovery target and immediate operator testing.
+  Do not reuse Phase 26 approval or its old marker-revert/backup as the release plan.
+
+**한국어:** `acf6cb7` Preview 빌드와 기본 필터·인증·소개 검증을 사용자가 PASS로
+확인했습니다. 가입·메일·저장소 차단은 NOT_RUN, 실제 Kakao와 빌드 로그 검토는
+PARTIAL로 남깁니다. 문서만 추가하며 운영에는 반영하지 않습니다. 다음은 별도의
+Production 배포 승인 여부와 실지도 확인 계획 결정입니다.
+
+## Previous Work: Phase 27D-1 Integrated Verification And Release Preparation
 
 - Review date: 2026-09-26 (Asia/Seoul). Continue on
   `feature/phase-27c-intro-resource-links`; no new branch. Started clean at
