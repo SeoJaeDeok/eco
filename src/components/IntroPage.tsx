@@ -3,6 +3,7 @@ import { ALL_TAXON_FILTER, TAXA, type TaxonFilter } from '../constants/taxon';
 import { IntroPageHeader } from './intro/IntroPageHeader';
 import { IntroTaxonFilter } from './intro/IntroTaxonFilter';
 import { IntroToolbar } from './intro/IntroToolbar';
+import { IntroRelatedSites } from './intro/IntroRelatedSites';
 import { SpeciesGrid } from './intro/SpeciesGrid';
 import type { SpeciesSummary } from './intro/SpeciesCard';
 import type { Observation, PageId, Taxon } from '../types';
@@ -110,6 +111,8 @@ export const IntroPage = ({ observations, onSelectSpecimen, onNavigate }: IntroP
           visibleTaxa={visibleTaxa}
           onSelectSpecimen={onSelectSpecimen}
         />
+
+        <IntroRelatedSites />
       </div>
     </div>
   );
