@@ -62,6 +62,10 @@ and source identity, counts and missing-rank rules are unchanged.
   remains owned outside MapPage; hiding does not invoke its selection callback.
 - A collapsed summary shows the actual search, selected species and broad taxa,
   not an invented combined filter count. Long summary/suggestion text wraps.
+- A small follow-up after `6aa6631` removes the collapsed summary's `전체 관찰`
+  fallback. Without active filters, MapPage omits that entire summary wrapper,
+  including its margin. The title/reopen button, active summaries, taxonomy chip
+  and `전체 보기` reset behavior are unchanged; expanded rendering is unchanged.
 - `TaxonomyFilterStatus` was extracted within the existing tree module and is
   rendered outside both hidden regions. The taxonomy chip, filter loading/error
   feedback, chip clear button, header summary and global reset remain available.
@@ -129,6 +133,7 @@ and [Kakao container relayout sample](https://apis.map.kakao.com/web/sample/mapR
 | --- | --- | --- |
 | Before-fix regression check | 2 expected FAIL | New outer-disclosure and bounded-indentation tests against `2059adb` source in memory; no reset/worktree replacement |
 | Follow-up regression against `3d58aad` | 3 expected FAIL | Updated disclosure, fresh hidden results and empty-feedback tests against previous source in memory; no reset/worktree replacement |
+| Summary regression against `6aa6631` | 2 expected FAIL | Strengthened existing tests cover unfiltered collapse and collapsed reset; corrected source passes both |
 | Component contract tests after follow-up | 9 PASS | Filter/tree/cache preservation, hidden counts/list/empty feedback, current incoming props, collapsed clear/reset, seven ranks, hidden-ancestor focus contract, pending children and retry |
 | Full Node suite after follow-up | 60 PASS | Existing 51 plus 9, including all six unchanged Phase 26 marker/layout tests |
 | Typecheck / production build | PASS | Existing commands; no dependency/tool installation |
@@ -147,6 +152,10 @@ separately (9 PASS). The initial audit command was
 Deno/Docker/Supabase checks were not needed for unchanged backend code. Mocks
 establish behavior contracts, not actual React DOM layout. The follow-up browser
 attempt failed at tool bootstrap before any page inspection or screenshots.
+The summary-only follow-up reran typecheck, all 60 tests (9 focused) and build
+successfully. Browser connection again failed before inspection, so both fixture
+and normal-app visual checks remain PARTIAL. The unchanged fixture imports the
+real MapPage; no copied fixture-only rendering was patched.
 
 ## Local Fixture And Manual Follow-up
 
@@ -183,6 +192,7 @@ removing an empty override. No real key value is needed or changed.
    Tab으로 숨긴 목록에 들어가지 않아야 하며 큰 빈 공간도 없어야 합니다.
 4. `필터 열기`를 눌러 선택값·열었던 가지·결과가 유지되는지 확인합니다. 접힌 상태의
    분류 칩 해제는 분류만, `전체 보기`는 전체 조건을 해제해야 합니다.
+   조건이 없을 때는 제목과 `필터 열기`만 남고 `전체 관찰` 요약과 그 여백은 없어야 합니다.
 5. `전체 보기` 후 검색어 `layout-short`만 입력하고 종 추천은 선택하지 않습니다.
    접은 뒤 `합성 자료 갱신`을 누르고 다시 엽니다. 결과 이름이 `layout-short updated`로
    바뀌어야 합니다. 없는 검색어로 만든 빈 결과 안내도 접기와 함께 숨겨지는지 확인합니다.

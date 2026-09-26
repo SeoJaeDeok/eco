@@ -244,6 +244,8 @@ test('chip clear and full reset work while collapsed without resetting the tree'
   assert.equal(ids(view).length, 5);
   assert.ok(!ids(view).includes('layout-pending') && !ids(view).includes('layout-rejected'));
   assert.equal(view.button('필터 열기').props['aria-expanded'], false);
+  assert.equal(view.nodes((node) => node.props['aria-label'] === '적용 중인 필터').length, 0);
+  assert.equal(view.nodes((node) => node.type === 'p' && view.text(node) === '전체 관찰').length, 0);
   await view.click(view.button('필터 열기'));
   assert.equal(view.button('Taraxacum 하위 분류 접기').props['aria-expanded'], true);
   assert.equal(fixture.calls.roots, 1);
@@ -339,8 +341,19 @@ test('outer visibility alone does not load taxonomy or call observation selectio
   const fixture = createMapFilterLayoutFixture();
   const view = await mountMap(fixture);
   const before = view.map().props.observations;
+  assert.equal(resultCounts(view).length, 1);
+  assert.equal(resultButtons(view).length, before.length);
   await view.click(view.button('필터 접기'));
+  assert.equal(view.nodes((node) => node.type === 'h1' && view.text(node) === '생태지도 검색').length, 1);
+  assert.equal(view.button('필터 열기').props['aria-expanded'], false);
+  assert.equal(view.nodes((node) => node.type === 'p' && view.text(node) === '전체 관찰').length, 0);
+  assert.equal(view.nodes((node) => node.props['aria-label'] === '적용 중인 필터').length, 0);
+  assert.equal(resultCounts(view).length, 0);
+  assert.equal(resultButtons(view).length, 0);
+  assert.equal(view.map().props.observations, before);
   await view.click(view.button('필터 열기'));
+  assert.equal(resultCounts(view).length, 1);
+  assert.equal(resultButtons(view).length, before.length);
   assert.equal(view.button('분류 탐색').props['aria-expanded'], false);
   assert.deepEqual(fixture.calls, { roots: 0, children: 0, selection: 0 });
   assert.equal(view.map().props.observations, before);

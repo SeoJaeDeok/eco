@@ -162,12 +162,11 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
             </button>
           </div>
 
-          {!areFiltersExpanded && (
+          {!areFiltersExpanded && hasActiveFilters && (
             <div className="mb-2 space-y-1 text-[11px] leading-5 text-zinc-600 [overflow-wrap:anywhere]" aria-label="적용 중인 필터">
               {searchQuery.trim() && <p>검색: {searchQuery}</p>}
               {selectedSpecies && <p>선택 종: {selectedSpecies.name}{selectedSpecies.scientificName && ` (${selectedSpecies.scientificName})`}</p>}
               {selectedTaxa.length > 0 && <p>분류군: {selectedTaxa.join(', ')}</p>}
-              {!hasActiveFilters && <p>전체 관찰</p>}
             </div>
           )}
 

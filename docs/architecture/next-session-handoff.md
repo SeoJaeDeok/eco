@@ -10,8 +10,9 @@ This document helps a new ChatGPT/Codex session understand Phase 27A local map-f
 - Working branch: `feature/phase-27a-map-filter-layout`.
 - Code/test commit: `c203f7a feat: add collapsible map filters and responsive taxonomy tree`.
 - Initial documentation commit: `3d58aad docs: record phase 27a map filter layout`.
-- Follow-up: `fix: collapse map results with filter panel`; use Git/final report
-  for its actual hash. Continued on the same branch; no new phase/branch, amend,
+- Results follow-up: `6aa6631 fix: collapse map results with filter panel`.
+- Summary-only follow-up: `fix: hide unfiltered summary when map filters collapse`;
+  use Git/final report for its hash. Continued on the same branch; no new phase/branch, amend,
   main merge, push or deployment.
 - Implemented only the outer Eco Map filter disclosure and deep taxonomy layout.
   Initial state is expanded; hiding controls keeps their React state mounted.
@@ -20,6 +21,9 @@ This document helps a new ChatGPT/Codex session understand Phase 27A local map-f
   compact map-list title/buttons and empty-result feedback now hide with the
   same toggle. This supersedes the original always-visible-results requirement.
   Chip clear, full reset and the existing summary/filter status remain visible.
+  The latest small follow-up hides the default `전체 관찰` summary and its wrapper
+  when collapsed without active filters. Active summaries, title/reopen button,
+  reset behavior and expanded rendering are unchanged.
   Two mounted native-hidden regions share one state and linked aria-controls;
   hidden results occupy no layout space or native keyboard focus targets.
   Incoming props still update current results while hidden; selection is not
@@ -36,6 +40,10 @@ This document helps a new ChatGPT/Codex session understand Phase 27A local map-f
   result tests fail against `3d58aad` source in memory and pass after correction.
   The initial two regressions against `2059adb` and zero-finding full audit remain
   historical evidence. Audit was not rerun in this no-package-change/no-push follow-up.
+- Summary-only follow-up reran typecheck, 60 tests (9 focused) and build: PASS.
+  Two strengthened tests fail against `6aa6631` and pass after the change.
+  Fixture files are unchanged and use the actual MapPage; browser connection
+  failed again before inspection, so no new visual or keyboard PASS is claimed.
 - Browser tooling failed before inspection. 320/390/768/1280 responsive geometry,
   actual keyboard/focus and visual overlap checks remain PARTIAL. Local fixture
   and modules returned HTTP 200, which is not browser-rendering evidence.
