@@ -5,7 +5,9 @@ import { execFileSync } from 'node:child_process';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import * as filters from '../src/utils/observationFilters.ts';
+import * as months from '../src/utils/observationMonth.ts';
 import { createMapFilterLayoutFixture } from './fixtures/map-filter-layout.mjs';
+import { createMapMonthFixture } from './fixtures/map-month-filter.mjs';
 
 // Component/effect contract harness, not React DOM, CSS geometry or a browser.
 const mountMap = async (fixture) => {
@@ -53,10 +55,11 @@ const mountMap = async (fixture) => {
   const stubs = {
     react,
     'react/jsx-runtime': { jsx, jsxs: jsx },
-    'lucide-react': Object.fromEntries(['ChevronDown', 'ChevronUp', 'ChevronRight', 'Loader2', 'RotateCw', 'X', 'Search'].map((name) => [name, name])),
+    'lucide-react': Object.fromEntries(['Check', 'ChevronDown', 'ChevronUp', 'ChevronRight', 'Loader2', 'RotateCw', 'X', 'Search'].map((name) => [name, name])),
     '../constants/taxon': { TAXA: ['식물', '조류'] },
     '../repositories/taxonomyTreeRepositoryProvider': { activeTaxonomyTreeRepository: fixture.repository },
     '../utils/observationFilters': filters,
+    '../utils/observationMonth': months,
     './MapPreview': { MapPreview: (props) => {
       react.useEffect(() => { mapMounts++; return () => { mapUnmounts++; }; }, []);
       return jsx('map-preview', props);
@@ -380,9 +383,9 @@ test('disclosures link to mounted regions and hide descendants without role tree
   const toggle = view.button('Plantae 하위 분류 접기');
   await view.click(toggle);
   assert.equal(view.focusPath, toggle.path);
-  assert.equal(view.nodes((node) => node.props.className?.includes('grid-cols-')).length, 1);
+  assert.equal(view.nodes((node) => node.type === 'button' && node.props.className?.includes('grid-cols-')).length, 1);
   await view.click(view.button('Plantae 하위 분류 펼치기'));
-  assert.equal(view.nodes((node) => node.props.className?.includes('grid-cols-')).length, 9);
+  assert.equal(view.nodes((node) => node.type === 'button' && node.props.className?.includes('grid-cols-')).length, 9);
   assert.equal(fixture.calls.children, 6);
 });
 
@@ -421,4 +424,174 @@ test('root error waits for explicit retry and empty roots remain a visible state
   await view.click(view.button('다시'));
   assert.equal(attempts, 2);
   assert.ok(view.nodes((node) => node.type === 'p' && view.text(node) === '분류 정보가 연결된 관찰이 아직 없습니다.').length);
+});
+
+const monthButton = (view, month) => {
+  const buttons = view.nodes((node) => node.type === 'button' && view.text(node) === `${month}월`);
+  assert.equal(buttons.length, 1);
+  return buttons[0];
+};
+const assertResultsAgree = async (view) => {
+  const before = view.selected.length;
+  for (const button of resultButtons(view)) await view.click(button);
+  assert.deepEqual(view.selected.slice(before), ids(view));
+  assert.match(view.text(resultCounts(view)[0]), new RegExp(`^표시 중 ${ids(view).length}건`));
+};
+
+test('month controls filter the actual map, compact list and count together beyond twenty', async () => {
+  const fixture = createMapMonthFixture();
+  const view = await mountMap(fixture);
+  assert.equal(ids(view).length, 33);
+  assert.equal(view.button('전체 월').props['aria-pressed'], true);
+  await view.click(monthButton(view, 5));
+  assert.equal(ids(view).length, 27);
+  assert.equal(monthButton(view, 5).props['aria-pressed'], true);
+  await assertResultsAgree(view);
+  await view.click(monthButton(view, 4));
+  assert.equal(ids(view).length, 28);
+  await assertResultsAgree(view);
+  await view.click(monthButton(view, 5));
+  assert.deepEqual(ids(view), ['month-april']);
+  await view.click(monthButton(view, 4));
+  assert.equal(view.button('전체 월').props['aria-pressed'], true);
+  assert.equal(ids(view).length, 33);
+  for (const month of months.OBSERVATION_MONTHS) await view.click(monthButton(view, month));
+  assert.equal(view.button('전체 월').props['aria-pressed'], true);
+  assert.ok(months.OBSERVATION_MONTHS.every((month) => monthButton(view, month).props['aria-pressed'] === false));
+  assert.equal(ids(view).length, 33);
+  assert.deepEqual(fixture.calls, { roots: 0, children: 0, selection: 0 });
+  assert.equal(view.mapMounts, 1);
+  assert.equal(view.mapUnmounts, 0);
+});
+
+test('month summary and independent clears preserve search, taxonomy branches, cache and selection', async () => {
+  const fixture = createMapMonthFixture();
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  const originalTreeCount = view.text(view.button('계Plantae'));
+  await view.click(view.button('계Plantae'));
+  await view.search('Monthus');
+  await view.click(view.nodes((node) => node.type === 'button' && node.props['aria-pressed'] !== undefined && view.text(node).startsWith('식물'))[0]);
+  await view.click(monthButton(view, 5));
+  await view.click(monthButton(view, 4));
+  assert.equal(ids(view).length, 26);
+  await view.click(resultButtons(view)[0]);
+  const selected = [...view.selected];
+  const calls = { ...fixture.calls };
+  assert.equal(view.text(view.button('계Plantae')), originalTreeCount);
+  await view.click(view.button('필터 접기'));
+  const summary = view.nodes((node) => node.props['aria-label'] === '적용 중인 필터')[0];
+  assert.match(view.text(summary), /관찰 월: 4월, 5월/);
+  assert.equal(resultCounts(view).length, 0);
+  const focusPaths = new Set(view.focusable().map((node) => node.path));
+  const hiddenMonths = view.nodes((node) => node.type === 'button' && /^\d+월$/.test(view.text(node)), true);
+  assert.equal(hiddenMonths.length, 12);
+  assert.ok(hiddenMonths.every((node) => !focusPaths.has(node.path)));
+  await view.click(view.button('분류 필터 해제'));
+  assert.equal(ids(view).length, 27); // Linked plants plus the legacy May plant.
+  assert.match(view.text(view.nodes((node) => node.props['aria-label'] === '적용 중인 필터')[0]), /관찰 월: 4월, 5월/);
+  await view.click(view.button('관찰 월 필터 해제'));
+  assert.equal(ids(view).length, 32);
+  await view.click(view.button('필터 열기'));
+  assert.equal(view.button('Monthus 하위 분류 접기').props['aria-expanded'], true);
+  assert.equal(view.nodes((node) => node.type === 'input')[0].props.value, 'Monthus');
+  assert.equal(view.button('전체 월').props['aria-pressed'], true);
+  assert.deepEqual(view.selected, selected);
+  assert.deepEqual(fixture.calls, calls);
+  assert.equal(view.text(view.button('계Plantae')), originalTreeCount);
+  await view.click(monthButton(view, 2));
+  await view.click(view.button('필터 접기'));
+  await view.click(view.button('전체 보기'));
+  assert.equal(ids(view).length, 33);
+  assert.equal(view.nodes((node) => node.props['aria-label'] === '적용 중인 필터').length, 0);
+  assert.equal(view.nodes((node) => node.type === 'p' && view.text(node) === '전체 관찰').length, 0);
+  await view.click(view.button('필터 열기'));
+  assert.equal(view.button('전체 월').props['aria-pressed'], true);
+  assert.equal(view.nodes((node) => node.type === 'input')[0].props.value, '');
+  assert.equal(view.button('Monthus 하위 분류 접기').props['aria-expanded'], true);
+  assert.deepEqual(fixture.calls, calls);
+});
+
+test('all-month action clears only months and species selection still ANDs with month', async () => {
+  const fixture = createMapMonthFixture();
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  await view.search('Monthus');
+  await view.click(view.nodes((node) => node.type === 'button' && node.props.className?.includes('max-w-full'))[0]);
+  await view.click(view.button('계Plantae'));
+  await view.click(monthButton(view, 5));
+  assert.equal(ids(view).length, 25);
+  const calls = { ...fixture.calls };
+  await view.click(view.button('전체 월'));
+  assert.equal(ids(view).length, 31);
+  assert.ok(view.button('분류 필터 해제'));
+  await view.click(monthButton(view, 3));
+  assert.equal(ids(view).length, 0);
+  await view.click(view.button('필터 접기'));
+  assert.match(view.text(view.nodes((node) => node.props['aria-label'] === '적용 중인 필터')[0]), /선택 종:.*관찰 월: 3월/);
+  await view.click(view.button('필터 열기'));
+  assert.equal(monthButton(view, 3).props['aria-pressed'], true);
+  assert.equal(resultButtons(view).length, 0);
+  assert.deepEqual(fixture.calls, calls);
+});
+
+test('incoming data while collapsed reuses the selected month without resetting map or tree', async () => {
+  const fixture = createMapMonthFixture();
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  await view.click(view.button('계Plantae'));
+  await view.click(monthButton(view, 5));
+  await view.click(resultButtons(view)[0]);
+  const calls = { ...fixture.calls };
+  await view.click(view.button('필터 접기'));
+  await view.updateObservations(fixture.observations.map((row) => row.id === 'month-may-1' ? { ...row, date: '2026-04-01' } : row));
+  assert.equal(ids(view).length, 24);
+  assert.ok(!ids(view).includes('month-may-1'));
+  assert.deepEqual(view.selected, ['month-may-1']);
+  await view.click(view.button('필터 열기'));
+  assert.equal(monthButton(view, 5).props['aria-pressed'], true);
+  assert.equal(view.button('Monthus 하위 분류 접기').props['aria-expanded'], true);
+  await assertResultsAgree(view);
+  assert.deepEqual(fixture.calls, calls);
+  assert.equal(view.mapMounts, 1);
+  assert.equal(view.mapUnmounts, 0);
+});
+
+test('month changes do not restart a pending taxonomy request and stale taxonomy responses stay ignored', async () => {
+  const fixture = createMapMonthFixture();
+  const pending = [];
+  fixture.repository.getObservationIdsForSelection = () => new Promise((resolve) => { fixture.calls.selection++; pending.push(resolve); });
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  await view.click(view.button('계Plantae'));
+  await view.click(monthButton(view, 4));
+  await view.click(monthButton(view, 5));
+  assert.equal(fixture.calls.selection, 1);
+  assert.deepEqual(ids(view), []);
+  await view.click(view.button('문Tracheophyta'));
+  assert.equal(fixture.calls.selection, 2);
+  pending[1](['month-may-2']);
+  await view.settle();
+  assert.deepEqual(ids(view), ['month-may-2']);
+  pending[0](['month-april']);
+  await view.settle();
+  assert.deepEqual(ids(view), ['month-may-2']);
+  await view.click(monthButton(view, 5));
+  assert.deepEqual(ids(view), []);
+  assert.equal(fixture.calls.selection, 2);
+});
+
+test('month controls expose multi-select buttons with focus styles and a non-color check indicator', async () => {
+  const view = await mountMap(createMapMonthFixture());
+  assert.equal(view.nodes((node) => node.type === 'fieldset' && node.props['aria-label'] === '관찰 월 다중 선택').length, 1);
+  for (const month of months.OBSERVATION_MONTHS) {
+    const button = monthButton(view, month);
+    assert.equal(button.props.type, 'button');
+    assert.equal(button.props['aria-pressed'], false);
+    assert.match(button.props.className, /focus-visible:/);
+  }
+  await view.click(monthButton(view, 5));
+  const check = view.nodes((node) => node.type === 'Check' && node.parent?.path === monthButton(view, 5).path)[0];
+  assert.equal(check.props['aria-hidden'], 'true');
+  assert.doesNotMatch(check.props.className, /invisible/);
 });

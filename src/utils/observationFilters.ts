@@ -1,5 +1,6 @@
 import { ALL_TAXON_FILTER, type TaxonFilter } from '../constants/taxon';
 import type { Observation, Taxon } from '../types';
+import { getObservationMonth, normalizeObservationMonths, type ObservationMonth } from './observationMonth';
 
 export type ImageFilter = 'all' | 'with-image' | 'without-image';
 export type ObservationSortKey = 'newest' | 'oldest' | 'name';
@@ -19,6 +20,7 @@ export interface FilterMapObservationsOptions {
   searchQuery: string;
   selectedSpeciesKey?: string | null;
   taxonomyObservationIds?: ReadonlySet<string> | null;
+  selectedMonths?: readonly ObservationMonth[];
 }
 
 export interface ObservationSpeciesGroup {
@@ -110,8 +112,9 @@ export const countObservationsByTaxon = (observations: Observation[], taxon: Tax
 
 export const filterMapObservations = (
   observations: Observation[],
-  { selectedTaxa, searchQuery, selectedSpeciesKey, taxonomyObservationIds = null }: FilterMapObservationsOptions,
+  { selectedTaxa, searchQuery, selectedSpeciesKey, taxonomyObservationIds = null, selectedMonths = [] }: FilterMapObservationsOptions,
 ) => {
+  const months = normalizeObservationMonths(selectedMonths);
   return observations.filter((observation) => {
     const matchesPublicStatus = observation.status === undefined
       || observation.status === 'sample'
@@ -122,8 +125,10 @@ export const filterMapObservations = (
       : matchesObservationSearchQuery(observation, searchQuery);
     const matchesTaxonomy = taxonomyObservationIds === null
       || (Boolean(observation.taxonId) && taxonomyObservationIds.has(observation.id));
+    const month = months.length > 0 ? getObservationMonth(observation.date) : null;
+    const matchesMonth = months.length === 0 || (month !== null && months.includes(month));
 
-    return matchesPublicStatus && matchesTaxon && matchesSpecies && matchesTaxonomy;
+    return matchesPublicStatus && matchesTaxon && matchesSpecies && matchesTaxonomy && matchesMonth;
   });
 };
 

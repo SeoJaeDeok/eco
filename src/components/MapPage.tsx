@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { TAXA } from '../constants/taxon';
 import { activeTaxonomyTreeRepository } from '../repositories/taxonomyTreeRepositoryProvider';
 import {
@@ -8,6 +8,7 @@ import {
   type ObservationSpeciesGroup,
 } from '../utils/observationFilters';
 import type { Observation, Taxon } from '../types';
+import { OBSERVATION_MONTHS, toggleObservationMonth, type ObservationMonth } from '../utils/observationMonth';
 import type { TaxonomyTreeSelection } from '../features/taxonomy/taxonomyTree';
 import { SearchInput } from './ui/SearchInput';
 import { TaxonFilterButton } from './ui/TaxonFilterButton';
@@ -34,6 +35,7 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
   const filterResultsId = `${filterControlsId}-results`;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTaxa, setSelectedTaxa] = useState<Taxon[]>([]);
+  const [selectedMonths, setSelectedMonths] = useState<ObservationMonth[]>([]);
   const [selectedSpeciesKey, setSelectedSpeciesKey] = useState<string | null>(null);
   const [selectedTaxonomyNode, setSelectedTaxonomyNode] = useState<TaxonomyTreeSelection | null>(null);
   const [taxonomyObservationIds, setTaxonomyObservationIds] = useState<ReadonlySet<string> | null>(null);
@@ -82,9 +84,10 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
       selectedTaxa,
       searchQuery,
       selectedSpeciesKey,
+      selectedMonths,
       taxonomyObservationIds: selectedTaxonomyNode ? taxonomyObservationIds ?? new Set() : null,
     });
-  }, [observations, searchQuery, selectedSpeciesKey, selectedTaxa, selectedTaxonomyNode, taxonomyObservationIds]);
+  }, [observations, searchQuery, selectedSpeciesKey, selectedTaxa, selectedMonths, selectedTaxonomyNode, taxonomyObservationIds]);
 
   const speciesSuggestions = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -103,7 +106,7 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
   }, [observations, selectedSpeciesKey]);
 
   const hasActiveFilters = Boolean(
-    searchQuery.trim() || selectedSpeciesKey || selectedTaxa.length > 0 || selectedTaxonomyNode,
+    searchQuery.trim() || selectedSpeciesKey || selectedTaxa.length > 0 || selectedMonths.length > 0 || selectedTaxonomyNode,
   );
 
   const handleSearchChange = (nextSearchQuery: string) => {
@@ -128,6 +131,7 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
     setSearchQuery('');
     setSelectedSpeciesKey(null);
     setSelectedTaxa([]);
+    setSelectedMonths([]);
     setSelectedTaxonomyNode(null);
   };
 
@@ -167,6 +171,20 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
               {searchQuery.trim() && <p>검색: {searchQuery}</p>}
               {selectedSpecies && <p>선택 종: {selectedSpecies.name}{selectedSpecies.scientificName && ` (${selectedSpecies.scientificName})`}</p>}
               {selectedTaxa.length > 0 && <p>분류군: {selectedTaxa.join(', ')}</p>}
+              {selectedMonths.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <p className="min-w-0">관찰 월: {selectedMonths.map((month) => `${month}월`).join(', ')}</p>
+                  <button
+                    type="button"
+                    aria-label="관찰 월 필터 해제"
+                    title="관찰 월 필터 해제"
+                    onClick={() => setSelectedMonths([])}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-700"
+                  >
+                    <X size={14} aria-hidden="true" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -247,6 +265,37 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
               })}
             </fieldset>
 
+            <fieldset className="mt-4" aria-label="관찰 월 다중 선택">
+              <legend className="text-xs font-medium text-zinc-700">관찰 월</legend>
+              <button
+                type="button"
+                aria-pressed={selectedMonths.length === 0}
+                onClick={() => setSelectedMonths([])}
+                className="my-1 inline-flex min-h-11 items-center gap-1 px-2 text-xs text-zinc-700 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-700"
+              >
+                <Check size={12} aria-hidden="true" className={selectedMonths.length === 0 ? '' : 'invisible'} />
+                전체 월
+              </button>
+              <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6">
+                {OBSERVATION_MONTHS.map((month) => {
+                  const isSelected = selectedMonths.includes(month);
+                  return (
+                    <button
+                      key={month}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => setSelectedMonths((current) => toggleObservationMonth(current, month))}
+                      className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-1 border px-1 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-700 ${isSelected ? 'border-black bg-black font-semibold text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-400'}`}
+                    >
+                      <Check size={12} aria-hidden="true" className={`shrink-0 ${isSelected ? '' : 'invisible'}`} />
+                      {month}월
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+
+            <p className="mt-3 text-[11px] leading-5 text-zinc-500">분류 옆 숫자는 전체 기록 기준</p>
             <TaxonomyTreePanel
               repository={activeTaxonomyTreeRepository}
               selectedNode={selectedTaxonomyNode}
