@@ -9,7 +9,7 @@ import {
   type ObservationSpeciesGroup,
 } from '../utils/observationFilters';
 import type { Observation, Taxon } from '../types';
-import { OBSERVATION_MONTHS, toggleObservationMonth, type ObservationMonth } from '../utils/observationMonth';
+import { getObservationYears, OBSERVATION_MONTHS, toggleObservationMonth, type ObservationMonth } from '../utils/observationMonth';
 import type { TaxonomyTreeSelection } from '../features/taxonomy/taxonomyTree';
 import { SearchInput } from './ui/SearchInput';
 import { TaxonFilterButton } from './ui/TaxonFilterButton';
@@ -41,14 +41,21 @@ export const MapPage = ({
   const [areFiltersExpanded, setAreFiltersExpanded] = useState(true);
   const filterControlsId = useId();
   const filterResultsId = `${filterControlsId}-results`;
+  const yearSelectId = `${filterControlsId}-year`;
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTaxa, setSelectedTaxa] = useState<Taxon[]>([]);
   const [selectedMonths, setSelectedMonths] = useState<ObservationMonth[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedSpeciesKey, setSelectedSpeciesKey] = useState<string | null>(null);
   const [selectedTaxonomyNode, setSelectedTaxonomyNode] = useState<TaxonomyTreeSelection | null>(null);
   const [taxonomyObservationIds, setTaxonomyObservationIds] = useState<ReadonlySet<string> | null>(null);
   const [isLoadingTaxonomyFilter, setIsLoadingTaxonomyFilter] = useState(false);
   const [taxonomyFilterError, setTaxonomyFilterError] = useState<string | null>(null);
+  const availableYears = useMemo(() => getObservationYears(observations), [observations]);
+  const isSelectedYearMissing = selectedYear !== null && !availableYears.includes(selectedYear);
+  const yearOptions = isSelectedYearMissing
+    ? [...availableYears, selectedYear].sort((a, b) => b - a)
+    : availableYears;
 
   useEffect(() => {
     if (!selectedTaxonomyNode) {
@@ -93,9 +100,10 @@ export const MapPage = ({
       searchQuery,
       selectedSpeciesKey,
       selectedMonths,
+      selectedYear,
       taxonomyObservationIds: selectedTaxonomyNode ? taxonomyObservationIds ?? new Set() : null,
     });
-  }, [observations, searchQuery, selectedSpeciesKey, selectedTaxa, selectedMonths, selectedTaxonomyNode, taxonomyObservationIds]);
+  }, [observations, searchQuery, selectedSpeciesKey, selectedTaxa, selectedMonths, selectedYear, selectedTaxonomyNode, taxonomyObservationIds]);
 
   const speciesSuggestions = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -114,7 +122,7 @@ export const MapPage = ({
   }, [observations, selectedSpeciesKey]);
 
   const hasActiveFilters = Boolean(
-    searchQuery.trim() || selectedSpeciesKey || selectedTaxa.length > 0 || selectedMonths.length > 0 || selectedTaxonomyNode,
+    searchQuery.trim() || selectedSpeciesKey || selectedTaxa.length > 0 || selectedMonths.length > 0 || selectedYear !== null || selectedTaxonomyNode,
   );
 
   const handleSearchChange = (nextSearchQuery: string) => {
@@ -140,6 +148,7 @@ export const MapPage = ({
     setSelectedSpeciesKey(null);
     setSelectedTaxa([]);
     setSelectedMonths([]);
+    setSelectedYear(null);
     setSelectedTaxonomyNode(null);
   };
 
@@ -179,6 +188,20 @@ export const MapPage = ({
               {searchQuery.trim() && <p>검색: {searchQuery}</p>}
               {selectedSpecies && <p>선택 종: {selectedSpecies.name}{selectedSpecies.scientificName && ` (${selectedSpecies.scientificName})`}</p>}
               {selectedTaxa.length > 0 && <p>분류군: {selectedTaxa.join(', ')}</p>}
+              {selectedYear !== null && (
+                <div className="flex items-center gap-2">
+                  <p className="min-w-0">관찰 연도: {selectedYear}년</p>
+                  <button
+                    type="button"
+                    aria-label="관찰 연도 필터 해제"
+                    title="관찰 연도 필터 해제"
+                    onClick={() => setSelectedYear(null)}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-700"
+                  >
+                    <X size={14} aria-hidden="true" />
+                  </button>
+                </div>
+              )}
               {selectedMonths.length > 0 && (
                 <div className="flex items-center gap-2">
                   <p className="min-w-0">관찰 월: {selectedMonths.map((month) => `${month}월`).join(', ')}</p>
@@ -272,6 +295,33 @@ export const MapPage = ({
                 );
               })}
             </fieldset>
+
+            <div className="mt-4">
+              <label htmlFor={yearSelectId} className="block text-xs font-medium text-zinc-700">관찰 연도</label>
+              <select
+                id={yearSelectId}
+                value={selectedYear ?? ''}
+                aria-describedby={availableYears.length === 0 || isSelectedYearMissing ? `${yearSelectId}-notice` : undefined}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (value === '') setSelectedYear(null);
+                  else if (yearOptions.includes(Number(value))) setSelectedYear(Number(value));
+                }}
+                className="mt-2 min-h-11 w-full min-w-0 max-w-full border border-zinc-200 bg-white px-2 text-xs text-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-700"
+              >
+                <option value="">전체 연도</option>
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}년{isSelectedYearMissing && year === selectedYear ? ' (현재 자료 없음)' : ''}
+                  </option>
+                ))}
+              </select>
+              {(availableYears.length === 0 || isSelectedYearMissing) && (
+                <p id={`${yearSelectId}-notice`} className="mt-1 text-[11px] leading-5 text-zinc-500">
+                  {isSelectedYearMissing ? '선택한 연도의 관찰이 현재 자료에 없습니다. 전체 연도로 해제할 수 있습니다.' : '선택할 수 있는 유효한 관찰 연도가 없습니다.'}
+                </p>
+              )}
+            </div>
 
             <fieldset className="mt-4" aria-label="관찰 월 다중 선택">
               <legend className="text-xs font-medium text-zinc-700">관찰 월</legend>

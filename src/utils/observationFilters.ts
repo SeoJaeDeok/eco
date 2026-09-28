@@ -1,6 +1,6 @@
 import { ALL_TAXON_FILTER, type TaxonFilter } from '../constants/taxon';
 import type { Observation, Taxon } from '../types';
-import { getObservationMonth, normalizeObservationMonths, type ObservationMonth } from './observationMonth';
+import { getObservationDateParts, normalizeObservationMonths, type ObservationMonth } from './observationMonth';
 
 export type ImageFilter = 'all' | 'with-image' | 'without-image';
 export type ObservationSortKey = 'newest' | 'oldest' | 'name';
@@ -21,6 +21,7 @@ export interface FilterMapObservationsOptions {
   selectedSpeciesKey?: string | null;
   taxonomyObservationIds?: ReadonlySet<string> | null;
   selectedMonths?: readonly ObservationMonth[];
+  selectedYear?: number | null;
 }
 
 export interface ObservationSpeciesGroup {
@@ -112,7 +113,7 @@ export const countObservationsByTaxon = (observations: Observation[], taxon: Tax
 
 export const filterMapObservations = (
   observations: Observation[],
-  { selectedTaxa, searchQuery, selectedSpeciesKey, taxonomyObservationIds = null, selectedMonths = [] }: FilterMapObservationsOptions,
+  { selectedTaxa, searchQuery, selectedSpeciesKey, taxonomyObservationIds = null, selectedMonths = [], selectedYear = null }: FilterMapObservationsOptions,
 ) => {
   const months = normalizeObservationMonths(selectedMonths);
   return observations.filter((observation) => {
@@ -125,10 +126,11 @@ export const filterMapObservations = (
       : matchesObservationSearchQuery(observation, searchQuery);
     const matchesTaxonomy = taxonomyObservationIds === null
       || (Boolean(observation.taxonId) && taxonomyObservationIds.has(observation.id));
-    const month = months.length > 0 ? getObservationMonth(observation.date) : null;
-    const matchesMonth = months.length === 0 || (month !== null && months.includes(month));
+    const date = months.length > 0 || selectedYear !== null ? getObservationDateParts(observation.date) : null;
+    const matchesYear = selectedYear === null || date?.year === selectedYear;
+    const matchesMonth = months.length === 0 || (date !== null && months.includes(date.month));
 
-    return matchesPublicStatus && matchesTaxon && matchesSpecies && matchesTaxonomy && matchesMonth;
+    return matchesPublicStatus && matchesTaxon && matchesSpecies && matchesTaxonomy && matchesYear && matchesMonth;
   });
 };
 

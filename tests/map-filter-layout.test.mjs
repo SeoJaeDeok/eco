@@ -162,6 +162,7 @@ const mountMap = async (fixture, overrides = {}) => {
     async updateObservations(next) { observations = next; render(); await settle(); },
     async click(node) { node.props.onClick({ currentTarget: { focus() { focusPath = node.path; } } }); await settle(); },
     async search(value) { nodes((node) => node.type === 'input')[0].props.onChange({ target: { value } }); await settle(); },
+    async selectYear(value) { nodes((node) => node.type === 'select')[0].props.onChange({ target: { value: String(value) } }); await settle(); },
   };
 };
 
@@ -609,4 +610,150 @@ test('month controls expose multi-select buttons with focus styles and a non-col
   const check = view.nodes((node) => node.type === 'Check' && node.parent?.path === monthButton(view, 5).path)[0];
   assert.equal(check.props['aria-hidden'], 'true');
   assert.doesNotMatch(check.props.className, /invisible/);
+});
+
+const yearSelect = (view, includeHidden = false) => view.nodes((node) => node.type === 'select', includeHidden)[0];
+const yearValues = (view) => view.nodes((node) => node.type === 'option').map((node) => node.props.value);
+
+test('year selector in MapPage stays based on unfiltered approved data while year and months intersect', async () => {
+  const fixture = createMapMonthFixture();
+  const view = await mountMap({ ...fixture, observations: [...fixture.observations,
+    { ...fixture.observations[0], id: 'future-pending', status: 'pending', date: '2030-01-01' },
+    { ...fixture.observations[0], id: 'future-rejected', status: 'rejected', date: '2029-01-01' },
+  ] });
+  const expected = ['', 2026, 2025, 2024, 2023, 2022];
+  assert.deepEqual(yearValues(view), expected);
+  assert.equal(yearSelect(view).props.value, '');
+  assert.equal(view.nodes((node) => node.type === 'label' && node.props.htmlFor === yearSelect(view).props.id).length, 1);
+  assert.match(yearSelect(view).props.className, /focus-visible:/);
+  await view.click(monthButton(view, 5));
+  await view.selectYear(2025);
+  assert.equal(ids(view).length, 13);
+  await assertResultsAgree(view);
+  await view.selectYear(2024);
+  assert.equal(ids(view).length, 12);
+  assert.equal(monthButton(view, 5).props['aria-pressed'], true);
+  await view.click(monthButton(view, 4));
+  assert.equal(yearSelect(view).props.value, 2024);
+  assert.equal(ids(view).length, 12);
+  await view.selectYear(2026);
+  assert.deepEqual(ids(view), ['month-april']);
+  await openPath(view, fixture);
+  await view.click(view.button('계Plantae'));
+  await view.search('no-matching-observation');
+  assert.deepEqual(ids(view), []);
+  assert.deepEqual(yearValues(view), expected);
+  assert.equal(yearSelect(view).props.value, 2026);
+  assert.equal(view.mapMounts, 1);
+  assert.equal(view.mapUnmounts, 0);
+});
+
+test('collapse preserves year, months, branches and cache; each clear affects only its own condition', async () => {
+  const fixture = createMapMonthFixture();
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  await view.click(view.button('계Plantae'));
+  await view.search('Monthus');
+  await view.selectYear(2024);
+  await view.click(monthButton(view, 5));
+  await view.click(monthButton(view, 4));
+  const calls = { ...fixture.calls };
+  const treeCount = view.text(view.button('계Plantae'));
+  assert.equal(ids(view).length, 12);
+  await view.click(view.button('필터 접기'));
+  assert.equal(yearSelect(view), undefined);
+  assert.ok(!view.focusable().some((node) => node.path === yearSelect(view, true).path));
+  assert.match(view.text(view.nodes((node) => node.props['aria-label'] === '적용 중인 필터')[0]), /관찰 연도: 2024년.*관찰 월: 4월, 5월/);
+  assert.equal(resultButtons(view).length, 0);
+  assert.equal(resultCounts(view).length, 0);
+  await view.click(view.button('분류 필터 해제'));
+  assert.equal(yearSelect(view, true).props.value, 2024);
+  assert.equal(ids(view).length, 12);
+  await view.click(view.button('관찰 월 필터 해제'));
+  assert.equal(yearSelect(view, true).props.value, 2024);
+  assert.equal(ids(view).length, 13);
+  await view.click(view.button('필터 열기'));
+  assert.equal(view.button('Monthus 하위 분류 접기').props['aria-expanded'], true);
+  assert.equal(view.nodes((node) => node.type === 'input')[0].props.value, 'Monthus');
+  assert.equal(view.text(view.button('계Plantae')), treeCount);
+  assert.equal(view.button('전체 월').props['aria-pressed'], true);
+  await view.click(monthButton(view, 5));
+  await view.click(view.button('필터 접기'));
+  await view.click(view.button('관찰 연도 필터 해제'));
+  assert.equal(yearSelect(view, true).props.value, '');
+  assert.equal(ids(view).length, 26); // The search still excludes the bird.
+  assert.match(view.text(view.nodes((node) => node.props['aria-label'] === '적용 중인 필터')[0]), /관찰 월: 5월/);
+  await view.click(view.button('필터 열기'));
+  await view.selectYear(2025);
+  await view.click(view.button('전체 월'));
+  assert.equal(yearSelect(view).props.value, 2025);
+  assert.equal(ids(view).length, 14);
+  await view.click(monthButton(view, 5));
+  await view.selectYear('');
+  assert.equal(monthButton(view, 5).props['aria-pressed'], true);
+  await view.selectYear(2025);
+  await view.click(view.button('필터 접기'));
+  await view.click(view.button('전체 보기'));
+  assert.equal(ids(view).length, 33);
+  assert.equal(yearSelect(view, true).props.value, '');
+  assert.equal(view.nodes((node) => node.props['aria-label'] === '적용 중인 필터').length, 0);
+  await view.click(view.button('필터 열기'));
+  assert.equal(view.button('전체 월').props['aria-pressed'], true);
+  assert.equal(view.button('Monthus 하위 분류 접기').props['aria-expanded'], true);
+  assert.deepEqual(fixture.calls, calls);
+  assert.equal(view.mapMounts, 1);
+  assert.equal(view.mapUnmounts, 0);
+});
+
+test('selected year remains identifiable when refreshed data temporarily empties or loses that year', async () => {
+  const fixture = createMapMonthFixture();
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  await view.selectYear(2025);
+  await view.click(monthButton(view, 5));
+  const calls = { ...fixture.calls };
+  await view.click(view.button('필터 접기'));
+  await view.updateObservations([]);
+  assert.equal(yearSelect(view, true).props.value, 2025);
+  assert.deepEqual(ids(view), []);
+  await view.click(view.button('필터 열기'));
+  assert.deepEqual(yearValues(view), ['', 2025]);
+  assert.match(view.text(view.nodes((node) => node.type === 'option' && node.props.value === 2025)[0]), /현재 자료 없음/);
+  const noticeId = yearSelect(view).props['aria-describedby'];
+  assert.match(view.text(view.nodes((node) => node.props.id === noticeId)[0]), /전체 연도/);
+  assert.equal(monthButton(view, 5).props['aria-pressed'], true);
+  await view.updateObservations(fixture.observations.filter((row) => !row.date.startsWith('2025-')));
+  assert.equal(yearSelect(view).props.value, 2025);
+  assert.deepEqual(ids(view), []);
+  assert.deepEqual(yearValues(view), ['', 2026, 2025, 2024, 2023, 2022]);
+  await view.updateObservations(fixture.observations);
+  assert.equal(yearSelect(view).props.value, 2025);
+  assert.equal(yearSelect(view).props['aria-describedby'], undefined);
+  assert.equal(ids(view).length, 13);
+  assert.equal(view.button('Monthus 하위 분류 접기').props['aria-expanded'], true);
+  assert.deepEqual(fixture.calls, calls);
+});
+
+test('empty date options keep all years usable and year changes do not restart pending taxonomy selection', async () => {
+  const empty = await mountMap({ ...createMapMonthFixture(), observations: [] });
+  assert.deepEqual(yearValues(empty), ['']);
+  assert.equal(yearSelect(empty).props.value, '');
+  assert.match(empty.text(empty.nodes((node) => node.props.id === yearSelect(empty).props['aria-describedby'])[0]), /유효한 관찰 연도가 없습니다/);
+  const fixture = createMapMonthFixture();
+  let resolve;
+  fixture.repository.getObservationIdsForSelection = () => new Promise((done) => { resolve = done; fixture.calls.selection++; });
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  await view.click(view.button('계Plantae'));
+  await view.selectYear(2025);
+  await view.click(monthButton(view, 5));
+  await view.selectYear(2024);
+  assert.equal(fixture.calls.selection, 1);
+  assert.deepEqual(ids(view), []);
+  resolve(['month-may-1', 'month-may-2']);
+  await view.settle();
+  assert.deepEqual(ids(view), ['month-may-2']);
+  await view.selectYear(2025);
+  assert.deepEqual(ids(view), ['month-may-1']);
+  assert.equal(fixture.calls.selection, 1);
 });
