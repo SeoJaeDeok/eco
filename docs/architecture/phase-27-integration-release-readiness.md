@@ -1,5 +1,32 @@
 # Phase 27D-1 - Integrated Verification And Release Preparation
 
+## Subsequent Production Result And Closeout
+
+Recorded on 2026-09-28. The D-1/D-2 sections below retain their historical scope.
+In D-3, the exact range `2059adb..258daaa` was verified as 11 commits and 19 files;
+all non-document files matched Preview-tested `acf6cb7`. Final checks passed:
+typecheck, 85 Node tests, build, dev-inclusive audit with zero findings at that
+checkpoint and diff/privacy checks. The four supplemental D-1 mocks are separate.
+
+The operator explicitly approved this Phase 27 Production release and confirmed
+a usable recovery target and immediate testing. The local safety branch
+`backup/before-phase-27-production` points to `2059adb`. Main was fast-forwarded
+to `258daaa` and pushed normally once; the feature and earlier backup branches
+were preserved. No rollback/revert was executed.
+
+The operator confirmed Production, matching commit and build PASS, then all 15
+core browser checks PASS, including real Kakao camera/resize/zoom/pan/detail and
+intro-auth restoration. No raw email/console secret exposure or new regression
+was reported. This is operator evidence, not a new Codex browser run. Historical
+Preview Kakao PARTIAL is not rewritten; signup/mail/storage live checks remain
+NOT_RUN and build-log review remains PARTIAL.
+
+See [Production results](phase-27-production-smoke.md) and the
+[Verified Phase 27 archive](../eco/phase-history/phase-27.md). D-4 is docs-only;
+fresh closeout checks and post-push deployment status are separate from the
+Production visual PASS on `258daaa`. No code/package/DB/settings changes.
+Next work waits for the user's choice, not another automatic deployment or feature.
+
 ## Subsequent Phase 27D-2 Preview Result
 
 Recorded on 2026-09-26. The operator subsequently authorized feature-branch Preview

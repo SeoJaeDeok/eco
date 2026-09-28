@@ -1,6 +1,18 @@
 # Phase 27B - Public Auth Success Page Refresh
 
-## Status And Scope
+## Subsequent Production Verification
+
+Recorded on 2026-09-28: the operator confirmed login/logout single reload,
+session/gate/public-screen restoration, failure without reload and successful
+retry, no passive reload loop and intro-auth return PASS on Production `258daaa`.
+Existing approved test-account sessions only; no new account or mail action.
+Both signup live branches and blocked-storage browser fallback remain NOT_RUN;
+their automated results are not live evidence. Build-log review remains PARTIAL.
+See [the Production matrix](phase-27-production-smoke.md) and
+[Phase 27 archive](../eco/phase-history/phase-27.md). The core phase is closed;
+local/Preview records below stay historical. No code or Auth setting changed here.
+
+## Historical Phase 27B Status And Scope
 
 - Based on `a95d2b7`, preserving the complete Phase 27A branch history.
 - Branch: `feature/phase-27b-auth-success-refresh`.

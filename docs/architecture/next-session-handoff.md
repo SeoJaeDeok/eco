@@ -2,9 +2,69 @@
 
 ## Purpose
 
-This document helps a new ChatGPT/Codex session continue from Phase 27D-2 Preview smoke while preserving Phase 27A/27B/27C and the verified Phase 26 closeout.
+This document records the verified Phase 27 closeout and remaining checks. Wait for the user's next task choice; preserve the deployed Phase 26 and Phase 27 work.
 
-## Current Work: Phase 27D-2 Preview Deployment And Integrated UI Smoke
+## Current State: Phase 27 Closed After Production Verification
+
+- Closeout record date: 2026-09-28 (Asia/Seoul). Started on clean main at `258daaa`;
+  fresh fetch confirmed origin/main also `258daaa`. No intervening code change.
+- Actual Preview visual evidence: `acf6cb7`. Actual Production-tested release:
+  `258daaa`. Git comparison confirms only documentation changed between those
+  commits; no newer Preview build/visual PASS is inferred for `258daaa`.
+- D-3 reviewed `2059adb..258daaa` (11 commits, 19 files), rechecked the candidate
+  and obtained explicit Phase 27 Production approval, rollback-target readiness
+  and immediate-test readiness. Main fast-forwarded to the exact candidate and
+  was pushed normally once. No merge commit, force push or Phase 26 approval reuse.
+- Operator confirmed Production environment, matching commit and build PASS,
+  then explicitly confirmed all 15 core Production checks: filter/results/default
+  summary hiding, state retention, narrow deep-tree layout, hidden keyboard focus,
+  real Kakao load/resize/filter camera/zoom-pan alignment/correct detail, login and
+  logout single reload/session/gate/screen restore, failure/retry, no passive loop,
+  intro-auth return and introduction links/layout/new tabs/keyboard.
+- Public raw email, secret-like console exposure and new regressions: none
+  reported. These are operator manual results, not Codex browser inspection,
+  pixel measurements or a claim of every mobile device/exception path.
+- Remaining: both signup live branches, new account/confirmation mail and actual
+  blocked-storage browser fallback NOT_RUN; build-log secret review PARTIAL.
+  Older localhost/Preview Kakao PARTIAL stays historical. The subsequent
+  Production map PASS does not claim localhost/Preview restrictions were removed.
+- Shared Supabase smoke used only existing approved test-account Auth sessions:
+  normal login/logout creation/cleanup, with the existing global sign-out scope.
+  No new account, mail, observation mutation, SQL, settings or coordinate change.
+- Phase 26 marker/security patches and all 27A/27B/27C changes remain intact.
+  No app, test, asset, package, migration/RPC/RLS/Edge Function or deployment
+  configuration change during closeout. No Auth/Storage/taxonomy/Kakao setting edit.
+- Feature branch `feature/phase-27c-intro-resource-links` remains `258daaa`.
+  Local `backup/before-phase-27-production` remains `2059adb` and is not pushed.
+  Phase 26 fix/backup and Phase 27A/27B branches are preserved. No recovery was
+  executed; old Phase 26 rollback commands are not the Phase 27 recovery range.
+- Fresh D-4 checks (2026-09-28): typecheck, full Node suite (exit 0), build,
+  dev-inclusive audit (zero findings at all severities; no registry error) and
+  documentation/privacy/equivalence checks PASS. App/test/audit commands ran once.
+  The test output collector missed the count-summary format; D-3's 85 is historical,
+  not a newly captured count. No new browser check or supplemental mock run.
+- Archive: `docs/eco/phase-history/phase-27.md`, status Verified for the core
+  requirements with explicit limitations. Full result matrix:
+  `docs/architecture/phase-27-production-smoke.md`. Preview/local records below
+  remain historical and are not rewritten as Production results.
+- Closeout message: `docs: close phase 27 map auth and resource improvements`.
+  Read its actual hash and push result from Git/final report; do not amend to add
+  a self-hash. A docs-only main push may trigger another Production build.
+  That deployment is not yet observed at document preparation. Source equivalence
+  to `258daaa` is not a new browser check, build-artifact or environment comparison.
+  No connected Vercel/GitHub status tooling or installed CLI was available. Do not
+  repeat commits to record transient deployment status; use the final push report.
+- Next: wait for the user to select a task. The previously planned Phase 28
+  candidates are 20-item observation-list pagination and monthly map filtering
+  by observation date. These and other deferred requests are not implemented.
+
+**한국어:** Phase 27 핵심 15개는 운영자 Production 확인 PASS로 종료합니다.
+실제 확인한 릴리스는 `258daaa`이며, 종료 문서 커밋의 배포·시각 검증과 구분합니다.
+가입·메일·저장소 차단은 NOT_RUN, 빌드 로그는 PARTIAL입니다. 사용자가 다음 작업을
+선택한 뒤 시작합니다. 이전 계획상 Phase 28 후보는 관찰목록 20개 페이지네이션과
+관찰 날짜 기준 월별 지도 필터이며 이번에는 구현하지 않습니다.
+
+## Previous Work: Phase 27D-2 Preview Deployment And Integrated UI Smoke
 
 - Date: 2026-09-26 (Asia/Seoul). Continue on
   `feature/phase-27c-intro-resource-links`; no new branch. Preview-tested candidate

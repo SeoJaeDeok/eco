@@ -1,6 +1,18 @@
 # Phase 27A - Collapsible Eco Map Filters And Responsive Taxonomy Tree Layout
 
-## Status And Scope
+## Subsequent Production Verification
+
+Recorded on 2026-09-28: the operator confirmed filter/result collapse, hidden
+default summary, retained selections/tree, narrow deep-tree layout and hidden
+keyboard targets PASS on Production `258daaa`. Real Kakao load, resize/filter
+camera preservation, zoom/pan alignment and correct marker detail also PASS.
+See [the Production matrix](phase-27-production-smoke.md) and
+[Phase 27 archive](../eco/phase-history/phase-27.md). Phase 27 core scope is closed.
+No Codex browser run, numeric geometry or exhaustive mobile coverage is claimed.
+The original implementation/local/Preview limitations below remain historical;
+they are not overwritten by the later operator Production evidence.
+
+## Historical Phase 27A Status And Scope
 
 - Baseline: clean `main` at `2059adb`.
 - Working branch: `feature/phase-27a-map-filter-layout`.

@@ -1,6 +1,17 @@
 # Phase 27C - Introduction Related Biodiversity Sites
 
-## Status And Scope
+## Subsequent Production Verification
+
+Recorded on 2026-09-28: the operator confirmed the three official links, new tabs,
+layout and keyboard use on Production `258daaa`, along with intro-auth screen
+return and no unnecessary tab-return reload. See [the Production matrix](phase-27-production-smoke.md)
+and [Phase 27 archive](../eco/phase-history/phase-27.md). The core phase is closed.
+This is operator actual-app evidence, not a Codex browser or new network-tool run.
+The historical GBIF tool 403 and the local/Preview results below retain their
+original scope. No new external API/tracking request or code change was added
+during closeout, and no exhaustive device/screen-reader verification is claimed.
+
+## Historical Phase 27C Status And Scope
 
 - Base: `c2d592f` on Phase 27B, including all Phase 27A work.
 - Branch: `feature/phase-27c-intro-resource-links`; main stays `2059adb`.
