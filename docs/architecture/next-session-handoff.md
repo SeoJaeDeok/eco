@@ -26,8 +26,9 @@ This document records Phase 28A implementation and the historical Phase 27 close
   114 Node tests (0 failed), build and audit PASS. The transition follow-up reran typecheck,
   the full Node suite (126 tests, 0 failed), build and dev-inclusive audit
   (0 vulnerabilities at every severity at that run). The subsequent scroll fix
-  freshly passed typecheck, 129 full-suite tests, build and dev-inclusive audit
-  (all severities 0). Tests exercise
+  passed typecheck, 129 full-suite tests, build and dev-inclusive audit (all
+  severities 0) in its implementation session. These are historical results,
+  not rerun during the current documentation-only manual-result record. Tests exercise
   the installed SDK query builder with injected fetch and actual App/list callbacks.
   Existing Phase 26/27 tests remain unchanged and pass.
 - User-approved follow-up: reuse menu page transitions for previous/next/page
@@ -47,15 +48,24 @@ This document records Phase 28A implementation and the historical Phase 27 close
   code cause: the result-response effect called `scrollIntoView` after pointer
   page navigation. Removed that effect, refs and callback flag; no compensation
   timer, saved viewport, fixed-height spacer or scroll lock. Four regression tests
-  failed before removal and passed after; 25 focused harness tests now pass.
+  failed before removal and passed after; 25 focused harness tests passed then.
   These execute App/list code with I/O spies, not real scroll geometry. Existing
   mounted fade grid/image aspect ratio remain; a short final page can clamp to
-  the new document bottom. Browser scroll/anchoring is still PARTIAL, not a measured
-  no-jump guarantee. The user's report is not a post-fix verification result.
+  the new document bottom. No absolute-position guarantee or large permanent
+  spacer is added. Unreported device/anchoring cases remain unverified.
+- Latest manual evidence: **operator-reported manual verification** after
+  `02db6ec`. The operator completed the supplied local checks and explicitly
+  confirmed the original automatic result-heading scroll is resolved: **PASS**.
+  This is not Codex browser inspection, measured scroll/pixel accuracy, or a
+  complete device/exception matrix. Do not turn the checklist completion report
+  into separately graded PASS results that were not supplied, and do not request
+  the same manual checks again for this record.
 - Local mock/static server and a 47-record fixture using the real list/detail
-  components are available. HTTP/transform checks passed, but browser tooling
-  failed before inspection again in the follow-up: actual animation comparison,
-  responsive/keyboard/click and actual scroll smoke PARTIAL. The real-component fixture accepts
+  components were available in the implementation session. HTTP/transform checks
+  passed then, but Codex browser tooling failed before inspection: historical
+  browser verification PARTIAL. The later operator local scroll PASS is separate.
+  This documentation session did not open the browser or recheck the server.
+  The real-component fixture accepts
   `?delay=800&failPage=2` for delayed reads/one-time page-two failure; no external I/O
   or duplicated animation. Live Supabase
   read/search/regex/photo compatibility NOT_RUN; real Kakao/live auth not reverified.
@@ -67,22 +77,34 @@ This document records Phase 28A implementation and the historical Phase 27 close
   Original local commits: `6088059 feat: paginate public observations in pages of twenty`
   and `8cdd850 docs: record phase 28a observation pagination`.
   Follow-up code/tests: `9bc55d7 feat: reuse page transitions for observation pagination`.
-  Documentation uses `docs: record observation pagination transitions`; read its
-  actual hash from Git. No remote feature branch was created or pushed by this work.
-  Scroll correction commit uses `fix: prevent scroll jumps during observation pagination`;
-  consult Git for its hash. Only list UI, its regression test and these records change.
+  Transition documentation: `04063eb docs: record observation pagination transitions`.
+  Scroll correction: `02db6ec fix: prevent scroll jumps during observation pagination`.
+  The current record changes only this handoff and `observation-list-pagination.md`,
+  with diff/Markdown/whitespace/EOF/forbidden-path/secret checks. App checks and
+  audit are not rerun: source/tests/packages are unchanged and the working guide
+  permits skipping typecheck/build for docs-only work. Local documentation commit
+  uses `docs: record phase 28a pagination verification`; read its hash from Git.
+  No remote feature branch was created or pushed by this work.
 - The Phase 27 docs-only `a3887a7` deployment remains unobserved; actual historical
   Production visual PASS is still tied to `258daaa`. Do not infer a new live PASS.
-- Next: finish pending read-only/browser checks; Phase 28B monthly Eco Map filter
-  by observation date is planned but not implemented or automatically started.
+- Carry to later approved integration/Preview: actual Supabase range/count/search/
+  photo filtering, real-data detail/images and map/list data separation. Live
+  Supabase remains NOT_RUN; fixture/harness results are not live-read evidence.
+- No known blocker to the next local implementation is confirmed. This is not
+  Production readiness or deployment approval. Next planned task: Phase 28B monthly
+  Eco Map filter by observation date, only after a separate user request.
+  It has not been implemented or automatically started.
   Phase 28 remains in progress; no completed Phase 28 archive.
 
 **한국어:** 관찰목록 20개 서버 페이지네이션을 구현했습니다. 검색·필터는 전체
 공개 관찰에 먼저 적용하며 지도·소개·트리는 목록 페이지와 분리했습니다.
-자동 검사는 통과했고 실제 화면·Supabase 확인은 남아 있습니다. 아직 로컬 작업입니다.
+기존 자동 검사는 통과했고 실제 Supabase 조회는 아직 NOT_RUN입니다. 아직 로컬 작업입니다.
 후속 전환 효과는 카드에만 적용하며 페이지를 넘긴 뒤 상단으로 이동시키던 호출을
-제거했습니다. 이번 129개 자동 검사는 통과했지만 실제 스크롤·좁은 화면·키보드는
-수동 확인이 필요합니다. 마지막 페이지가 짧아지는 경우의 브라우저 보정은 남습니다.
+제거했습니다. 사용자가 02db6ec 이후 안내된 수동 확인을 완료했고 자동 상단 이동
+문제가 해결됐다고 보고해 해당 항목을 사용자 확인 PASS로 기록했습니다.
+129개 자동 검사는 과거 기록이며 이번에는 문서만 검사합니다. 같은 수동 테스트를
+다시 요청하지 않습니다. 개별 결과가 없는 예외·기기 검증을 PASS로 확장하지 않으며,
+마지막 페이지가 짧아지는 경우의 브라우저 보정은 구분해서 남깁니다.
 push나 배포는 하지 않습니다. 월별 지도 필터는 별도 요청을 받은 뒤 진행합니다.
 
 ## Previous State: Phase 27 Closed After Production Verification

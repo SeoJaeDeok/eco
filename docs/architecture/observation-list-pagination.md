@@ -21,7 +21,55 @@
   The subsequent user-approved transition follow-up changes UI code/tests as well
   as documentation. It is not a docs-only verification or a new phase/branch.
   Follow-up code/tests: `9bc55d7 feat: reuse page transitions for observation pagination`.
-  Its separate documentation commit is identified by Git, not a self-referential hash.
+  Transition documentation: `04063eb docs: record observation pagination transitions`.
+  Latest implementation: `02db6ec fix: prevent scroll jumps during observation pagination`.
+
+## Local Verification Status After 02db6ec
+
+- Evidence: **operator-reported manual verification** of the local pagination
+  correction at `02db6ec`. The operator reports completing the supplied manual
+  checks and explicitly confirms that the original automatic result-heading
+  scroll is resolved: **PASS**.
+- This is not Codex browser verification. No scroll-position measurement, pixel
+  tolerance, complete device matrix or item-by-item exception results were supplied.
+  The checklist completion report is retained as a whole, not expanded into
+  separate PASS claims for every delay/error, keyboard or reduced-motion case.
+  The same manual checks are not requested again in this documentation task.
+- The local fixture uses real list/detail components and isolated records. That
+  evidence is separate from actual Supabase requests, which remain **NOT_RUN**.
+  No Preview/Production deployment or Production verification has occurred for
+  Phase 28A. The earlier Codex browser-tool limitation remains historical.
+
+| Implemented capability | Code and historical automated evidence | Manual / live evidence |
+| --- | --- | --- |
+| Twenty observation records per server page | Repository range contract and injected SDK transport tests | Actual Supabase NOT_RUN |
+| Whole-public-data search/filter before paging | Shared data/count predicates; approved-only and deterministic ordering tests | Actual Supabase NOT_RUN |
+| Matching total count and visible range | Exact count, page bounds, zero/final-page tests | No separate item-level result supplied |
+| Registered-reference photo filter | Shared mock/server photo patterns and count consistency tests | Actual Supabase photo/legacy compatibility NOT_RUN |
+| Search/filter reset to page one; detail close preserves page | Actual App/list callback harness | Guided-check completion reported as a whole |
+| Existing menu-style card fade and reduced motion | Shared opacity targets, transition and no-completion-required tests | No separate exception/device results supplied |
+| No unwanted automatic result-heading scroll | Scroll effect/flag removal in 02db6ec; callback and scroll-spy regressions | Original defect PASS, operator-reported |
+| Delayed, failed and out-of-order requests | Abort/identity guards, stale-transition rejection and retry tests | No separate exception results supplied |
+| List page does not limit map/tree to twenty | Separate list read; App/map separation regression and unchanged tree path | Live data separation NOT_RUN |
+
+The previous implementation session passed 129 Node tests, typecheck, build and
+a dev-inclusive audit with zero vulnerabilities at that time. These are historical
+results, not rerun results or a permanent security guarantee. This record-only
+session runs diff, Markdown, whitespace/EOF, forbidden-path and secret-like diff
+checks. App checks and audit are not rerun because only documentation changes;
+the project working guide explicitly permits skipping typecheck/build for docs-only work.
+
+The short-page limit is unchanged: switching from twenty to seven cards can reduce
+the maximum document scroll range, so native bottom clamping is possible. That is
+not the removed `scrollIntoView()` call. No large permanent spacer was added, and
+absolute viewport coordinates are not guaranteed across all document lengths.
+
+For a later approved integration/Preview check, retain actual Supabase range,
+count, search and photo predicates; real-data detail/image compatibility; and
+separation of map data from list page data. No known blocker to the next local
+implementation is established by the current evidence, but this is not release
+approval or full live-environment verification. Phase 28B, observation-date monthly
+Eco Map filtering, remains planned only and requires a separate request.
 
 ## Changed Files
 
@@ -147,8 +195,9 @@ Taxa column-level grants are not widened or bypassed; no taxa join is needed her
 - Page navigation no longer calls scroll or focus APIs for pointer or keyboard
   activation. Controls remain mounted; no click-time position is captured or
   restored after a delayed response. The user's subsequent scroll is not undone.
-  Normal menu navigation is unchanged. Actual browser positioning remains PARTIAL;
-  a shorter final document may still constrain the available scroll range.
+  Normal menu navigation is unchanged. The original automatic-scroll defect now
+  has an operator-reported local PASS; unreported device/geometry cases remain
+  unverified. A shorter final document may constrain the available scroll range.
 - A safe Korean error and same-condition retry distinguish failure from empty.
   The page query disables SDK automatic retries; the retry button is explicit.
 - Successful out-of-range response with exact count corrects to the last page
@@ -303,25 +352,30 @@ native anchoring and behavior on narrow screens still require real browser check
 | --- | --- | --- |
 | Regression before/after | PASS (mocked) | Four changed/new tests failed on the old scroll call, then passed after removal |
 | Focused actual App/list harness | PASS | 25 tests; scroll/focus spies, delayed response, user movement, retry, menu distinction |
-| Full Node suite | PASS | Fresh run: 129 tests, 0 failures; previous 126 remains historical |
+| Full Node suite | PASS | At implementation time: 129 tests, 0 failures; not rerun for the manual-result record |
 | Typecheck / build | PASS | Rerun after this code change |
 | Full dev-inclusive audit | PASS | Fresh audit: all severities 0; no dependency changes |
 | Diff/format/secret/path checks | PASS | Only two list UI files, one test and two documents changed |
 | Local serving | PASS | Root, 47-record fixture and changed component transforms responded successfully |
-| Real scroll position/layout/focus | PARTIAL | Browser connection failed before inspection; no scroll or pixel measurements |
+| Codex browser inspection at implementation time | PARTIAL | Connection failed before inspection; no scroll or pixel measurements; later operator result is recorded above |
 | Live Supabase / real Kakao | NOT_RUN / PARTIAL | Not reverified by this change |
 
 Tests exercise real App/list callback wiring with mocked Motion and scroll APIs,
-not CSS layout. Their synthetic positions are not browser measurements. The user's
-original problem report is not recorded as a post-fix visual PASS. No account,
+not CSS layout. Their synthetic positions are not browser measurements. The original
+problem report alone was not post-fix evidence; the subsequent explicit operator
+confirmation above establishes PASS for that defect. No account,
 observation, SQL, package, DB, Auth/Storage/Kakao/Vercel setting or provider change;
-no merge/push/deployment. Local commit message:
-`fix: prevent scroll jumps during observation pagination`; use Git for its hash.
+no merge/push/deployment. Local implementation commit:
+`02db6ec fix: prevent scroll jumps during observation pagination`.
 
 ## Local Manual Check
 
-A local mock/static dev server is provided at `http://127.0.0.1:3000` during this
-session. No environment file or deployed settings were edited. The standard app
+The following is the previously supplied checklist, retained for reference.
+The operator reports completing it after `02db6ec`; it is not a new request to
+repeat it, nor a set of separately graded results. The local mock/static server
+was available at `http://127.0.0.1:3000` in the implementation session; this docs-only
+session did not recheck its availability. No environment file or deployed settings
+were edited. The standard app
 uses unchanged sample data. The isolated fixture mounts the **real list and detail
 components** with 47 injected records, not a duplicate HTML implementation. It does
 not exercise real App routing, repository networking or live authentication.
@@ -353,8 +407,10 @@ measurement. A unique tie-breaker stabilises a fixed dataset, not concurrent
 insertions/removals: offset pages can shift and repeat/skip records between reads.
 No snapshot, cursor, index, RPC or migration is introduced.
 
-Live public read/regex/legacy-image compatibility and real responsive interaction
-remain necessary before a later release. Home/map/intro and tree scalability remain
+Live public read/regex/legacy-image compatibility and any unreported device-specific
+cases remain for later integration/release checks. The resolved automatic-scroll
+defect does not require the same local check to be repeated for this record.
+Home/map/intro and tree scalability remain
 separate follow-ups. Supplementary server statistics can be considered later.
 Next planned subtask is Phase 28B observation-date monthly map filtering, only on
 separate request. Phase 28 is not closed; no merge/push/deployment.
@@ -379,10 +435,13 @@ Reviewed on 2026-09-28 alongside installed SDK source:
 **한국어:** 목록만 서버에서 조건에 맞는 관찰 20개와 정확한 건수를 받습니다.
 사진 필터는 표시 성공이 아닌 등록 정보 기준이며, 종 수 등의 보조 통계는 이번
 목록 화면에서만 생략했습니다. 지도·소개·분류 트리는 20개로 제한하지 않습니다.
-자동 검사는 통과했지만 실제 Supabase와 브라우저 클릭 검증은 남아 있습니다.
+기존 자동 검사는 통과했고 실제 Supabase 조회는 아직 NOT_RUN입니다.
 후속 수정으로 기존 메뉴와 같은 투명도 전환을 카드 영역에 추가했습니다.
 새 데이터가 준비된 뒤에만 교체하며 검색·필터·페이지 버튼과 상세 상태는 유지합니다.
 추가 요청에 따라 페이지 변경 후 결과 상단으로 이동시키던 호출도 제거했습니다.
-이번 전체 129개 자동 검사는 통과했지만 실제 스크롤·전환·배치는 아직 PARTIAL입니다.
+02db6ec 이후 사용자가 안내된 수동 검증을 완료했고, 원래 자동 상단 이동 문제가
+해결됐다고 확인했습니다. 이 항목은 사용자 확인 PASS이며 Codex 직접 검증은 아닙니다.
+129개 테스트·타입 검사·빌드·감사 결과는 이전 구현 세션 기록으로, 이번에는 문서만
+검사했습니다. 개별 결과가 없는 예외 상황이나 모든 기기를 PASS로 확대하지 않습니다.
 마지막 7개 페이지에서 문서가 짧아지면 브라우저가 가능한 범위로 보정할 수 있습니다.
 DB·패키지·설정을 바꾸지 않았고 운영 반영이나 push는 하지 않습니다.
