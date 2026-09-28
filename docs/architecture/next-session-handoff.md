@@ -2,9 +2,76 @@
 
 ## Purpose
 
-This document records Phase 28B implementation, inherited Phase 28A work and the historical Phase 27 closeout. Preserve deployed work; do not begin integration, deployment or another feature without a separate request.
+This document records the documentation-only Phase 28 integration review, Phase 28B implementation, inherited Phase 28A work and the historical Phase 27 closeout. Preserve deployed work; do not execute integration, deployment or another feature without a separate request.
 
-## Current State: Phase 28B Observation Year/Month Map Filter
+## Current State: Phase 28 Integration Review, Readiness On Hold
+
+- Date: 2026-09-28 (Asia/Seoul). Reviewed clean
+  `feature/phase-28b-observation-month-filter` at `6a52cd3`.
+  Fresh fetch confirms local main/origin/main both `a3887a7`.
+  Reviewed range `a3887a7..6a52cd3`: 11 commits, 31 files, including 28A and 28B.
+  This session adds only a documentation commit; read its actual hash from Git.
+- **No new manual PASS:** all 16 operator checklist entries remain **NOT_RUN**,
+  including blank-screen resolution, fixture expected counts, year/month state,
+  clears, narrow/keyboard, ordinary-app controls and pagination regression.
+  Blank error summary means not supplied, not "no errors confirmed". No Codex
+  browser check, no pixel measurements or all-device verification occurred.
+  Historical 28A automatic-scroll correction operator PASS remains unchanged.
+- **Confirmed blocker B1:** actual default mock repository returns six visible
+  records with six valid 2026 dates but no status. `getObservationYears` requires
+  explicit approved and returns no years. Existing map filtering accepts these
+  local samples, so this is a public-display/year-option contract mismatch, not
+  an empty/invalid-date dataset or a harmless fixture caveat. Fixture records
+  explicitly approved do not exercise the ordinary default-mock path.
+- `Observation.status` is optional, but Supabase DB rows retain required status:
+  public repository filters approved; mapper preserves `observed_date -> date`
+  and `status`. Source inspection and a synthetic mapper probe found no dropped
+  status in that path. No live Supabase request/RLS test was performed.
+- Narrow fix proposed, **not executed**: make the reviewed mock public-sample
+  contract explicit at its read boundary and add actual default-repository/MapPage
+  coverage. Do not globally promote undefined to approved, weaken pending/rejected
+  exclusion, or change RLS. Separate code authorization is needed before the fix.
+  Ready-to-deploy status stays on hold; this docs task does not silently patch it.
+- Integration source review: page read remains server range/count/filter; detail,
+  fade and no-auto-scroll are retained. App list and map collections are separate;
+  list twenty-item limit does not constrain map/tree. Map date options use the
+  unfiltered loaded collection, and map/compact list/count use one final result.
+  Tree counts/cache remain separate and global; map provider remains unchanged.
+  Existing map/tree server row cap is unverified, not solved by date filtering.
+- Historical checks recorded at `6a52cd3`: 156 Node tests, typecheck/build PASS,
+  dev-inclusive audit zero at that run. **Not rerun here.** Current work executes
+  Git/source review, local read-only mock/mapper diagnostics and document diff,
+  Markdown/whitespace/EOF/forbidden-path/secret-like checks. The working guide
+  permits docs-only typecheck/build skip. No code/package change or push occurs.
+- Actual Supabase 28A range/count/search/photo/detail/images/data separation and
+  28B date/year/results/read scope remain **NOT_RUN**. Real Kakao remains **PARTIAL**.
+  Browser/server availability was not rechecked; previous fixture HTTP/module
+  evidence is historical, not a new render PASS. Supplied count numbers are only
+  synthetic expectations, not live data.
+- New plan: `docs/architecture/phase-28-integration-release-readiness.md` contains
+  full reviewed commits/files, B1, evidence boundaries and mandatory read-only
+  Preview checks. Checklist recorded in `eco-map-observation-month-filter.md`.
+- **Next decision:** after separately correcting B1, user decides on feature-branch
+  Preview push and Supabase read-only smoke authorization. Prefer Preview for list,
+  dates and UI; defer only real Kakao when domains restrict it. No new accounts,
+  email, SQL or observations to fill missing test cases; insufficient data stays
+  PARTIAL. Prior Phase 26/27/Preview approvals are not reused for Phase 28.
+- Main, Phase 28A and earlier feature/backup branches preserved. No app/test/package,
+  DB/migration/RLS/RPC/Edge Function, Auth/Storage/Kakao/Vercel setting changes.
+  No merge, push, deployment, rollback/revert, next feature or Phase 28 archive.
+  Commit message: `docs: record date filter smoke and prepare phase 28 integration`.
+
+**한국어:** 이번 수동 확인표는 모두 NOT_RUN으로 받았으므로 성공으로 기록하지
+않았습니다. 기본 mock의 정상 표시 기록이 연도 선택지에서 빠지는 연결 문제를
+직접 재현했습니다. Supabase mapper에는 같은 누락이 없지만 실조회는 미검증입니다.
+작은 계약 수정의 별도 승인 후 Preview·실조회 검증 승인 여부를 결정해야 합니다.
+코드는 그대로 두고 문서만 정리했으며, 기존 자동 156개 PASS는 과거 기록입니다.
+
+## Previous Implementation State: Phase 28B Observation Year/Month Map Filter
+
+Historical implementation-session record below. The integration findings and
+NOT_RUN operator checklist above supersede any prior readiness implication;
+server/test statements below describe that earlier session, not this docs review.
 
 - Date: 2026-09-28 (Asia/Seoul). Started clean from Phase 28A `dea0ad2` on
   `feature/phase-28b-observation-month-filter`, not from main. Main remains
