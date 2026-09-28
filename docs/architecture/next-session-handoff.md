@@ -2,9 +2,65 @@
 
 ## Purpose
 
-This document records the documentation-only Phase 28 integration review, Phase 28B implementation, inherited Phase 28A work and the historical Phase 27 closeout. Preserve deployed work; do not execute integration, deployment or another feature without a separate request.
+This document records the Phase 28B mock approval/date-contract correction, earlier integration review, inherited Phase 28A work and historical Phase 27 closeout. Preserve deployed work; do not execute integration, deployment or another feature without a separate request.
 
-## Current State: Phase 28 Integration Review, Readiness On Hold
+## Current State: Phase 28B Mock Contract Corrected Locally
+
+- Date: 2026-09-28 (Asia/Seoul). Continued clean Phase 28B branch
+  `feature/phase-28b-observation-month-filter` from `bacecae`, no new branch.
+  Local main and cached origin/main remain `a3887a7`; no fetch/push in this task.
+- Code/test commit: `419f654 fix: align public mock observations with approval status`.
+  Documentation follows separately; use Git for its actual hash, not self-amendment.
+- Authorized correction: exactly six `status: 'approved'` additions in
+  `src/data/sampleObservations.ts`, the intended public mock records. All other
+  sample fields are unchanged. Actual source -> mock repository -> App/MapPage
+  now supplies both visible records and the strict approved-only year selector.
+  General mock expected years `[2026]`; all/May six, April zero; two valid-date
+  legacy/unlinked records remain included without a taxonomy filter.
+- **B1 resolved in code/automated checks**, not all-environment verification.
+  No missing-status-to-approved fallback and no public guard relaxation. Pending/
+  rejected remain excluded. Separate mock taxonomy status fixtures are preserved;
+  admin uses the separate Supabase admin repository, not these six samples.
+  Supabase mapper/query/RLS are unchanged and live reads remain **NOT_RUN**.
+- Tests first: new checks failed on the old source (26 focused: 21 PASS, 5 FAIL),
+  then all 26 passed after six status additions. Five new actual-source/repository
+  contract tests plus one actual-MapPage mocked-render test. Fresh full Node suite:
+  **162 PASS, 0 failed, 0 skipped**. Typecheck/build PASS, dev-inclusive audit all
+  severities 0 at this run. Format/Markdown/diff/secret/path checks before commits.
+  Prior 156-test results are historical, not reused as this result.
+- Port `3005` server rechecked: served MapPage points into this workspace and
+  sample source matches the working file; boolean-only provider check confirms
+  mock mode. General app: `http://127.0.0.1:3005/`. Date and pagination fixture
+  entries/modules respond correctly, including Vite's HTML module proxy.
+  Browser connection failed before inspection: **visual PARTIAL**, not HTTP PASS
+  promoted to rendering PASS. No new browser package or configuration change.
+- All original **16 operator checks remain NOT_RUN**. Date fixture counts
+  33/27/28/13/12/0 and pagination 20/20/7 remain synthetic expectations. Actual
+  Supabase 28A range/count/search/photo/detail/images/separation and 28B date/year
+  read checks remain NOT_RUN. Real Kakao remains PARTIAL. Existing 28A operator
+  PASS for the original automatic-scroll defect is retained, not newly tested live.
+- Map/tree data still independent of the list's twenty-record page. Existing
+  loaded-map/server row-cap limitation remains. Phase 26/27 providers, auth and
+  Phase 28A page queries, image handling, fade/no-auto-scroll are unchanged and
+  their automated regressions remain in the passing full suite.
+- Changed scope: one public sample file, two test files and three documents.
+  No package/lockfile, DB/migration/RLS/RPC/Edge Function, Auth/Storage/Kakao/Vercel
+  settings, accounts, email or service observation writes. Main, features and
+  backups preserved. No merge/push/deployment, archive or next feature.
+- Next decision: user separately authorizes feature-branch Preview and read-only
+  actual Supabase smoke. B1 no longer blocks that decision, but browser/live
+  checks and approval are still required; no claim of Production readiness.
+  Prior Phase approvals are not reused. See `phase-28-integration-release-readiness.md`.
+
+**한국어:** 기본 공개 샘플 6개에 승인 상태를 적어 연도 선택 연결을 고쳤습니다.
+수정 전 실패를 재현했고 수정 후 전체 162개 검사가 통과했습니다. 직접 화면
+확인은 PARTIAL, 사용자 확인 16개와 Supabase 실조회는 NOT_RUN입니다.
+코드상 막힘은 해소됐지만 배포 완료가 아니며, 다음은 별도 Preview 승인 결정입니다.
+
+## Previous State: Documentation-Only Phase 28 Integration Review
+
+Historical `bacecae` record below: its B1 diagnosis is superseded by the authorized
+correction above. Its NOT_RUN manual/live results are not upgraded by that fix.
 
 - Date: 2026-09-28 (Asia/Seoul). Reviewed clean
   `feature/phase-28b-observation-month-filter` at `6a52cd3`.

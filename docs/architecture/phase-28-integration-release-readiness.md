@@ -2,21 +2,60 @@
 
 ## Decision And Evidence Scope
 
-- Review date: 2026-09-28 (Asia/Seoul), documentation-only review.
-- **NOT READY for release:** confirmed default-mock public-data/year-option
-  contract mismatch (B1 below), plus outstanding browser and live read checks.
+- Review and correction date: 2026-09-28 (Asia/Seoul).
+- **B1 corrected locally; release verification still incomplete.** The later
+  authorized code/test fix explicitly approves six intended public mock samples,
+  without weakening the year-option guard or changing Supabase. Browser/live
+  read checks and separate Preview/deployment authorization are outstanding.
 - No new user manual PASS was supplied. All 16 requested 28B checks are NOT_RUN.
   The blank-screen correction is implemented, not operator-confirmed resolved.
-- Code/tests/packages/settings are unchanged in this review. No merge, push,
-  Preview/Production deployment, promotion, SQL or data write was performed.
+- The original `bacecae` review was documentation-only. The follow-up changes one
+  mock sample file and two test files plus three documents. Packages/settings and
+  Supabase code are unchanged. No merge/push/deployment, SQL or service data write.
 - Prior Phase 26/27 Production or Preview authorization is not reusable here.
   Phase 28 remains open; this document is not deployment approval.
 
-**한국어:** 구현은 브랜치에 있지만 배포 준비 완료는 아닙니다. 기본 mock 앱의
-연도 선택 연결 문제를 확인했고, 사용자 화면 확인 16개와 Supabase 실조회도
-남아 있습니다. 이번에는 문서만 정리하며 코드나 설정을 바꾸지 않았습니다.
+**한국어:** 기본 mock 앱의 승인 상태 누락은 코드와 자동 검사에서 해결했습니다.
+사용자 화면 확인 16개와 Supabase 실조회는 남아 있으며 배포 준비 완료는 아닙니다.
+이번 수정은 공개 샘플 6개의 상태 보강으로 제한했고 승인 기준은 바꾸지 않았습니다.
 
-## Verified Git Snapshot
+## Current Correction And Verification
+
+- Continued from `bacecae` on the existing Phase 28B branch. Main and cached
+  origin/main remain `a3887a7`; no remote operation is performed in this follow-up.
+- Corrected code candidate: `419f654 fix: align public mock observations with approval status`.
+  Range `a3887a7..419f654`: 13 commits / 34 files before this documentation commit.
+  Since the historical snapshot below, add `bacecae` (integration review) and
+  `419f654` (correction). New paths are this readiness document,
+  `src/data/sampleObservations.ts` and `tests/mock-observation-public-contract.test.mjs`;
+  the other changed paths remain listed below. The next doc-only commit does not
+  claim its own hash or a deployed/visually verified candidate.
+- `src/data/sampleObservations.ts`: six explicit approved properties, no other
+  field changes. This supplies collection/page/detail and App/MapPage. Admin uses
+  Supabase's separate admin provider. Separate taxonomy fixtures retain pending/
+  rejected states. No general approval fallback or year-filter relaxation.
+- New `tests/mock-observation-public-contract.test.mjs` (five tests) and one
+  `tests/map-filter-layout.test.mjs` test cover the real default data/repository,
+  actual MapPage handlers, legacy dates, page/detail consistency and negative status
+  boundaries. Existing tests cover unchanged Supabase approved query/mapper paths.
+- Before six source additions: focused 26 tests, 21 PASS / 5 FAIL. After: 26 PASS.
+  New full suite: **162 PASS, 0 failed, 0 skipped**. Typecheck/build PASS. Fresh
+  `npm.cmd audit --include=dev --audit-level=high --json`: all severities 0.
+  Diff/Markdown/whitespace/EOF/secret/forbidden-path checks pass before commits.
+- Verified ordinary mock source dates independently: six in May 2026; unique year
+  `[2026]`, May/all six, April zero. Legacy dates retained. Synthetic date fixture
+  33/27/28/13/12/0 and list fixture 20/20/7 are unchanged, not live results.
+- Port 3005 serves current workspace MapPage and matching sample source; mock mode
+  checked without printing configuration. Root, fixture HTML/module proxy and
+  entry transforms respond. Browser connection fails before inspection, so both
+  ordinary-app and fixture visual checks remain **PARTIAL**. HTTP is not render PASS.
+- All 16 user checks remain **NOT_RUN**. Actual Supabase is NOT_RUN, Kakao PARTIAL;
+  no new operator PASS. Prior 28A scroll-fix manual PASS is retained.
+- This closes the code-level B1 blocker only. It does not complete live RLS/query,
+  screen, device or release verification. Follow the read-only Preview plan below
+  only after separate authorization; no shared test data is to be created.
+
+## Historical Verified Git Snapshot Before Correction
 
 - Branch: `feature/phase-28b-observation-month-filter`, clean on entry.
 - BASE_MAIN: local main and freshly fetched origin/main both `a3887a7`.
@@ -83,9 +122,10 @@ tests/observation-pagination-ui.test.mjs
 tests/observation-pagination.test.mjs
 ```
 
-## Public Date And Status Contract: B1
+## Historical Public Date And Status Contract: B1
 
-**Confirmed compatibility blocker, not a reported live Supabase failure.**
+**Confirmed at the original review, corrected by the follow-up above.** This was
+not a reported live Supabase failure. The table/probe describe the pre-fix source.
 
 | Layer inspected | Actual contract / behavior |
 | --- | --- |
@@ -118,7 +158,7 @@ access, the mapper retains status, and the year helper adds a local check. No
 status-dropping mapper defect was found. This source/probe result does not prove
 live records, RLS or deployed queries work; those remain NOT_RUN.
 
-Minimum separately approved correction proposal:
+Original separately approved correction proposal (now implemented at sample source):
 
 1. Make the reviewed local mock public samples' status contract explicit at their
    public read boundary (or explicitly classify those known samples), keeping
@@ -131,15 +171,14 @@ Minimum separately approved correction proposal:
 4. Re-run affected tests and final checks after that separate code change, then
    reconsider Preview readiness. No fix or test edit is made by this document.
 
-**한국어:** 일반 mock 화면은 날짜가 있는 6개 기록을 보여주지만 승인 상태 표시가
-없어서 연도 선택지만 비어 있습니다. Supabase 쪽은 승인 상태가 정상 전달됩니다.
-모든 빈 상태를 승인으로 간주하는 우회 대신, 검토된 로컬 샘플의 공개 읽기 계약과
-회귀 테스트를 좁게 수정하는 별도 작업이 필요합니다.
+**한국어:** 이전 진단에서는 날짜가 있는 6개 기록에 승인 상태가 없어 연도 선택지가
+비었습니다. 이후 승인된 수정으로 해당 공개 샘플만 명시적으로 approved 처리했고,
+이제 실제 기본 자료와 MapPage를 잇는 회귀 검사도 통과합니다. Supabase는 별도입니다.
 
 ## Integration Boundary Review
 
-Source and existing tests were inspected in this session; historical automated
-PASS is not a newly executed or live PASS.
+Source review remains applicable; the following manual/live column preserves the
+original review. The correction's newly executed suite is recorded above, not live PASS.
 
 | Area | Confirmed implementation / existing automated coverage | Manual or live evidence | Readiness implication |
 | --- | --- | --- | --- |
@@ -149,7 +188,7 @@ PASS is not a newly executed or live PASS.
 | 28A fade/no auto-scroll | Card-only shared opacity targets, reduced motion, stale-response/transition guards; pagination calls no scroll/focus API | Original scroll defect operator PASS after 02db6ec; new checklist repeat NOT_RUN | Preserve original PASS, do not expand device/exception coverage |
 | App list/map separation | App full-read effect only for home/intro/map; list owns page query, receives revision not collection; map receives independent observations | Live separation NOT_RUN | Home may already read full collection before list entry; distinguish that from a new list-triggered download |
 | 28B calendar/filtering | Strict observed-date year/month parsing, no timezone/creation-date substitution; one year AND OR-months AND existing conditions | All new operator items NOT_RUN | UI/live evidence remains outstanding |
-| 28B options/reset | Years from unfiltered map source; missing selection retained; independent date/taxonomy clears and all-filter reset | Default-mock diagnostic exposes B1 | Confirmed blocker, not only untested behavior |
+| 28B options/reset | Years from unfiltered map source; missing selection retained; independent clears/reset; six source samples now explicit approved | Corrected actual mock/MapPage automated tests PASS; browser NOT_RUN/PARTIAL | B1 closed in code/tests, live results still required |
 | 28B result/tree boundaries | Same filtered array for map/compact list/count; tree keeps separate global approved-linked summaries, lazy branches/cache; date change not an effect dependency for taxonomy requests | Supabase/tree/date integration NOT_RUN | Do not interpret tree counts as current date-filter counts |
 | Phase 26 map behavior | Provider/resize/layout files unchanged against main; no new camera commands or SDK calls | Actual Kakao PARTIAL | Real-domain verification later, separate from static fixture |
 | Fixture initialization | Explicit local repository/static renderer into actual MapPage; module/init/render error categories | Blank-screen correction operator NOT_RUN | Historical HTTP/module checks do not prove browser rendering |
@@ -162,7 +201,7 @@ RPC, page-aggregation loop, map pagination or count redesign is proposed here.
 Short final list pages may reduce document scroll range; no pixel-position or
 fixed-height guarantee is introduced.
 
-## User Report And Verification Ledger
+## Historical User Report And Verification Ledger At bacecae
 
 The exact 16-item NOT_RUN checklist and blank error summary are recorded in
 [the year/month record](eco-map-observation-month-filter.md#operator-checklist-at-integration-review).
@@ -189,7 +228,7 @@ suite count. No server/address availability was rechecked in this document sessi
 
 ## Later Approved Preview Plan
 
-Recommended route **after B1 is addressed**: authorize normal feature-branch push
+Recommended route **after the local B1 correction**: authorize normal feature-branch push
 and a Git-linked Preview, verify actual Supabase reads there, and defer only real
 Kakao behavior if the Preview domain is restricted. Preview authentication/data
 configuration and branch scope must be checked without printing values before
@@ -221,11 +260,11 @@ scoped correction, not automatic RLS/DB/Auth changes.
 
 ## Gates And Next Decision
 
-- **Confirmed blocker B1:** default mock displayed-data/year-option inconsistency;
-  requires separate narrow code/test correction before ready status.
+- **B1 resolved in code/tests:** six public sample declarations and actual mock
+  path coverage; no other confirmed blocker identified in this correction.
 - **Unverified, not confirmed defects:** supplied operator checklist, live
   Supabase queries/count/search/images/dates/separation, browser layout and Kakao.
-- After correcting B1 and reviewing checks, user decides whether to authorize
+- After reviewing the correction and remaining checks, user decides whether to authorize
   feature-branch Preview push and read-only integrated smoke. That authorization
   does not permit main push, Production deployment or promotion.
 - Any later Production decision requires a newly reviewed candidate, fresh checks,
@@ -235,6 +274,6 @@ scoped correction, not automatic RLS/DB/Auth changes.
   Phase 28 completion archive.
 
 **한국어:** 다음 배포 경로는 기능 브랜치 Preview에서 실제 Supabase 읽기를 먼저
-확인하는 방식입니다. 다만 현재는 B1 수정이 먼저이며, Preview push·실조회 검증도
+확인하는 방식입니다. B1은 코드상 해결됐지만 Preview push·실조회 검증에는
 별도 승인이 필요합니다. 실제 지도가 도메인 제한으로 안 보이는 경우만 별도 운영
 검증 대상으로 남기고, 다른 화면 검증까지 완료로 간주하지 않습니다.

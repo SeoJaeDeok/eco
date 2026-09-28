@@ -13,19 +13,86 @@
   No range selector, graph, new server query, data write or next feature.
 - Follow-up commits: `420689f fix: restore map date filter fixture rendering` and
   `48bd5c4 feat: add year selection to eco map date filters`.
-- Latest documentation-only integration review at `6a52cd3`: all 16 supplied
-  operator checklist items are **NOT_RUN**. No new browser success is reported.
-  Release readiness is **ON HOLD** for confirmed default-mock year-option
-  contract mismatch B1 and remaining live checks; see
+- The documentation-only integration review recorded at `bacecae` identified B1
+  in candidate `6a52cd3`. The approved follow-up now resolves that mismatch in
+  code and automated tests by explicitly approving only six public mock samples.
+  All 16 operator checklist items remain **NOT_RUN**; live/browser verification
+  and deployment approval are still outstanding. See
   [Phase 28 integration readiness](phase-28-integration-release-readiness.md).
 - Phase 28A local automatic-scroll correction remains operator-confirmed PASS.
   Its actual Supabase range/count/search/photo/detail/image checks remain NOT_RUN.
   The historical Phase 27 tested Production release is `258daaa`; the docs-only
   `a3887a7` deployment is still unobserved, not upgraded to PASS by this task.
 
-**한국어:** 연도·월 필터와 빈 화면 원인 수정은 구현됐지만 사용자 화면 확인은
-아직 모두 NOT_RUN입니다. 기본 mock 앱의 승인 상태와 연도 선택 연결 불일치를
-확인해 배포 준비 완료 판단을 보류합니다. 이번 검토는 문서 전용입니다.
+**한국어:** 기본 mock 공개 자료 6개에 빠져 있던 승인 상태를 명시했습니다.
+연도 선택 연결 문제는 코드와 자동 검사에서 해소했습니다. 사용자 확인 16개와
+Supabase 실조회는 여전히 NOT_RUN이며, 전체 배포 검증 완료라는 뜻은 아닙니다.
+
+## Default Mock Contract Correction (2026-09-28)
+
+This is an authorized code/test follow-up from `bacecae`, not a docs-only task.
+Code/test commit: `419f654 fix: align public mock observations with approval status`.
+`src/data/sampleObservations.ts` supplies the ordinary app through
+`mockObservationRepository` -> App's collection read -> AppRoutes -> MapPage.
+All six intended public samples had valid dates in May 2026 but lacked status.
+Existing mock display admitted them; the strict approved-only year extractor did
+not. The correction adds exactly six `status: 'approved'` properties at source.
+IDs, names, dates, coordinates, images and taxonomy links are unchanged.
+
+The collection, page and detail reads share these samples; home/intro also use
+the public repository. Admin's provider loads the Supabase admin repository, not
+this array. Mock taxonomy summaries are separate fixtures and retain their own
+approved/pending/rejected cases and global counts. No runtime status fallback,
+repository/mapper/filter change, status type expansion or real data write is made.
+Unknown/sample compatibility in existing mock map/page reads is not broadened and
+does not promote a record to approved; unknown/sample still cannot add year options.
+Pending/rejected remain excluded from map/page results and year options.
+
+Five new contract tests read the actual default source/repository, check page/detail
+consistency, independently enumerated dates, legacy records, negative statuses and
+unchanged private taxonomy fixtures. One new actual-MapPage harness test feeds that
+repository's six records and real mock taxonomy repository through year/month,
+empty result, collapse, branch retention, independent clears, search and full reset.
+The harness replaces React DOM/effects/map rendering; it is not browser geometry.
+
+| Current follow-up check | Result and evidence |
+| --- | --- |
+| Before source correction | Focused 26 tests: 21 PASS, 5 FAIL; new failures reproduce absent status and empty default/legacy/MapPage year options |
+| After source correction | Same focused 26 tests: all PASS, with no test expectation changed to hide the failures |
+| Full Node suite | 162 PASS, 0 failed, 0 skipped; includes prior 156 and six new tests |
+| Typecheck / build | PASS, newly executed once after correction |
+| Dev-inclusive dependency audit | PASS, all severities 0 at this run; no package update |
+| Diff / Markdown / whitespace / EOF / secret-like / forbidden paths | PASS before local commits; existing sample fields verified unchanged apart from status |
+| General app serving | Port 3005 rechecked; served MapPage embeds this workspace path, served sample source matches current file, provider confirms mock mode via boolean-only check |
+| Fixture serving | Exact HTML/root and Vite module proxy, static fixture entry and pagination entry respond; not app-index fallback |
+| Direct browser | PARTIAL: browser connection fails before inspection; HTTP/transform checks are not rendering PASS |
+| Operator 16-item checklist | NOT_RUN, no new user result supplied |
+| Actual Supabase / real Kakao | NOT_RUN / PARTIAL, unchanged |
+
+Existing synthetic date fixture expectations (33/27/28/13/12/0) and 47-record
+pagination fixture are unchanged and distinct from ordinary mock expectations:
+
+| Ordinary mock condition | Expected observations |
+| --- | --- |
+| All years/all months | 6 |
+| 2026/all months or May | 6 |
+| All years/May or April + May | 6 |
+| 2026/April only | 0, year/month remain selected |
+| Valid year options | 2026 only, once |
+
+These expectations come from six source dates (May 6, 8, 10, 11, 12 and 13), not
+from using the filter under test to generate expected counts. Two unlinked records
+remain eligible for date filters; taxonomy selection retains its existing rules.
+
+Optional local confirmation, no accounts or data writes:
+
+1. Open `http://127.0.0.1:3005/`, enter 생태지도: six results and the 2026 option.
+2. Select 2026 and May: six; switch May off and April on: zero with choices retained.
+3. Collapse/reopen; clear only month to restore six while retaining 2026; then use
+   전체 연도 or 전체 보기 and check independent/full reset and retained tree branches.
+4. Check the unchanged date fixture at `/tests/fixtures/map-month-filter.html`
+   (33 total, May 27) and pagination fixture at `/tests/fixtures/observation-pagination.html`
+   (20/20/7); these use synthetic data, not Supabase.
 
 ## Operator Checklist At Integration Review
 
@@ -55,13 +122,13 @@ absence of errors. No additional manual result is inferred from the task title.
 | Existing pagination/fade/scroll retention | NOT_RUN |
 
 The numbers are fixture expectations only, not newly observed results or real
-Supabase counts. No Codex browser was opened this session. Earlier browser-tool
+Supabase counts. No Codex browser was opened in that documentation review. Earlier browser-tool
 limitations remain PARTIAL; neither fixture nor ordinary-app visual PASS is added.
 No all-mobile-device or measured pixel claim is made. The prior 28A operator PASS
 for the original automatic-scroll defect after `02db6ec` remains historical and
 is not revoked or converted into a new item-by-item check by this NOT_RUN table.
 
-This record runs document/Git checks and a local read-only contract diagnostic,
+That documentation review ran document/Git checks and a local read-only contract diagnostic,
 not the full Node suite, typecheck, build or audit. The recorded 156-test PASS and
 zero-vulnerability audit belong to the previous implementation session.
 
@@ -120,17 +187,18 @@ species, taxa, taxonomy or month filtering. It collects valid dates from explici
 `approved` records, deduplicates and sorts descending. No hardcoded years and no
 list-page input. Valid legacy unlinked records contribute years; pending/rejected
 or invalid dates do not. Unknown status does not manufacture an approved year
-option. The older default mock samples lack explicit status, so those samples
-alone can show only all years; the isolated fixture has explicit public statuses.
-Existing sample visibility/month behavior is not changed to populate the selector.
+option. Before the correction above the default mock samples lacked explicit
+status, so only all years appeared; the isolated fixture had explicit statuses.
+Now the six intended default public samples also explicitly declare approval.
 
-**Integration review finding B1:** that difference is not an accepted harmless
+**Historical integration finding B1 (now corrected above):** that difference was not a harmless
 mock limitation. An actual local read-only call through `mockObservationRepository`
 returned six records, six valid dates in 2026, six absent statuses; existing map
 filtering displayed all six, while `getObservationYears` returned no options.
 Thus dates are present, but the public display and option contracts disagree.
 The approved synthetic fixture bypasses this ordinary-app case and cannot prove
-it works. No runtime data or sample file was changed to hide the mismatch.
+it works. That review made no runtime/sample changes; the later authorized fix
+changes only the six reviewed source declarations, not the approval guard.
 
 `Observation.status` is optional (`src/types.ts:46`). Supabase public reads
 explicitly filter approved rows, and the unchanged mapper includes both
@@ -139,11 +207,9 @@ both, so no status-dropping defect is established for Supabase; live reads remai
 NOT_RUN. TypeScript optional status is not a substitute for repository/RLS access
 control, and undefined must not be globally promoted to approved.
 
-The separately proposed narrow fix is to make the known local mock public-sample
-contract explicit at its read boundary and cover default-repository-to-MapPage
-behavior, while retaining pending/rejected/unknown-input protection. No helper,
-sample, repository, tests or permissions are edited in this documentation step.
-Release readiness remains on hold until that mismatch is addressed and verified.
+The authorized correction above makes the known samples explicit at source and
+covers default-repository-to-MapPage behavior. B1 is resolved at code/test level;
+remaining browser/live checks still prevent a claim of full release verification.
 
 With no available years the native select retains all years and an empty-data note.
 If a selected year disappears during refresh it stays selected and appears as
@@ -273,8 +339,8 @@ and absence of additional runtime issues remain **PARTIAL**, not visual PASS.
 ## Follow-Up Verification (2026-09-28, Historical Implementation Run)
 
 Recorded at `6a52cd3`, before the documentation-only integration review. The
-following execution results and server observations were not repeated in the
-current session; the new contract diagnostic and checklist are recorded above.
+following results remain historical. The later correction's fresh checks and
+server observations are recorded separately above, without relabelling this run.
 
 | Check | Result | Evidence and limit |
 | --- | --- | --- |
@@ -344,22 +410,23 @@ check that nonpublic records cannot add year options. The original 33/27/28 and
    also check unchanged list paging/detail/fade/no-auto-scroll. Counts depend on
    that app's data, not the fixture. Do not create accounts, observations or SQL.
 
-**한국어:** 이번 자동 검사는 156개 통과입니다. 3005의 잘못된 초기화 조건은
+**한국어:** 이전 연도 기능 구현 시 자동 검사는 156개 통과했습니다. 3005의 잘못된 초기화 조건은
 제거했지만 직접 브라우저 확인은 PARTIAL입니다. 연도는 현재 지도로 읽어온
 승인된 자료에서만 구하므로 전체 DB의 연도 목록을 보장하지 않습니다.
 합성 화면과 일반 앱, 실제 Supabase 결과는 각각 따로 확인해야 합니다.
 
 ## Unchanged Boundaries And Next Step
 
-Only MapPage, its pure filtering helpers, isolated tests/fixture and documentation
-change. No package, DB/migration/RLS/RPC/Edge Function, Auth/Storage/Kakao/Vercel
+Across Phase 28B, MapPage, pure helpers, isolated tests/fixture, six default public
+sample statuses and documentation change. This correction does not alter MapPage,
+helpers, repository queries or providers. No package, DB/migration/RLS/RPC/Edge Function, Auth/Storage/Kakao/Vercel
 configuration, observation write, new account, email, or deployment action.
 No Docker, WSL, Supabase reset or SQL execution. Existing data/backup branches
 are preserved. The documentation commit hash is reported from Git;
 no self-hash amendment or Phase 28 completion archive.
 
-Next: separately authorize a narrow B1 contract correction; then decide whether
-to authorize feature-branch Preview deployment and actual Supabase integrated
+Next: B1 is corrected in code/tests; decide whether to authorize feature-branch
+Preview deployment and actual Supabase integrated
 reads as described in `phase-28-integration-release-readiness.md`. The supplied
 operator checklist remains NOT_RUN. Do not start a fix, feature or deployment
 automatically; old Production/Preview approval is not current authorization.
