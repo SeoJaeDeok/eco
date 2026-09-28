@@ -17,7 +17,11 @@
 - No monthly map filter, deletion, new auth flow, migration/RPC/RLS, package,
   settings, observation mutation, merge, push or deployment in this phase.
 - Code/test commit: `6088059 feat: paginate public observations in pages of twenty`.
-  Documentation is committed separately; consult Git for that commit's own hash.
+  Original documentation: `8cdd850 docs: record phase 28a observation pagination`.
+  The subsequent user-approved transition follow-up changes UI code/tests as well
+  as documentation. It is not a docs-only verification or a new phase/branch.
+  Follow-up code/tests: `9bc55d7 feat: reuse page transitions for observation pagination`.
+  Its separate documentation commit is identified by Git, not a self-referential hash.
 
 ## Changed Files
 
@@ -36,6 +40,10 @@
   `tests/fixtures/observation-pagination.mjs`, `observation-pagination.html`,
   `observation-pagination-browser.mjs`.
 - Documentation: this file and `docs/architecture/next-session-handoff.md`.
+- Transition follow-up additionally shares `src/utils/pageTransition.ts` between
+  AppRoutes and the real list; updates the list, pagination controls, UI tests,
+  browser fixture script/title and these two documents. Repository, query, card,
+  detail, App state, Navbar, map and image helpers are unchanged in this follow-up.
 
 ## Previous Flow And Separation
 
@@ -132,10 +140,14 @@ Taxa column-level grants are not widened or bypassed; no taxa join is needed her
   type, disabled boundaries, focus styles and current-page semantics.
 - Each request carries query, revision, retry and repository identity. Abort plus
   effect cleanup prevents stale/unmounted results, errors and prefetch effects.
-  Old cards/counts are not presented during a new request; loading is announced.
-- Explicit page moves focus/scroll to the stable result region after resolution;
-  editing search/filter controls does not move focus. Browser focus/layout remains
-  PARTIAL until manually checked. No animation is required.
+  The transition follow-up retains the previous page's cards during explicit page
+  requests with a loading/previous-page notice. They are inert and hidden from
+  assistive navigation, not relabelled as the requested page. New conditions hide
+  unrelated old results. Final cards/count/range/page commit together.
+- Pointer page navigation keeps the existing instant result-region scroll on
+  success, without transferring keyboard focus. Keyboard page navigation keeps
+  focus/viewport at the mounted controls. No new global or smooth scroll is added.
+  Search/filter controls do not move focus. Browser focus/layout remains PARTIAL.
 - A safe Korean error and same-condition retry distinguish failure from empty.
   The page query disables SDK automatic retries; the retry button is explicit.
 - Successful out-of-range response with exact count corrects to the last page
@@ -148,7 +160,7 @@ Taxa column-level grants are not widened or bypassed; no taxa join is needed her
   increments the read revision so the current list count/filter/page is reread;
   a record leaving the filter is removed from the result. No write was tested live.
 
-## Verification (2026-09-28)
+## Original Verification (2026-09-28, Before Transition Follow-up)
 
 | Check | Result | Evidence / limit |
 | --- | --- | --- |
@@ -174,6 +186,76 @@ list/header/pagination components with a hook harness, not a browser renderer.
 No mock result proves live RLS, database regex/collation, CSS geometry or sessions.
 Deno/server code is unchanged; no Docker, WSL or Supabase reset was needed or run.
 
+## Pagination Transition Follow-up (2026-09-28)
+
+The user requested the same effect as the introduction/list/map menu transition,
+not a directional slide or a page-turn effect. Before this follow-up, AppRoutes
+used `AnimatePresence mode="wait"` with `initial={{ opacity: 0 }}`,
+`animate={{ opacity: 1 }}` and `exit={{ opacity: 0 }}` for every route. No transform,
+duration or easing override was supplied. The installed Motion family is 12.40.0
+(declared `motion` range remains `^12.23.24`). Its opacity default in
+`motion-dom`'s `animation/utils/default-transitions.mjs` is 0.3 seconds per leg
+with easing `[0.25, 0.1, 0.35, 1]`. These are inspected defaults, not measured timing.
+
+`PAGE_FADE` extracts the same three targets with no timing override. AppRoutes
+retains its keys, wait mode and original behavior. The list uses those targets
+in a stable `motion.div` around **only ObservationGrid**, sequentially fading old
+cards out and ready cards in. The list does not need a second AnimatePresence or
+page key: keeping one grid avoids overlapping old/new interactive lists and
+unmounting the search form, controls or App-owned detail modal.
+
+- Explicit previous/next/number navigation requests immediately. The last
+  successful page remains visible while waiting, preserving its natural height.
+  Buttons are temporarily `aria-disabled` with guarded handlers; synchronous
+  duplicate activation is also locked before React's next render.
+- Only a successful response for a different actual page starts the exit fade.
+  The response waits locally for that exit, then data/count/range/page change
+  together before entry. Runtime image prefetch does not gate the transition.
+  The last seven-card page takes its natural height; no twenty-card fixed height
+  or global overflow hiding is introduced.
+- Each pending fade carries the same request identity and its own exit target.
+  Search/filter changes, cleanup and unmount invalidate the pending reference.
+  An obsolete completion cannot commit a later page or undo a newer search.
+  Completed page intent is cleared, including before later edit-driven rereads.
+- Loading/previous-page status and safe failure/retry stay outside the fade.
+  Failure retains the old labelled, inert page without confirming the failed
+  page number. Retry uses the same request conditions. Old cards cannot be
+  activated by pointer/Tab and are `aria-hidden`; no second grid is mounted.
+- `initial={false}` and zero-duration non-page replacements avoid a second entry
+  animation inside the menu transition. Current/disabled-page activation, detail
+  open/close, image completion, ordinary rerenders and search typing do not replay
+  the fade. No page reload, timer-delayed query or persistence is introduced.
+- `useReducedMotion` skips the fade and commits ready results without waiting for
+  completion. A changed reduced-motion value can also finish a pending response
+  immediately. Actual OS preference/DOM behavior still needs browser verification.
+- `aria-disabled` plus guards replaces native arrow disabling so reaching a
+  boundary does not discard focus. All controls remain mounted during page reads;
+  current-page semantics and visible focus styles remain. A zero/one-page result
+  still hides unnecessary navigation. No automatic search-input focus change.
+
+### Follow-up Verification
+
+| Check | Result | Evidence / limit |
+| --- | --- | --- |
+| TypeScript / build | PASS | Rerun after final code changes |
+| Full Node suite | PASS | 126 tests, 0 failures; not copied from the original 114 |
+| Actual App/list orchestration | PASS (mocked Motion/I/O) | 22 UI tests, including 12 added transition cases |
+| Shared route fade / first entry | PASS (mocked) | Original wait/opacity props; nested initial fade disabled |
+| Data/transition agreement | PASS (mocked) | Next/number/previous, 20/20/7, range/count/page commit, request not delayed |
+| Cancellation / failure / retry | PASS (mocked) | Delayed/reordered read, condition change during exit, stale completion, unmount |
+| Reduced motion / focus policy | PASS (mocked) | No callback required when reduced; mounted controls, guarded boundaries, no focus call |
+| Existing pagination and Phase 26/27 suite | PASS | Server query transport/photo/count, details, images, map separation and prior regressions |
+| Full dev-inclusive audit | PASS | All severities 0 in this follow-up run; not a future guarantee |
+| Diff/whitespace/EOF/Markdown/privacy | PASS | Intended paths only; no package, DB or setting edits |
+| Local HTTP/transform | PASS | Root, real fixture and changed modules respond successfully on port 3000 |
+| Actual animation feel/responsive DOM/keyboard | PARTIAL | Browser connection failed before inspection; no browser/tool dependency installed |
+| Live Supabase / real Kakao / live auth | NOT_RUN / PARTIAL / PARTIAL | Not exercised by this follow-up; no new live PASS |
+
+The UI harness executes actual App, AppRoutes and list callbacks but substitutes
+Motion completion and leaf DOM. It does not render CSS, measure focus/geometry,
+or prove animation timing/feel. HTTP serving is not a visual smoke. No operator
+statement is expanded into unreported detailed live verification.
+
 ## Local Manual Check
 
 A local mock/static dev server is provided at `http://127.0.0.1:3000` during this
@@ -183,16 +265,24 @@ components** with 47 injected records, not a duplicate HTML implementation. It d
 not exercise real App routing, repository networking or live authentication.
 It is not a Vite production build entry or public default dataset.
 
-1. Open `/tests/fixtures/observation-pagination.html`; check 20, 20 and 7 cards
-   with ranges and disabled first/last arrows.
-2. Sort oldest first, move to page three, then search `수국`; it must be found on
-   search page one. Try an unmatched name and clear the search.
-3. Check taxon and photo filters; changing either returns to page one with the
-   matching count. Photo registration can have a placeholder if display is absent.
-4. Open a card on page two and close detail; the same page must remain.
-5. At narrow/wide widths, use Tab/Enter for page arrows and check wrapping/focus.
-6. In the standard app, open Eco Map/tree and intro; confirm their existing
-   controls/content remain independent. Do not save observations or create accounts.
+Fixture-only query options `?delay=800` and `?delay=800&failPage=2` simulate an
+800ms read delay and one failure on page two. Retry succeeds without modifying
+data. Aborted fixture timers/listeners are cleaned up. Animation is exclusively
+the actual list implementation, not a fixture recreation.
+
+1. Compare the standard app's introduction/list/map menu fade with the fixture's
+   `1 -> 2 -> 3 -> 2 -> 1` transitions; check 20/20/7, count/range, no extra slide.
+2. Open/close detail on page two; confirm page/filter state and no fade replay.
+   Current-page and boundary buttons must not issue an extra request/transition.
+3. Sort oldest first and search `수국` from the final page; check page one and no
+   typing fade. Exercise photo/taxon filters, an unmatched search and clear.
+4. Use the delayed fixture, click pages quickly, and change search while waiting
+   or fading. Previous cards must not be interactive or replace newer results.
+5. Use the failure fixture; confirm an error without a false new page, then retry.
+   At narrow/wide widths check Tab/Enter focus; enable reduced motion and repeat.
+6. In the normal app, verify Eco Map/tree and introduction remain independent.
+   Do not save observations, create accounts or send mail. Live Supabase paging
+   remains separate from this injected fixture.
 
 ## Limits And Follow-up
 
@@ -218,9 +308,15 @@ Reviewed on 2026-09-28 alongside installed SDK source:
 - [Supabase raw filters](https://supabase.com/docs/reference/javascript/using-filters-filter)
 - [PostgREST filters and regular expressions](https://docs.postgrest.org/en/stable/references/api/tables_views.html)
 - [PostgREST pagination/count](https://docs.postgrest.org/en/stable/references/api/pagination_count.html)
+- [Motion presence and sequential exits](https://motion.dev/docs/react-animate-presence)
+- [Motion reduced-motion accessibility](https://motion.dev/docs/react-accessibility)
+- [React state preservation](https://react.dev/learn/preserving-and-resetting-state)
 
 **한국어:** 목록만 서버에서 조건에 맞는 관찰 20개와 정확한 건수를 받습니다.
 사진 필터는 표시 성공이 아닌 등록 정보 기준이며, 종 수 등의 보조 통계는 이번
 목록 화면에서만 생략했습니다. 지도·소개·분류 트리는 20개로 제한하지 않습니다.
 자동 검사는 통과했지만 실제 Supabase와 브라우저 클릭 검증은 남아 있습니다.
+후속 수정으로 기존 메뉴와 같은 투명도 전환을 카드 영역에 추가했습니다.
+새 데이터가 준비된 뒤에만 교체하며 검색·필터·페이지 버튼과 상세 상태는 유지합니다.
+전체 126개 자동 검사는 통과했지만 실제 전환 느낌과 화면 배치는 아직 PARTIAL입니다.
 DB·패키지·설정을 바꾸지 않았고 운영 반영이나 push는 하지 않습니다.

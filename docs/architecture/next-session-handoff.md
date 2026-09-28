@@ -22,22 +22,41 @@ This document records Phase 28A implementation and the historical Phase 27 close
   download the full collection. Home Navbar/intro/map keep their existing full read
   and statistics; tree has its own unchanged read. Neither is limited to twenty.
   Existing full-read API row limits/scalability are not solved by this work.
-- Current automated checks: typecheck, 114 Node tests (0 failed), build PASS;
-  dev-inclusive audit reports 0 vulnerabilities at this run. New tests exercise
+- Original pagination checks before the transition follow-up: typecheck,
+  114 Node tests (0 failed), build and audit PASS. The follow-up reran typecheck,
+  the full Node suite (126 tests, 0 failed), build and dev-inclusive audit
+  (0 vulnerabilities at every severity at this run). Tests exercise
   the installed SDK query builder with injected fetch and actual App/list callbacks.
   Existing Phase 26/27 tests remain unchanged and pass.
+- User-approved follow-up: reuse menu page transitions for previous/next/page
+  numbers. `PAGE_FADE` shares AppRoutes' unchanged opacity 0/1/0 targets and Motion
+  defaults (installed 12.40.0, opacity 0.3s per leg, easing [0.25, 0.1, 0.35, 1]).
+  Only the card grid fades; no route/list-root key or new dependency. Successful
+  current responses exit the old grid, then commit cards/range/count/page and enter.
+  Loading/error retain a labelled inert previous page; forms/controls stay mounted.
+  Search cancels stale fades, initial entry does not double-animate, completed
+  page intent is cleared and reduced-motion does not wait for completion.
+  Arrow `aria-disabled` guards preserve focus at boundaries; keyboard navigation
+  no longer moves focus/scroll away, pointer success keeps existing instant scroll.
+  Repository/query/photo/search/detail/image/map behavior is unchanged by this
+  follow-up. It is a code/test change, not documentation-only verification.
 - Local mock/static server and a 47-record fixture using the real list/detail
   components are available. HTTP/transform checks passed, but browser tooling
-  failed before inspection: responsive/keyboard/click smoke PARTIAL. Live Supabase
+  failed before inspection again in the follow-up: actual animation comparison,
+  responsive/keyboard/click smoke PARTIAL. The real-component fixture now accepts
+  `?delay=800&failPage=2` for delayed reads/one-time page-two failure; no external I/O
+  or duplicated animation. Live Supabase
   read/search/regex/photo compatibility NOT_RUN; real Kakao/live auth not reverified.
   No SQL, shared test data, new account, email or observation write was performed.
 - No package, migration/RLS/RPC/Edge Function, Auth/Storage/Kakao/Vercel setting
   changes. Map provider/Phase 26 alignment, Phase 27 filter/tree/auth/intro behavior
   preserved; only list wiring and successful-write read invalidation changed.
 - Record and manual steps: `docs/architecture/observation-list-pagination.md`.
-  Code/tests committed locally as `6088059 feat: paginate public observations in pages of twenty`.
-  Documentation uses `docs: record phase 28a observation pagination`; read its own
-  hash from Git. No remote feature branch was created or pushed by this work.
+  Original local commits: `6088059 feat: paginate public observations in pages of twenty`
+  and `8cdd850 docs: record phase 28a observation pagination`.
+  Follow-up code/tests: `9bc55d7 feat: reuse page transitions for observation pagination`.
+  Documentation uses `docs: record observation pagination transitions`; read its
+  actual hash from Git. No remote feature branch was created or pushed by this work.
 - The Phase 27 docs-only `a3887a7` deployment remains unobserved; actual historical
   Production visual PASS is still tied to `258daaa`. Do not infer a new live PASS.
 - Next: finish pending read-only/browser checks; Phase 28B monthly Eco Map filter
@@ -46,7 +65,9 @@ This document records Phase 28A implementation and the historical Phase 27 close
 
 **한국어:** 관찰목록 20개 서버 페이지네이션을 구현했습니다. 검색·필터는 전체
 공개 관찰에 먼저 적용하며 지도·소개·트리는 목록 페이지와 분리했습니다.
-자동 검사는 통과했고 실제 화면·Supabase 확인은 남아 있습니다. 아직 로컬 작업으로,
+자동 검사는 통과했고 실제 화면·Supabase 확인은 남아 있습니다. 아직 로컬 작업입니다.
+후속 전환 효과는 카드에만 적용했고 126개 자동 검사가 통과했습니다.
+기존 메뉴와 같은 느낌인지, 좁은 화면·실제 키보드 동작은 수동 확인이 필요합니다.
 push나 배포는 하지 않습니다. 월별 지도 필터는 별도 요청을 받은 뒤 진행합니다.
 
 ## Previous State: Phase 27 Closed After Production Verification
