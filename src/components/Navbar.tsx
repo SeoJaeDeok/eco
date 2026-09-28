@@ -8,6 +8,7 @@ interface NavbarProps {
   onNavigate: (page: PageId) => void;
   observationCount: number;
   uniqueSpeciesCount?: number;
+  showObservationStats?: boolean;
   publicAuthDisplayName: string;
   publicAuthError: string | null;
   publicAuthNotice: string | null;
@@ -26,6 +27,7 @@ export const Navbar = ({
   onNavigate,
   observationCount,
   uniqueSpeciesCount,
+  showObservationStats = true,
   publicAuthDisplayName,
   publicAuthError,
   publicAuthNotice,
@@ -118,10 +120,14 @@ export const Navbar = ({
             <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-400" />
             <span className="font-mono text-[10px] font-semibold uppercase tracking-tighter text-zinc-700">정적 디자인 시안</span>
           </div>
-          <span className="text-[9px] font-light opacity-20">|</span>
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-tighter text-zinc-700 opacity-60">
-            {uniqueSpeciesCount ?? observationCount} SPECIES / {observationCount} RECORDS
-          </span>
+          {showObservationStats && (
+            <>
+              <span className="text-[9px] font-light opacity-20">|</span>
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-tighter text-zinc-700 opacity-60">
+                {uniqueSpeciesCount ?? observationCount} SPECIES / {observationCount} RECORDS
+              </span>
+            </>
+          )}
         </div>
 
         <nav className="hidden items-center gap-8 text-sm font-light md:flex">

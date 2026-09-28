@@ -1,0 +1,32 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { observationTotalPages } from '../../utils/observationPagination';
+
+interface ObservationPaginationProps {
+  page: number;
+  totalCount: number;
+  onPageChange: (page: number) => void;
+}
+
+export const ObservationPagination = ({ page, totalCount, onPageChange }: ObservationPaginationProps) => {
+  const totalPages = observationTotalPages(totalCount);
+  if (totalPages <= 1) return null;
+  const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+  const pages = Array.from({ length: Math.min(5, totalPages) }, (_, index) => start + index);
+  const buttonClass = 'inline-flex h-11 min-w-11 items-center justify-center border border-zinc-200 px-3 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-40';
+  return (
+    <nav aria-label="관찰목록 페이지" className="mt-8 flex flex-wrap items-center justify-center gap-2">
+      <button type="button" aria-label="이전 페이지" disabled={page === 1} className={buttonClass}
+        onClick={() => onPageChange(page - 1)}><ChevronLeft size={16} aria-hidden="true" /></button>
+      <span className="px-2 text-xs text-zinc-600 sm:hidden" aria-current="page">{page} / {totalPages}페이지</span>
+      <div className="hidden gap-2 sm:flex">
+        {pages.map((number) => <button key={number} type="button" aria-label={`${number}페이지`}
+          aria-current={number === page ? 'page' : undefined}
+          className={`${buttonClass} ${number === page ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-700'}`}
+          onClick={() => { if (number !== page) onPageChange(number); }}>{number}</button>)}
+      </div>
+      <button type="button" aria-label="다음 페이지" disabled={page === totalPages} className={buttonClass}
+        onClick={() => onPageChange(page + 1)}><ChevronRight size={16} aria-hidden="true" /></button>
+      <span className="hidden text-xs text-zinc-500 sm:inline">총 {totalPages}페이지</span>
+    </nav>
+  );
+};

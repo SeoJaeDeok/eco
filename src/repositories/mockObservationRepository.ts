@@ -2,6 +2,7 @@ import { sampleObservations } from '../data/sampleObservations';
 import type { Observation, OwnerObservationUpdateInput } from '../types';
 import type { ObservationRepository } from './observationRepository';
 import { countUniqueSpecies } from '../utils/observationStats';
+import { paginateMockObservations } from '../utils/observationPagination';
 
 const updatedObservationsById = new Map<string, Observation>();
 
@@ -24,6 +25,10 @@ const getMockObservations = () => sampleObservations.map((observation) => (
 ));
 
 export const mockObservationRepository: ObservationRepository = {
+  listPublicObservationsPage: async (query, signal) => {
+    signal?.throwIfAborted();
+    return paginateMockObservations(getMockObservations(), query);
+  },
   listObservations: async () => [...getMockObservations()],
   getObservationById: async (id) => getMockObservations().find((observation) => observation.id === id) ?? null,
   countUniqueSpecies: async () => countUniqueSpecies(getMockObservations()),

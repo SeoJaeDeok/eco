@@ -16,6 +16,8 @@ import {
   type UploadedObservationImage,
 } from './supabaseObservationImageStorage';
 import { getSupabaseClient } from './supabaseClient';
+import { buildObservationPageQuery } from './observationPageQuery';
+import { OBSERVATION_PAGE_SIZE, observationPageRange, observationTotalPages, validateObservationPageQuery } from '../../utils/observationPagination';
 
 const OBSERVATIONS_TABLE = 'observations';
 const PROFILES_TABLE = 'profiles';
@@ -113,6 +115,49 @@ const getCurrentContributor = async () => {
 };
 
 export const supabaseObservationRepository: ObservationRepository = {
+  async listPublicObservationsPage(options, signal) {
+    validateObservationPageQuery(options);
+    let page = options.page;
+    // At most one correction if existing edits/removals made the requested offset invalid.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      signal?.throwIfAborted();
+      const { from, to } = observationPageRange(page);
+      let query = buildObservationPageQuery(options).range(from, to);
+      if (signal) query = query.abortSignal(signal);
+      const result = await query;
+      signal?.throwIfAborted();
+      let count = result.count;
+      if (result.error) {
+        if (result.status !== 416 || result.error.code !== 'PGRST103' || attempt > 0) {
+          throw createRepositoryError('Failed to load observation page.', result.error);
+        }
+        let countQuery = buildObservationPageQuery(options, true);
+        if (signal) countQuery = countQuery.abortSignal(signal);
+        const counted = await countQuery;
+        if (counted.error) throw createRepositoryError('Failed to count observations.', counted.error);
+        count = counted.count;
+      }
+      signal?.throwIfAborted();
+      if (count === null || !Number.isSafeInteger(count) || count < 0) {
+        throw new Error('Missing or invalid exact observation count.');
+      }
+      const lastPage = Math.max(1, observationTotalPages(count));
+      if (count === 0) return { items: [], page: 1, pageSize: OBSERVATION_PAGE_SIZE, totalCount: 0 };
+      if (page > lastPage && attempt === 0) { page = lastPage; continue; }
+      if (result.error || page > lastPage || !Array.isArray(result.data)) {
+        throw new Error('Observation page changed while loading. Retry required.');
+      }
+      const rows = result.data as unknown as ObservationDbRow[];
+      if (rows.length !== Math.min(OBSERVATION_PAGE_SIZE, count - from)
+        || rows.some((row) => row.status !== 'approved')) {
+        throw new Error('Incomplete or invalid public observation page.');
+      }
+      const images = await createImageDisplayFieldsById(rows);
+      signal?.throwIfAborted();
+      return { items: mapObservationRowsToObservations(rows, images), page, pageSize: OBSERVATION_PAGE_SIZE, totalCount: count };
+    }
+    throw new Error('Observation page could not be corrected.');
+  },
   async listObservations() {
     const { data, error } = await getSupabaseClient()
       .from(OBSERVATIONS_TABLE)

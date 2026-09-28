@@ -4,10 +4,12 @@ import type {
   OwnerObservationUpdateInput,
   VerifiedTaxonomyObservationInput,
 } from '../types';
+import type { ObservationPage, ObservationPageQuery } from '../utils/observationPagination';
 
 export type ObservationRepositoryKind = 'mock' | 'supabase';
 
 export interface ObservationRepository {
+  listPublicObservationsPage(query: ObservationPageQuery, signal?: AbortSignal): Promise<ObservationPage>;
   listObservations(): Promise<Observation[]>;
   getObservationById(id: string): Promise<Observation | null>;
   countUniqueSpecies(): Promise<number>;

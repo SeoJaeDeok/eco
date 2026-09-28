@@ -58,7 +58,9 @@ export default function App({ authRefreshReturn = null }: AppProps) {
   const [observations, setObservations] = useState<Observation[]>([]);
   const [uniqueSpeciesCount, setUniqueSpeciesCount] = useState(0);
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
-  const [isLoadingObservations, setIsLoadingObservations] = useState(true);
+  const [isLoadingObservations, setIsLoadingObservations] = useState(false);
+  const [observationRevision, setObservationRevision] = useState(0);
+  const [loadedCollectionRevision, setLoadedCollectionRevision] = useState<number | null>(null);
   const [observationLoadError, setObservationLoadError] = useState<string | null>(null);
   const [publicAuthState, setPublicAuthState] = useState<AuthSessionState>(() => createEmptyAuthSessionState());
   const [isCheckingPublicAuth, setIsCheckingPublicAuth] = useState(true);
@@ -71,22 +73,26 @@ export default function App({ authRefreshReturn = null }: AppProps) {
       ? AUTH_REFRESH_NOTICES[authRefreshReturn.notice] : null
   ));
   const imageRefreshRetryKeysRef = useRef(new Set<string>());
+  // These screens retain their full-collection behavior. The list owns an independent page query.
+  const needsObservationCollection = currentPage === 'home' || currentPage === 'intro' || currentPage === 'map';
 
   useEffect(() => {
+    if (!needsObservationCollection || loadedCollectionRevision === observationRevision) {
+      setIsLoadingObservations(false);
+      return;
+    }
     let isCurrent = true;
 
     const loadObservations = async () => {
       try {
         setIsLoadingObservations(true);
         setObservationLoadError(null);
-        const [nextObservations, nextUniqueSpeciesCount] = await Promise.all([
-          activeObservationRepository.listObservations(),
-          activeObservationRepository.countUniqueSpecies(),
-        ]);
+        const nextObservations = await activeObservationRepository.listObservations();
 
         if (!isCurrent) return;
         setObservations(nextObservations);
-        setUniqueSpeciesCount(nextUniqueSpeciesCount);
+        setUniqueSpeciesCount(countUniqueSpecies(nextObservations));
+        setLoadedCollectionRevision(observationRevision);
         void prefetchObservationImages(nextObservations);
       } catch {
         if (!isCurrent) return;
@@ -103,7 +109,7 @@ export default function App({ authRefreshReturn = null }: AppProps) {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [needsObservationCollection, observationRevision, loadedCollectionRevision]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -219,6 +225,7 @@ export default function App({ authRefreshReturn = null }: AppProps) {
     }
 
     void prefetchObservationImage(observation).catch(() => undefined);
+    setObservationRevision((revision) => revision + 1);
 
     setObservations((currentObservations) => {
       const nextObservations = [
@@ -236,6 +243,7 @@ export default function App({ authRefreshReturn = null }: AppProps) {
       : await activeObservationRepository.updateOwnObservation(id, input);
 
     void prefetchObservationImage(updatedObservation).catch(() => undefined);
+    setObservationRevision((revision) => revision + 1);
 
     setObservations((currentObservations) => {
       const nextObservations = currentObservations.map((currentObservation) => {
@@ -375,6 +383,7 @@ export default function App({ authRefreshReturn = null }: AppProps) {
         onNavigate={navigate}
         observationCount={observations.length}
         uniqueSpeciesCount={uniqueSpeciesCount}
+        showObservationStats={currentPage !== 'observations'}
         publicAuthDisplayName={publicAuthDisplayName}
         publicAuthError={publicAuthError}
         publicAuthNotice={publicAuthNotice}
@@ -391,7 +400,7 @@ export default function App({ authRefreshReturn = null }: AppProps) {
 
       <main className="relative z-10">
         {isLoadingObservations && <p className="sr-only">관찰 데이터를 불러오는 중입니다.</p>}
-        {observationLoadError && (
+        {needsObservationCollection && observationLoadError && (
           <div className="fixed left-1/2 top-24 z-50 -translate-x-1/2 border border-zinc-200 bg-white px-4 py-2 text-xs text-zinc-600 shadow-sm">
             {observationLoadError}
           </div>
@@ -417,6 +426,7 @@ export default function App({ authRefreshReturn = null }: AppProps) {
         <AppRoutes
           currentPage={currentPage}
           observations={observations}
+          observationRevision={observationRevision}
           publicAuthState={publicAuthState}
           isCheckingPublicAuth={isCheckingPublicAuth}
           isPublicAuthConfigured={PUBLIC_AUTH_CONFIGURED}

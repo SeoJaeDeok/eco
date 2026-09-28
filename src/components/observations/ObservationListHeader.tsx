@@ -1,12 +1,7 @@
-import { ALL_TAXON_FILTER, type TaxonFilter } from '../../constants/taxon';
 import type { ImageFilter, ObservationSortKey } from '../../utils/observationFilters';
 import { SearchInput } from '../ui/SearchInput';
 
 interface ObservationListHeaderProps {
-  selectedTaxon: TaxonFilter;
-  uniqueSpeciesCount: number;
-  resultCount: number;
-  totalCount: number;
   sortKey: ObservationSortKey;
   onSortChange: (sortKey: ObservationSortKey) => void;
   searchQuery: string;
@@ -37,10 +32,6 @@ const getImageFilterClassName = (active: boolean) => {
 };
 
 export const ObservationListHeader = ({
-  selectedTaxon,
-  uniqueSpeciesCount,
-  resultCount,
-  totalCount,
   sortKey,
   onSortChange,
   searchQuery,
@@ -54,12 +45,6 @@ export const ObservationListHeader = ({
       <div>
         <div className="flex flex-wrap items-baseline gap-3">
           <h2 className="font-serif text-3xl opacity-80 underline decoration-zinc-200 decoration-1 underline-offset-8">관찰목록</h2>
-          <span className="rounded-full border border-zinc-100 bg-zinc-50 px-2.5 py-1 font-sans text-[11px] font-medium text-zinc-500">
-            {selectedTaxon === ALL_TAXON_FILTER ? `관찰종 ${uniqueSpeciesCount}종` : `${selectedTaxon} 관찰종 ${uniqueSpeciesCount}종`}
-          </span>
-          <span className="font-sans text-[10px] uppercase tracking-[0.18em] text-zinc-400">
-            {resultCount}/{totalCount}건
-          </span>
         </div>
 
         <fieldset className="mt-4 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest">

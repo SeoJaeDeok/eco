@@ -15,6 +15,7 @@ const AdminPage = lazy(() => import('./admin/AdminPage').then((module) => ({ def
 interface AppRoutesProps {
   currentPage: PageId;
   observations: Observation[];
+  observationRevision: number;
   publicAuthState: AuthSessionState;
   isCheckingPublicAuth: boolean;
   isPublicAuthConfigured: boolean;
@@ -32,6 +33,7 @@ interface AppRoutesProps {
 export const AppRoutes = ({
   currentPage,
   observations,
+  observationRevision,
   publicAuthState,
   isCheckingPublicAuth,
   isPublicAuthConfigured,
@@ -61,7 +63,7 @@ export const AppRoutes = ({
       )}
       {currentPage === 'observations' && (
         <motion.div key="observations" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <ObservationListPage observations={observations} onSelect={onSelectObservation} />
+          <ObservationListPage revision={observationRevision} onSelect={onSelectObservation} />
         </motion.div>
       )}
       {currentPage === 'map' && (
