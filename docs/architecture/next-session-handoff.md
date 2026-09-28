@@ -2,9 +2,63 @@
 
 ## Purpose
 
-This document records Phase 28A implementation and the historical Phase 27 closeout. Preserve the deployed Phase 26/27 work; do not start Phase 28B without a separate request.
+This document records Phase 28B implementation, inherited Phase 28A work and the historical Phase 27 closeout. Preserve deployed work; do not begin integration, deployment or another feature without a separate request.
 
-## Current State: Phase 28A Observation List Pagination
+## Current State: Phase 28B Observation Month Map Filter
+
+- Date: 2026-09-28 (Asia/Seoul). Started clean from Phase 28A `dea0ad2` on
+  `feature/phase-28b-observation-month-filter`, not from main. Main remains
+  `a3887a7`; Phase 28A and all earlier feature/backup branches are preserved.
+- Implemented observation months 1..12 in the existing Eco Map controls. Empty
+  selection/all twelve means all months; selected months OR across every year,
+  AND existing text/species/broad-taxon/taxonomy conditions. Month summary is
+  chronological, month clear is independent, and 전체 보기 includes month reset.
+- Actual schema: `observed_date date not null`, mapped unchanged to
+  `Observation.date`. Strict YYYY-MM-DD/calendar/leap validation, no timezone
+  conversion, created-at fallback, mapper/write change or new date persistence.
+  Missing/invalid dates are excluded only with active months; legacy/status rules
+  remain unchanged. No year/range selector or monthly graph.
+- Same final array feeds map/compact list/count. Native hidden controls keep month
+  state and tree cache/branches. Month toggles do not refetch taxonomy or remount
+  the map. Tree counts remain global approved linked-record counts, not monthly.
+  Existing map collection/server row-limit caveats remain; no complete-database
+  monthly-search or pixel-alignment measurement claim.
+- Phase 28A pagination/card fade/no-auto-scroll and independent list/map data
+  wiring are unchanged. Its operator local scroll correction PASS after `02db6ec`
+  remains recorded by `dea0ad2`, not a new browser test. Actual 28A Supabase
+  range/count/search/photo/detail/image/separation checks remain **NOT_RUN**.
+- Fresh 28B checks: typecheck PASS; full Node suite **143 PASS, 0 failed**;
+  build PASS; dev-inclusive audit all severities 0 at this run. Fourteen new
+  tests cover calendar/month rules plus actual MapPage handlers under mocked
+  effects/I/O; all prior regressions remain included. This is not a live SDK/DB run.
+- Isolated fixture: `tests/fixtures/map-month-filter.html` uses real MapPage/static
+  components and synthetic data (33 public records; May 27, April+May 28).
+  Existing 47-record pagination fixture is unchanged. Separate mock/static local
+  dev server: `http://127.0.0.1:3005`; HTML/proxy/module serving checked successfully.
+  Browser connection failed before inspection; responsive/keyboard/actual render
+  **PARTIAL**. Actual Supabase month reads **NOT_RUN**, real Kakao **PARTIAL**.
+- Details and six-step manual checks:
+  `docs/architecture/eco-map-observation-month-filter.md`. No new observer/account,
+  shared DB write, package change, migration/RLS/RPC/Edge Function or settings
+  change. Phase 26 map provider, Phase 27 auth/intro and 28A list source unchanged.
+- Local code/test commit: `cc908f5 feat: filter eco map observations by month`.
+  Documentation message: `docs: record phase 28b observation month filtering`.
+  Read actual hashes from Git/final report; no amend to record a self-hash.
+  No merge, push, Preview/Production deployment or Phase 28 archive.
+- Historical docs-only `a3887a7` deployment remains unobserved; Production visual
+  evidence for Phase 27 stays `258daaa`. This work does not infer a new live PASS.
+- Next: operator month-filter verification, then a separately requested Phase 28
+  integration plan including remaining 28A/28B live reads. No next feature starts
+  automatically and no previous deployment approval is reused.
+
+**한국어:** 모든 연도의 관찰 날짜를 기준으로 여러 월을 함께 선택할 수 있습니다.
+월만 해제하거나 전체 보기를 사용할 수 있고, 필터를 접어도 선택과 트리를 유지합니다.
+지도·작은 목록·결과 수는 같은 필터를 쓰며 분류 숫자는 전체 기록 기준입니다.
+자동 143개·타입·빌드·보안 검사는 통과했지만 화면·카카오 확인은 PARTIAL,
+Supabase 실조회는 28A·28B 모두 NOT_RUN입니다. 아직 로컬 커밋만 진행하며,
+사용자 확인 후 통합 검증 계획을 별도 요청받아 진행합니다.
+
+## Previous State: Phase 28A Observation List Pagination
 
 - Date: 2026-09-28 (Asia/Seoul). Started from clean, freshly fetched
   main/origin/main `a3887a7`; branch `feature/phase-28a-observation-list-pagination`.
