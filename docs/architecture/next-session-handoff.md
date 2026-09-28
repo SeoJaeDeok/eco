@@ -2,9 +2,54 @@
 
 ## Purpose
 
-This document records the verified Phase 27 closeout and remaining checks. Wait for the user's next task choice; preserve the deployed Phase 26 and Phase 27 work.
+This document records Phase 28A implementation and the historical Phase 27 closeout. Preserve the deployed Phase 26/27 work; do not start Phase 28B without a separate request.
 
-## Current State: Phase 27 Closed After Production Verification
+## Current State: Phase 28A Observation List Pagination
+
+- Date: 2026-09-28 (Asia/Seoul). Started from clean, freshly fetched
+  main/origin/main `a3887a7`; branch `feature/phase-28a-observation-list-pagination`.
+  Main and all existing feature/backup branches are preserved. No merge/push/deploy.
+- Implementation: `listPublicObservationsPage` in contract/provider/mock/Supabase,
+  fixed twenty observation records, exact matching count, server-side approved-only
+  search/taxon/photo conditions, explicit sort plus unique ID tie-breaker, range
+  correction once, safe errors/retry and stale-response/abort handling.
+- User-approved decisions: photo filter uses registered image references rather
+  than display success; list-only supplementary species/taxon/Navbar statistics
+  are omitted rather than computed from twenty records. Taxon controls remain.
+  Future server aggregation is possible but outside this scope.
+- The list owns its page state; App supplies a read revision after existing edits.
+  Detail ID refresh/image retry is preserved. List entry/restoration does not
+  download the full collection. Home Navbar/intro/map keep their existing full read
+  and statistics; tree has its own unchanged read. Neither is limited to twenty.
+  Existing full-read API row limits/scalability are not solved by this work.
+- Current automated checks: typecheck, 114 Node tests (0 failed), build PASS;
+  dev-inclusive audit reports 0 vulnerabilities at this run. New tests exercise
+  the installed SDK query builder with injected fetch and actual App/list callbacks.
+  Existing Phase 26/27 tests remain unchanged and pass.
+- Local mock/static server and a 47-record fixture using the real list/detail
+  components are available. HTTP/transform checks passed, but browser tooling
+  failed before inspection: responsive/keyboard/click smoke PARTIAL. Live Supabase
+  read/search/regex/photo compatibility NOT_RUN; real Kakao/live auth not reverified.
+  No SQL, shared test data, new account, email or observation write was performed.
+- No package, migration/RLS/RPC/Edge Function, Auth/Storage/Kakao/Vercel setting
+  changes. Map provider/Phase 26 alignment, Phase 27 filter/tree/auth/intro behavior
+  preserved; only list wiring and successful-write read invalidation changed.
+- Record and manual steps: `docs/architecture/observation-list-pagination.md`.
+  Code/tests committed locally as `6088059 feat: paginate public observations in pages of twenty`.
+  Documentation uses `docs: record phase 28a observation pagination`; read its own
+  hash from Git. No remote feature branch was created or pushed by this work.
+- The Phase 27 docs-only `a3887a7` deployment remains unobserved; actual historical
+  Production visual PASS is still tied to `258daaa`. Do not infer a new live PASS.
+- Next: finish pending read-only/browser checks; Phase 28B monthly Eco Map filter
+  by observation date is planned but not implemented or automatically started.
+  Phase 28 remains in progress; no completed Phase 28 archive.
+
+**한국어:** 관찰목록 20개 서버 페이지네이션을 구현했습니다. 검색·필터는 전체
+공개 관찰에 먼저 적용하며 지도·소개·트리는 목록 페이지와 분리했습니다.
+자동 검사는 통과했고 실제 화면·Supabase 확인은 남아 있습니다. 아직 로컬 작업으로,
+push나 배포는 하지 않습니다. 월별 지도 필터는 별도 요청을 받은 뒤 진행합니다.
+
+## Previous State: Phase 27 Closed After Production Verification
 
 - Closeout record date: 2026-09-28 (Asia/Seoul). Started on clean main at `258daaa`;
   fresh fetch confirmed origin/main also `258daaa`. No intervening code change.
