@@ -21,7 +21,7 @@ const emptyAuth = { user: null, profile: null, isAdmin: false };
 // Not a real DOM, layout, navigation or Supabase session test.
 const mount = async ({ initialPage = 'observations', pageRead, observations = createPaginationObservations(), signedIn = false, admin = false,
   reducedMotion = false, autoFinishExit = true, imageRead = async () => {} } = {}) => {
-  const instances = new Map(), effects = [], calls = { all: 0, count: 0, pages: [], details: [], updates: [], adminUpdates: [], prefetch: [], mounts: [], scrolls: [], focuses: [] };
+  const instances = new Map(), effects = [], calls = { all: 0, count: 0, pages: [], details: [], updates: [], adminUpdates: [], prefetch: [], mounts: [], scrolls: [], windowScrolls: [], focuses: [] };
   let current, dirty = false, tree;
   const rows = observations;
   const repository = {
@@ -91,7 +91,12 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
       ['ObservationDetail', 'detail'], ['auth/UploadLoginGate', 'gate'], ['observations/ObservationGrid', 'grid']]
       .map(([name, value]) => [path(`components/${name}`), { [name.split('/').at(-1)]: value }]),
   ]);
-  const window = { location: { hash: '', pathname: '/', search: '' }, scrollTo() {}, addEventListener() {}, removeEventListener() {} };
+  // This is an I/O spy, not browser scroll geometry or native scroll anchoring.
+  const window = {
+    location: { hash: '', pathname: '/', search: '' }, scrollX: 0, scrollY: 0,
+    scrollTo(options) { calls.windowScrolls.push(options); window.scrollY = options.top ?? window.scrollY; window.scrollX = options.left ?? window.scrollX; },
+    addEventListener() {}, removeEventListener() {},
+  };
   const load = (file) => {
     if (modules.has(file)) return modules.get(file);
     const actual = file.endsWith('.tsx') ? file : `${file}.tsx`;
@@ -124,7 +129,10 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
       return renderNode(node.type(node.props), `${location}.render`);
     }
     if (node.props.ref && typeof node.props.ref === 'object') {
-      node.props.ref.current = { scrollIntoView: (options) => calls.scrolls.push(options), focus: (options) => calls.focuses.push(options) };
+      node.props.ref.current = {
+        scrollIntoView: (options) => { calls.scrolls.push(options); window.scrollY = 0; },
+        focus: (options) => calls.focuses.push(options),
+      };
     }
     return { ...node, children: renderNode(node.props.children, `${location}.children`) };
   };
@@ -167,6 +175,8 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
   render(); await settle();
   return {
     calls, nodes, text, button, settle, render, transitionNode,
+    userScroll(x, y) { window.scrollX = x; window.scrollY = y; },
+    scrollPosition: () => [window.scrollX, window.scrollY],
     async finishExit() { const node = transitionNode(); node.props.onAnimationComplete(node.props.animate); await settle(); },
     async setReducedMotion(value) { reducedMotion = value; dirty = true; await settle(); },
     grid: () => nodes((node) => node.type === 'grid')[0]?.props,
@@ -485,19 +495,88 @@ test('reduced motion commits pages without any completion event, including when 
   assert.equal(view.transitionNode().props.transition.duration, 0);
 });
 
-test('keyboard retains controls without programmatic focus/scroll; pointer navigation retains instant result scroll', async () => {
-  const view = await mount();
-  await view.click('다음 페이지', 0);
-  await view.click('다음 페이지', 0);
-  assert.equal(view.button('다음 페이지').props['aria-disabled'], true);
-  assert.equal(view.button('다음 페이지').props.disabled, undefined);
+test('pointer and keyboard page controls never request scrolling or focus transfer and remain mounted', async () => {
+  for (const detail of [1, 0]) {
+    const view = await mount();
+    await view.search('같은');
+    const controlMounts = view.calls.mounts.filter((name) => name === 'ObservationPagination').length;
+    view.userScroll(0, 720);
+    for (const name of ['다음 페이지', '3페이지', '이전 페이지', '1페이지']) {
+      await view.click(name, detail);
+      assert.deepEqual(view.scrollPosition(), [0, 720]);
+      assert.equal(view.calls.scrolls.length, 0);
+      assert.equal(view.calls.windowScrolls.length, 0);
+      assert.equal(view.calls.focuses.length, 0);
+      assert.equal(view.nodes((node) => node.type === 'input')[0].props.value, '같은');
+    }
+    assert.equal(view.button('이전 페이지').props['aria-disabled'], true);
+    assert.equal(view.button('이전 페이지').props.disabled, undefined);
+    assert.equal(view.calls.mounts.filter((name) => name === 'ObservationPagination').length, controlMounts);
+    view.unmount();
+  }
+});
+
+test('late page success and fade completion respect manual scrolling after the click, including reduced motion', async () => {
+  for (const reducedMotion of [false, true]) {
+    const pending = deferred();
+    const records = createPaginationObservations();
+    const view = await mount({ autoFinishExit: false, reducedMotion,
+      pageRead: (query, _signal, index) => index === 2 ? pending.promise : Promise.resolve(pagination.paginateMockObservations(records, query)) });
+    view.userScroll(0, 950);
+    await view.click('다음 페이지');
+    view.userScroll(0, 480);
+    pending.resolve(pagination.paginateMockObservations(records, view.calls.pages.at(-1).query));
+    await view.settle();
+    assert.deepEqual(view.scrollPosition(), [0, 480]);
+    if (!reducedMotion) {
+      assert.equal(view.transitionNode().props.animate.opacity, 0);
+      view.userScroll(0, 610);
+      await view.finishExit();
+      assert.deepEqual(view.scrollPosition(), [0, 610]);
+    }
+    assert.equal(view.transitionNode().props.animate.opacity, 1);
+    assert.equal(view.button('2페이지').props['aria-current'], 'page');
+    assert.equal(view.calls.scrolls.length, 0);
+    assert.equal(view.calls.windowScrolls.length, 0);
+    assert.equal(view.calls.focuses.length, 0);
+    view.unmount();
+  }
+});
+
+test('failed page and successful retry never request scroll, even when the user moved during the failure', async () => {
+  const view = await mount({ autoFinishExit: false,
+    pageRead: (query, _signal, index) => index === 2 ? Promise.reject(new Error('Synthetic read failure'))
+      : Promise.resolve(pagination.paginateMockObservations(createPaginationObservations(), query)) });
+  view.userScroll(0, 650);
+  await view.click('다음 페이지');
+  assert.equal(view.nodes((node) => node.props.role === 'alert').length, 1);
+  assert.deepEqual(view.scrollPosition(), [0, 650]);
+  view.userScroll(0, 420);
+  await view.click('다시 시도');
+  assert.equal(view.transitionNode().props.animate.opacity, 0);
+  await view.finishExit();
+  assert.deepEqual(view.scrollPosition(), [0, 420]);
   assert.equal(view.calls.scrolls.length, 0);
+  assert.equal(view.calls.windowScrolls.length, 0);
   assert.equal(view.calls.focuses.length, 0);
-  await view.click('이전 페이지', 1);
-  assert.equal(view.calls.scrolls.length, 1);
-  assert.equal(view.calls.scrolls[0].behavior, 'instant');
-  assert.equal(view.calls.focuses.length, 0);
-  assert.equal(view.calls.mounts.filter((name) => name === 'ObservationPagination').length, 1);
+});
+
+test('route navigation still performs its original scroll; pagination and detail do not invoke that route action', async () => {
+  const view = await mount({ initialPage: 'intro' });
+  view.userScroll(0, 430);
+  await view.navigate('observations');
+  assert.equal(view.calls.windowScrolls.length, 1);
+  assert.equal(view.calls.windowScrolls[0].top, 0);
+  assert.equal(view.calls.windowScrolls[0].behavior, 'smooth');
+  view.userScroll(0, 640);
+  await view.click('다음 페이지');
+  const selected = view.grid().observations[0];
+  view.grid().onSelectObservation(selected); await view.settle();
+  view.nodes((node) => node.type === 'detail')[0].props.onClose(); await view.settle();
+  assert.equal(view.button('2페이지').props['aria-current'], 'page');
+  assert.equal(view.calls.windowScrolls.length, 1);
+  assert.equal(view.calls.scrolls.length, 0);
+  assert.deepEqual(view.scrollPosition(), [0, 640]);
 });
 
 test('obsolete fade completion cannot commit a later page or run after unmount', async () => {

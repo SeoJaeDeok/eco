@@ -23,9 +23,11 @@ This document records Phase 28A implementation and the historical Phase 27 close
   and statistics; tree has its own unchanged read. Neither is limited to twenty.
   Existing full-read API row limits/scalability are not solved by this work.
 - Original pagination checks before the transition follow-up: typecheck,
-  114 Node tests (0 failed), build and audit PASS. The follow-up reran typecheck,
+  114 Node tests (0 failed), build and audit PASS. The transition follow-up reran typecheck,
   the full Node suite (126 tests, 0 failed), build and dev-inclusive audit
-  (0 vulnerabilities at every severity at this run). Tests exercise
+  (0 vulnerabilities at every severity at that run). The subsequent scroll fix
+  freshly passed typecheck, 129 full-suite tests, build and dev-inclusive audit
+  (all severities 0). Tests exercise
   the installed SDK query builder with injected fetch and actual App/list callbacks.
   Existing Phase 26/27 tests remain unchanged and pass.
 - User-approved follow-up: reuse menu page transitions for previous/next/page
@@ -36,14 +38,24 @@ This document records Phase 28A implementation and the historical Phase 27 close
   Loading/error retain a labelled inert previous page; forms/controls stay mounted.
   Search cancels stale fades, initial entry does not double-animate, completed
   page intent is cleared and reduced-motion does not wait for completion.
-  Arrow `aria-disabled` guards preserve focus at boundaries; keyboard navigation
-  no longer moves focus/scroll away, pointer success keeps existing instant scroll.
+  Arrow `aria-disabled` guards preserve focus at boundaries. The later user request
+  supersedes pointer-only result scrolling: no pagination activation now calls
+  scroll/focus APIs, for pointer or keyboard. Menu scrolling stays unchanged.
   Repository/query/photo/search/detail/image/map behavior is unchanged by this
   follow-up. It is a code/test change, not documentation-only verification.
+- Scroll correction started clean at `04063eb` on this same branch. Confirmed
+  code cause: the result-response effect called `scrollIntoView` after pointer
+  page navigation. Removed that effect, refs and callback flag; no compensation
+  timer, saved viewport, fixed-height spacer or scroll lock. Four regression tests
+  failed before removal and passed after; 25 focused harness tests now pass.
+  These execute App/list code with I/O spies, not real scroll geometry. Existing
+  mounted fade grid/image aspect ratio remain; a short final page can clamp to
+  the new document bottom. Browser scroll/anchoring is still PARTIAL, not a measured
+  no-jump guarantee. The user's report is not a post-fix verification result.
 - Local mock/static server and a 47-record fixture using the real list/detail
   components are available. HTTP/transform checks passed, but browser tooling
   failed before inspection again in the follow-up: actual animation comparison,
-  responsive/keyboard/click smoke PARTIAL. The real-component fixture now accepts
+  responsive/keyboard/click and actual scroll smoke PARTIAL. The real-component fixture accepts
   `?delay=800&failPage=2` for delayed reads/one-time page-two failure; no external I/O
   or duplicated animation. Live Supabase
   read/search/regex/photo compatibility NOT_RUN; real Kakao/live auth not reverified.
@@ -57,6 +69,8 @@ This document records Phase 28A implementation and the historical Phase 27 close
   Follow-up code/tests: `9bc55d7 feat: reuse page transitions for observation pagination`.
   Documentation uses `docs: record observation pagination transitions`; read its
   actual hash from Git. No remote feature branch was created or pushed by this work.
+  Scroll correction commit uses `fix: prevent scroll jumps during observation pagination`;
+  consult Git for its hash. Only list UI, its regression test and these records change.
 - The Phase 27 docs-only `a3887a7` deployment remains unobserved; actual historical
   Production visual PASS is still tied to `258daaa`. Do not infer a new live PASS.
 - Next: finish pending read-only/browser checks; Phase 28B monthly Eco Map filter
@@ -66,8 +80,9 @@ This document records Phase 28A implementation and the historical Phase 27 close
 **한국어:** 관찰목록 20개 서버 페이지네이션을 구현했습니다. 검색·필터는 전체
 공개 관찰에 먼저 적용하며 지도·소개·트리는 목록 페이지와 분리했습니다.
 자동 검사는 통과했고 실제 화면·Supabase 확인은 남아 있습니다. 아직 로컬 작업입니다.
-후속 전환 효과는 카드에만 적용했고 126개 자동 검사가 통과했습니다.
-기존 메뉴와 같은 느낌인지, 좁은 화면·실제 키보드 동작은 수동 확인이 필요합니다.
+후속 전환 효과는 카드에만 적용하며 페이지를 넘긴 뒤 상단으로 이동시키던 호출을
+제거했습니다. 이번 129개 자동 검사는 통과했지만 실제 스크롤·좁은 화면·키보드는
+수동 확인이 필요합니다. 마지막 페이지가 짧아지는 경우의 브라우저 보정은 남습니다.
 push나 배포는 하지 않습니다. 월별 지도 필터는 별도 요청을 받은 뒤 진행합니다.
 
 ## Previous State: Phase 27 Closed After Production Verification

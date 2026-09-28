@@ -5,7 +5,7 @@ interface ObservationPaginationProps {
   page: number;
   totalCount: number;
   busy?: boolean;
-  onPageChange: (page: number, scrollToResults: boolean) => void;
+  onPageChange: (page: number) => void;
 }
 
 export const ObservationPagination = ({ page, totalCount, busy = false, onPageChange }: ObservationPaginationProps) => {
@@ -18,17 +18,17 @@ export const ObservationPagination = ({ page, totalCount, busy = false, onPageCh
     <nav aria-label="관찰목록 페이지" aria-busy={busy} className="mt-8 flex flex-wrap items-center justify-center gap-2">
       {/* aria-disabled keeps the initiating button focused even at a new boundary. */}
       <button type="button" aria-label="이전 페이지" aria-disabled={busy || page === 1} className={`${buttonClass} ${page === 1 ? 'opacity-40' : ''}`}
-        onClick={(event) => { if (!busy && page > 1) onPageChange(page - 1, event.detail !== 0); }}><ChevronLeft size={16} aria-hidden="true" /></button>
+        onClick={() => { if (!busy && page > 1) onPageChange(page - 1); }}><ChevronLeft size={16} aria-hidden="true" /></button>
       <span className="px-2 text-xs text-zinc-600 sm:hidden" aria-current="page">{page} / {totalPages}페이지</span>
       <div className="hidden gap-2 sm:flex">
         {pages.map((number) => <button key={number} type="button" aria-label={`${number}페이지`}
           aria-current={number === page ? 'page' : undefined}
           aria-disabled={busy || number === page}
           className={`${buttonClass} ${number === page ? 'bg-zinc-900 text-white' : 'bg-white text-zinc-700'}`}
-          onClick={(event) => { if (!busy && number !== page) onPageChange(number, event.detail !== 0); }}>{number}</button>)}
+          onClick={() => { if (!busy && number !== page) onPageChange(number); }}>{number}</button>)}
       </div>
       <button type="button" aria-label="다음 페이지" aria-disabled={busy || page === totalPages} className={`${buttonClass} ${page === totalPages ? 'opacity-40' : ''}`}
-        onClick={(event) => { if (!busy && page < totalPages) onPageChange(page + 1, event.detail !== 0); }}><ChevronRight size={16} aria-hidden="true" /></button>
+        onClick={() => { if (!busy && page < totalPages) onPageChange(page + 1); }}><ChevronRight size={16} aria-hidden="true" /></button>
       <span className="hidden text-xs text-zinc-500 sm:inline">총 {totalPages}페이지</span>
     </nav>
   );

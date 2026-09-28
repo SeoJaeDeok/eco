@@ -144,10 +144,11 @@ Taxa column-level grants are not widened or bypassed; no taxa join is needed her
   requests with a loading/previous-page notice. They are inert and hidden from
   assistive navigation, not relabelled as the requested page. New conditions hide
   unrelated old results. Final cards/count/range/page commit together.
-- Pointer page navigation keeps the existing instant result-region scroll on
-  success, without transferring keyboard focus. Keyboard page navigation keeps
-  focus/viewport at the mounted controls. No new global or smooth scroll is added.
-  Search/filter controls do not move focus. Browser focus/layout remains PARTIAL.
+- Page navigation no longer calls scroll or focus APIs for pointer or keyboard
+  activation. Controls remain mounted; no click-time position is captured or
+  restored after a delayed response. The user's subsequent scroll is not undone.
+  Normal menu navigation is unchanged. Actual browser positioning remains PARTIAL;
+  a shorter final document may still constrain the available scroll range.
 - A safe Korean error and same-condition retry distinguish failure from empty.
   The page query disables SDK automatic retries; the retry button is explicit.
 - Successful out-of-range response with exact count corrects to the last page
@@ -233,7 +234,7 @@ unmounting the search form, controls or App-owned detail modal.
   current-page semantics and visible focus styles remain. A zero/one-page result
   still hides unnecessary navigation. No automatic search-input focus change.
 
-### Follow-up Verification
+### Transition Verification Before Scroll Correction
 
 | Check | Result | Evidence / limit |
 | --- | --- | --- |
@@ -256,6 +257,67 @@ Motion completion and leaf DOM. It does not render CSS, measure focus/geometry,
 or prove animation timing/feel. HTTP serving is not a visual smoke. No operator
 statement is expanded into unreported detailed live verification.
 
+## Scroll-Jump Correction (2026-09-28)
+
+The user reported an upward move after switching from page one to page two and
+requested keeping the current viewport while retaining the card fade. This
+supersedes the earlier pointer-only automatic result-region scroll requirement.
+Started clean on the same Phase 28A branch at `04063eb`; no new branch or reset.
+
+### Confirmed Code Cause And Small Fix
+
+- Before correction, `ObservationPagination` passed `event.detail !== 0` as a
+  `scrollToResults` flag. `ObservationListPage` saved it in
+  `scrollAfterPageChange`, then its response effect called
+  `resultRef.current?.scrollIntoView({ block: 'start', behavior: 'instant' })`.
+  The result region also has a scroll margin. This is an explicit result-start
+  scroll, not an opacity-animation requirement.
+- Inspected ancestors (`App` root, main, AppRoutes and list containers) have no
+  separate scrolling panel: the document/viewport is the scrolling surface in
+  this layout. This was established from code, not a live `scrollY` measurement.
+- Removed only that effect, its two refs and the flag through the page callback.
+  No replacement scroll/focus call, delayed correction, position snapshot, body
+  lock, global anchoring override or permanent padding was added.
+- The existing App menu/hash navigation scroll remains untouched. Pagination
+  uses real `type="button"` controls, not anchors or form submission, and does
+  not invoke App navigation. No result `focus()` or `autoFocus` is introduced.
+- The same mounted grid retains old cards while requesting/fading; there is no
+  intentional empty exit gap or page-key remount. Card image `aspect-square`
+  reservations and ID keys are unchanged. Native scroll anchoring, text-height
+  variation and exact browser geometry were not measured or asserted as causes.
+- `PAGE_FADE`, reduced-motion handling, request identity/abort guards, error/retry,
+  filter/search/page state, detail selection, page-only image handling and server
+  query semantics remain unchanged. The existing fixture uses these actual list
+  components without any fixture-only scroll compensation.
+
+### Short Final Page And Verification Limits
+
+Twenty-card to twenty-card moves no longer request vertical or horizontal scroll.
+If twenty cards become seven and the previous position exceeds the new document's
+maximum scroll range, the browser may clamp it to the new bottom. This is distinct
+from sending the reader to the result heading. No oversized permanent blank area
+is introduced to conceal that constraint. Exact before/during/after positions,
+native anchoring and behavior on narrow screens still require real browser checks.
+
+| Check | Result | Evidence / limit |
+| --- | --- | --- |
+| Regression before/after | PASS (mocked) | Four changed/new tests failed on the old scroll call, then passed after removal |
+| Focused actual App/list harness | PASS | 25 tests; scroll/focus spies, delayed response, user movement, retry, menu distinction |
+| Full Node suite | PASS | Fresh run: 129 tests, 0 failures; previous 126 remains historical |
+| Typecheck / build | PASS | Rerun after this code change |
+| Full dev-inclusive audit | PASS | Fresh audit: all severities 0; no dependency changes |
+| Diff/format/secret/path checks | PASS | Only two list UI files, one test and two documents changed |
+| Local serving | PASS | Root, 47-record fixture and changed component transforms responded successfully |
+| Real scroll position/layout/focus | PARTIAL | Browser connection failed before inspection; no scroll or pixel measurements |
+| Live Supabase / real Kakao | NOT_RUN / PARTIAL | Not reverified by this change |
+
+Tests exercise real App/list callback wiring with mocked Motion and scroll APIs,
+not CSS layout. Their synthetic positions are not browser measurements. The user's
+original problem report is not recorded as a post-fix visual PASS. No account,
+observation, SQL, package, DB, Auth/Storage/Kakao/Vercel setting or provider change;
+no merge/push/deployment. Local commit message:
+`fix: prevent scroll jumps during observation pagination`; use Git for its hash.
+
 ## Local Manual Check
 
 A local mock/static dev server is provided at `http://127.0.0.1:3000` during this
@@ -270,19 +332,18 @@ Fixture-only query options `?delay=800` and `?delay=800&failPage=2` simulate an
 data. Aborted fixture timers/listeners are cleaned up. Animation is exclusively
 the actual list implementation, not a fixture recreation.
 
-1. Compare the standard app's introduction/list/map menu fade with the fixture's
-   `1 -> 2 -> 3 -> 2 -> 1` transitions; check 20/20/7, count/range, no extra slide.
-2. Open/close detail on page two; confirm page/filter state and no fade replay.
-   Current-page and boundary buttons must not issue an extra request/transition.
-3. Sort oldest first and search `수국` from the final page; check page one and no
-   typing fade. Exercise photo/taxon filters, an unmatched search and clear.
-4. Use the delayed fixture, click pages quickly, and change search while waiting
-   or fading. Previous cards must not be interactive or replace newer results.
-5. Use the failure fixture; confirm an error without a false new page, then retry.
-   At narrow/wide widths check Tab/Enter focus; enable reduced motion and repeat.
-6. In the normal app, verify Eco Map/tree and introduction remain independent.
-   Do not save observations, create accounts or send mail. Live Supabase paging
-   remains separate from this injected fixture.
+1. In the fixture near the bottom, use next/previous and number buttons for
+   `1 -> 2 -> 1`; check 20/20 cards, the same fade and no jump to the result heading.
+2. Move to the seven-card page and back. Distinguish a shorter document's bottom
+   clamp from an extra heading jump; do not expect identical maximum scroll ranges.
+3. In the delayed fixture, scroll manually while waiting or fading. Ready data
+   must not pull you to the heading or a previously saved click-time position.
+4. In the failure fixture, retry page two. Error and retry must not programmatically
+   move the viewport; a changing error-message height is not a measured guarantee.
+5. At narrow/wide widths use Tab/Enter, reduced motion and page-two detail open/close.
+   Keep page/filter state and normal user-driven focus scrolling usable.
+6. In the normal app compare menu fades/navigation, search/filter behavior and
+   independent map/tree data. Do not save observations, create accounts or send mail.
 
 ## Limits And Follow-up
 
@@ -311,6 +372,9 @@ Reviewed on 2026-09-28 alongside installed SDK source:
 - [Motion presence and sequential exits](https://motion.dev/docs/react-animate-presence)
 - [Motion reduced-motion accessibility](https://motion.dev/docs/react-accessibility)
 - [React state preservation](https://react.dev/learn/preserving-and-resetting-state)
+- [MDN scrollIntoView and scroll margins](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView)
+- [MDN focus and preventScroll](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus)
+- [MDN scroll anchoring overview](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Scroll_anchoring/Overview)
 
 **한국어:** 목록만 서버에서 조건에 맞는 관찰 20개와 정확한 건수를 받습니다.
 사진 필터는 표시 성공이 아닌 등록 정보 기준이며, 종 수 등의 보조 통계는 이번
@@ -318,5 +382,7 @@ Reviewed on 2026-09-28 alongside installed SDK source:
 자동 검사는 통과했지만 실제 Supabase와 브라우저 클릭 검증은 남아 있습니다.
 후속 수정으로 기존 메뉴와 같은 투명도 전환을 카드 영역에 추가했습니다.
 새 데이터가 준비된 뒤에만 교체하며 검색·필터·페이지 버튼과 상세 상태는 유지합니다.
-전체 126개 자동 검사는 통과했지만 실제 전환 느낌과 화면 배치는 아직 PARTIAL입니다.
+추가 요청에 따라 페이지 변경 후 결과 상단으로 이동시키던 호출도 제거했습니다.
+이번 전체 129개 자동 검사는 통과했지만 실제 스크롤·전환·배치는 아직 PARTIAL입니다.
+마지막 7개 페이지에서 문서가 짧아지면 브라우저가 가능한 범위로 보정할 수 있습니다.
 DB·패키지·설정을 바꾸지 않았고 운영 반영이나 push는 하지 않습니다.

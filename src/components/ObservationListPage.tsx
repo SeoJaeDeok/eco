@@ -44,8 +44,6 @@ export const ObservationListPage = ({ repository = activeObservationRepository, 
   const reduceMotion = useReducedMotion();
   const reduceMotionRef = useRef(reduceMotion);
   reduceMotionRef.current = reduceMotion;
-  const resultRef = useRef<HTMLDivElement>(null);
-  const scrollAfterPageChange = useRef(false);
   const matchesRequest = (result: PageResponse | null) => result?.query === query
     && result.revision === revision && result.retry === retry && result.repository === repository;
   const current = matchesRequest(response) ? response : null;
@@ -99,15 +97,7 @@ export const ObservationListPage = ({ repository = activeObservationRepository, 
     }
   }, [reduceMotion, exiting]);
 
-  useEffect(() => {
-    if (current?.data && scrollAfterPageChange.current) {
-      scrollAfterPageChange.current = false;
-      resultRef.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
-    }
-  }, [current]);
-
   const changeConditions = (patch: Partial<Omit<ObservationPageQuery, 'page'>>) => {
-    scrollAfterPageChange.current = false;
     pageRequest.current = null;
     pendingRef.current = null;
     setQuery((previous) => ({ ...previous, ...patch, page: 1 }));
@@ -131,7 +121,7 @@ export const ObservationListPage = ({ repository = activeObservationRepository, 
           onSelectTaxon={(selectedTaxon) => changeConditions({ selectedTaxon })}
         />
 
-        <div ref={resultRef} tabIndex={-1} aria-label="관찰 검색 결과" aria-busy={isLoading}
+        <div tabIndex={-1} aria-label="관찰 검색 결과" aria-busy={isLoading}
           className="scroll-mt-28 focus-visible:outline-2 focus-visible:outline-offset-4">
           <p role="status" className="mb-4 text-xs text-zinc-500">
             {isLoading ? '관찰 기록을 불러오는 중입니다.' : current?.data
@@ -161,13 +151,12 @@ export const ObservationListPage = ({ repository = activeObservationRepository, 
         </div>
         {visibleData && <ObservationPagination page={visibleData.page} totalCount={visibleData.totalCount}
           busy={isLoading}
-          onPageChange={(page, scrollToResults) => {
+          onPageChange={(page) => {
             if (isLoading || requestLocked.current || page === visibleData.page) return;
             requestLocked.current = true;
             const nextQuery = { ...query, page };
             pageRequest.current = nextQuery;
             pendingRef.current = null;
-            scrollAfterPageChange.current = scrollToResults;
             setQuery(nextQuery);
           }} />}
       </div>
