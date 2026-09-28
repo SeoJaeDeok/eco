@@ -7,6 +7,7 @@ import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 import * as pagination from '../src/utils/observationPagination.ts';
 import * as taxa from '../src/constants/taxon.ts';
+import * as pageTransition from '../src/utils/pageTransition.ts';
 import { createPaginationObservations } from './fixtures/observation-pagination.mjs';
 
 const deferred = () => {
@@ -18,8 +19,9 @@ const emptyAuth = { user: null, profile: null, isAdmin: false };
 
 // Real App -> AppRoutes -> ObservationListPage orchestration, injected I/O and shallow leaf UI.
 // Not a real DOM, layout, navigation or Supabase session test.
-const mount = async ({ initialPage = 'observations', pageRead, observations = createPaginationObservations(), signedIn = false, admin = false } = {}) => {
-  const instances = new Map(), effects = [], calls = { all: 0, count: 0, pages: [], details: [], updates: [], adminUpdates: [], prefetch: [] };
+const mount = async ({ initialPage = 'observations', pageRead, observations = createPaginationObservations(), signedIn = false, admin = false,
+  reducedMotion = false, autoFinishExit = true, imageRead = async () => {} } = {}) => {
+  const instances = new Map(), effects = [], calls = { all: 0, count: 0, pages: [], details: [], updates: [], adminUpdates: [], prefetch: [], mounts: [], scrolls: [], focuses: [] };
   let current, dirty = false, tree;
   const rows = observations;
   const repository = {
@@ -69,6 +71,7 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
     'components/observations/ObservationPagination.tsx', 'components/ui/TaxonFilterButton.tsx', 'components/ui/SearchInput.tsx'];
   const modules = new Map([
     [path('constants/taxon'), taxa], [path('utils/observationPagination'), pagination],
+    [path('utils/pageTransition'), pageTransition],
     [path('repositories/observationRepositoryProvider'), { activeObservationRepository: repository, getConfiguredObservationRepositoryKind: () => 'mock' }],
     [path('repositories/adminObservationRepositoryProvider'), { activeAdminObservationRepository: {
       async updateObservationAsAdmin(id, input) {
@@ -81,7 +84,7 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
     [path('utils/observationStats'), { countUniqueSpecies: (items) => new Set(items.map((item) => item.name)).size }],
     [path('utils/observerDisplay'), { normalizeObserverDisplayName: () => undefined }],
     [path('utils/observationImagePrefetch'), {
-      prefetchObservationImages: async (items) => { calls.prefetch.push(items.map((item) => item.id)); },
+      prefetchObservationImages: async (items) => { calls.prefetch.push(items.map((item) => item.id)); await imageRead(items); },
       prefetchObservationImage: async () => {}, withCachedObservationImageUrl: (item) => item,
     }],
     ...[['Navbar', 'navbar'], ['Hero', 'hero'], ['IntroPage', 'intro'], ['MapPage', 'map'], ['UploadMockPage', 'upload'],
@@ -100,7 +103,7 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
     runInNewContext(outputText, { exports, window, AbortController, require(name) {
       if (name === 'react') return react;
       if (name === 'react/jsx-runtime') return { jsx, jsxs: jsx, Fragment: 'fragment' };
-      if (name === 'motion/react') return { AnimatePresence: 'animate', motion: { div: 'motion-div' } };
+      if (name === 'motion/react') return { AnimatePresence: 'animate', motion: { div: 'motion-div' }, useReducedMotion: () => reducedMotion };
       if (name === 'lucide-react') return { Search: 'search-icon', RotateCw: 'reload-icon', ChevronLeft: 'left', ChevronRight: 'right' };
       return load(resolve(dirname(actual), name));
     } });
@@ -115,9 +118,13 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
       if (!frame || frame.type !== node.type) {
         frame?.slots.forEach((slot) => slot.cleanup?.());
         frame = { type: node.type, slots: [], cursor: 0 }; instances.set(location, frame);
+        calls.mounts.push(node.type.name);
       }
       frame.seen = true; frame.cursor = 0; current = frame;
       return renderNode(node.type(node.props), `${location}.render`);
+    }
+    if (node.props.ref && typeof node.props.ref === 'object') {
+      node.props.ref.current = { scrollIntoView: (options) => calls.scrolls.push(options), focus: (options) => calls.focuses.push(options) };
     }
     return { ...node, children: renderNode(node.props.children, `${location}.children`) };
   };
@@ -132,6 +139,10 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
   const settle = async () => {
     for (let i = 0; i < 30; i++) {
       await new Promise((resolve) => setImmediate(resolve));
+      const exiting = transitionNode();
+      if (autoFinishExit && exiting?.props.animate.opacity === 0) {
+        exiting.props.onAnimationComplete(exiting.props.animate);
+      }
       if (!dirty) return;
       render();
     }
@@ -152,11 +163,14 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
     const found = nodes((node) => node.type === 'button' && (node.props['aria-label'] === name || text(node) === name));
     assert.equal(found.length, 1, 'Expected one action'); return found[0];
   };
+  const transitionNode = () => nodes((node) => node.type === 'motion-div' && node.props.onAnimationComplete)[0];
   render(); await settle();
   return {
-    calls, nodes, text, button, settle, render,
+    calls, nodes, text, button, settle, render, transitionNode,
+    async finishExit() { const node = transitionNode(); node.props.onAnimationComplete(node.props.animate); await settle(); },
+    async setReducedMotion(value) { reducedMotion = value; dirty = true; await settle(); },
     grid: () => nodes((node) => node.type === 'grid')[0]?.props,
-    async click(name) { const node = button(name); assert.ok(!node.props.disabled); node.props.onClick(); await settle(); },
+    async click(name, detail = 1) { const node = button(name); assert.ok(!node.props.disabled); node.props.onClick({ detail }); await settle(); },
     async search(value) { nodes((node) => node.type === 'input')[0].props.onChange({ target: { value } }); await settle(); },
     async navigate(page) { nodes((node) => node.type === 'navbar')[0].props.onNavigate(page); await settle(); },
     unmount() { instances.forEach((frame) => frame.slots.forEach((slot) => slot.cleanup?.())); },
@@ -182,7 +196,7 @@ test('App restored list requests only a page, not the collection or species coun
 
 test('page controls show exact range, final count and preserve the page across detail open/close', async () => {
   const view = await mount();
-  assert.equal(view.button('이전 페이지').props.disabled, true);
+  assert.equal(view.button('이전 페이지').props['aria-disabled'], true);
   await view.click('다음 페이지');
   assert.equal(view.calls.pages.at(-1).query.page, 2);
   assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node).includes('21–40')));
@@ -196,7 +210,7 @@ test('page controls show exact range, final count and preserve the page across d
   assert.equal(view.calls.all, 0);
   await view.click('다음 페이지');
   assert.equal(view.grid().observations.length, 7);
-  assert.equal(view.button('다음 페이지').props.disabled, true);
+  assert.equal(view.button('다음 페이지').props['aria-disabled'], true);
 });
 
 test('search, taxon, image and sort changes reset page one; zero has no invalid range/navigation', async () => {
@@ -240,15 +254,22 @@ test('late responses and errors cannot replace newer conditions, and unmount abo
   view.unmount(); assert.equal(view.calls.pages.at(-1).signal.aborted, true);
 });
 
-test('pending page clears old cards/count; errors offer explicit same-query retry', async () => {
+test('pending/error page retains inert old cards and page controls with an explicit notice; retry uses same query', async () => {
   const pending = deferred();
   const view = await mount({ pageRead: (query, _signal, index) => index === 2 ? pending.promise
     : Promise.resolve(pagination.paginateMockObservations(createPaginationObservations(), query)) });
   await view.click('다음 페이지');
-  assert.equal(view.grid(), undefined);
+  assert.equal(view.grid().observations.length, 20);
+  assert.equal(view.transitionNode().props.inert, true);
+  assert.equal(view.transitionNode().props['aria-hidden'], true);
+  assert.equal(view.button('1페이지').props['aria-current'], 'page');
+  assert.equal(view.button('다음 페이지').props['aria-disabled'], true);
   assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node).includes('불러오는')));
   pending.reject(new Error('Synthetic failure')); await view.settle();
-  assert.equal(view.grid(), undefined);
+  assert.equal(view.grid().observations.length, 20);
+  assert.equal(view.transitionNode().props.inert, true);
+  assert.equal(view.button('1페이지').props['aria-current'], 'page');
+  assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node).includes('이전 1페이지')));
   assert.equal(view.nodes((node) => node.props.role === 'alert').length, 1);
   await view.click('다시 시도');
   assert.equal(view.calls.pages.at(-1).query.page, 2);
@@ -298,4 +319,211 @@ test('large page counts render at most five number buttons, with labelled arrows
   assert.equal(numbers.length, 5);
   assert.equal(numbers.filter((node) => node.props['aria-current'] === 'page').length, 1);
   assert.ok(numbers.every((node) => node.props.type === 'button' && node.props.className.includes('focus-visible')));
+});
+
+test('actual route keeps the original wait/fade props; first list data does not run a second entry fade', async () => {
+  const view = await mount({ initialPage: 'intro', autoFinishExit: false });
+  const route = view.nodes((node) => node.type === 'motion-div' && node.key === 'intro')[0];
+  assert.deepEqual(route.props.initial, { opacity: 0 });
+  assert.deepEqual(route.props.animate, { opacity: 1 });
+  assert.deepEqual(route.props.exit, { opacity: 0 });
+  assert.equal(route.props.transition, undefined);
+  assert.ok(view.nodes((node) => node.type === 'animate' && node.props.mode === 'wait').length);
+  await view.navigate('observations');
+  assert.equal(view.grid().observations.length, 20);
+  assert.equal(view.transitionNode().props.initial, false);
+  assert.equal(view.transitionNode().props.animate, pageTransition.PAGE_FADE.animate);
+  assert.equal(view.transitionNode().props.transition.duration, 0);
+});
+
+test('next/number/previous fade only ready results, then atomically commit cards, range, count and page', async () => {
+  const view = await mount({ autoFinishExit: false });
+  const sequence = [['다음 페이지', 2, 20, '21–40'], ['3페이지', 3, 7, '41–47'],
+    ['이전 페이지', 2, 20, '21–40'], ['1페이지', 1, 20, '1–20']];
+  for (const [button, page, count, range] of sequence) {
+    const previousIds = view.grid().observations.map((row) => row.id);
+    const previousPage = view.nodes((node) => node.type === 'button' && node.props['aria-current'] === 'page')[0].props['aria-label'];
+    await view.click(button);
+    assert.equal(view.calls.pages.at(-1).query.page, page);
+    assert.equal(view.transitionNode().props.animate.opacity, pageTransition.PAGE_FADE.exit.opacity);
+    assert.equal(view.transitionNode().props.transition, undefined);
+    assert.deepEqual(view.grid().observations.map((row) => row.id), previousIds);
+    assert.equal(view.button(previousPage).props['aria-current'], 'page');
+    assert.equal(view.transitionNode().props.inert, true);
+    assert.equal(view.nodes((node) => node.type === 'grid').length, 1);
+    await view.finishExit();
+    assert.equal(view.grid().observations.length, count);
+    assert.equal(view.button(`${page}페이지`).props['aria-current'], 'page');
+    assert.equal(view.transitionNode().props.animate, pageTransition.PAGE_FADE.animate);
+    assert.equal(view.transitionNode().props.inert, false);
+    assert.equal(view.transitionNode().props.transition, undefined);
+    assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node).includes(range) && view.text(node).includes('총 47개')));
+  }
+  assert.equal(view.calls.pages.length, 5);
+  for (const name of ['App', 'AppRoutes', 'ObservationListPage', 'ObservationListHeader', 'ObservationPagination']) {
+    assert.equal(view.calls.mounts.filter((value) => value === name).length, 1, `${name} stays mounted`);
+  }
+});
+
+test('pending request starts immediately, keeps result height/content, blocks duplicate clicks and waits for data not images', async () => {
+  const pending = deferred(), image = deferred();
+  const rows = createPaginationObservations();
+  const view = await mount({ autoFinishExit: false, imageRead: () => image.promise,
+    pageRead: (query, _signal, count) => count === 2 ? pending.promise : Promise.resolve(pagination.paginateMockObservations(rows, query)) });
+  const click = view.button('다음 페이지').props.onClick;
+  click({ detail: 1 }); click({ detail: 1 }); await view.settle();
+  assert.equal(view.calls.pages.length, 2);
+  assert.equal(view.transitionNode().props.animate.opacity, 1);
+  assert.equal(view.grid().observations.length, 20);
+  await view.click('3페이지');
+  assert.equal(view.calls.pages.length, 2);
+  pending.resolve(pagination.paginateMockObservations(rows, view.calls.pages.at(-1).query));
+  await view.settle();
+  assert.equal(view.transitionNode().props.animate.opacity, 0);
+  await view.click('3페이지');
+  assert.equal(view.calls.pages.length, 2);
+  await view.finishExit();
+  assert.equal(view.button('2페이지').props['aria-current'], 'page');
+  assert.equal(view.calls.prefetch.length, 2);
+  image.resolve(); await view.settle();
+  assert.equal(view.transitionNode().props.animate.opacity, 1);
+});
+
+test('current page, disabled boundaries and ordinary rerenders do not request or replay a fade', async () => {
+  const view = await mount({ autoFinishExit: false });
+  await view.click('1페이지'); await view.click('이전 페이지');
+  assert.equal(view.calls.pages.length, 1);
+  assert.equal(view.transitionNode().props.animate.opacity, 1);
+  await view.click('3페이지'); await view.finishExit();
+  const target = view.transitionNode().props.animate;
+  await view.click('다음 페이지'); await view.click('3페이지');
+  view.render(); await view.settle();
+  assert.equal(view.calls.pages.length, 2);
+  assert.equal(view.transitionNode().props.animate, target);
+});
+
+test('detail open/close, refreshed image object and entry completion cannot replay the page fade', async () => {
+  const view = await mount({ autoFinishExit: false });
+  await view.click('다음 페이지'); await view.finishExit();
+  const target = view.transitionNode().props.animate;
+  const row = view.grid().observations[3];
+  view.grid().onSelectObservation({ ...row, imageUrl: '/fixture-image-refresh.jpg' }); await view.settle();
+  assert.equal(view.nodes((node) => node.type === 'detail')[0].props.observation.id, row.id);
+  assert.equal(view.transitionNode().props.animate, target);
+  view.nodes((node) => node.type === 'detail')[0].props.onClose(); await view.settle();
+  await view.finishExit(); // An opacity-one completion is not a page commit.
+  assert.equal(view.transitionNode().props.animate, target);
+  assert.equal(view.button('2페이지').props['aria-current'], 'page');
+  assert.equal(view.calls.pages.length, 2);
+  assert.equal(view.calls.prefetch.length, 2);
+});
+
+test('each condition change cancels an exit and rejects its stale completion without animating search results', async () => {
+  for (const change of [(view) => view.search('같은'), (view) => view.click('식물'),
+    (view) => view.click('사진 있음'), (view) => view.click('관찰명순')]) {
+    const view = await mount({ autoFinishExit: false });
+    await view.click('다음 페이지');
+    const old = view.transitionNode();
+    assert.equal(old.props.animate.opacity, 0);
+    await change(view);
+    const ids = view.grid().observations.map((row) => row.id);
+    old.props.onAnimationComplete(old.props.animate); await view.settle();
+    assert.deepEqual(view.grid().observations.map((row) => row.id), ids);
+    assert.equal(view.calls.pages.at(-1).query.page, 1);
+    assert.equal(view.transitionNode().props.animate.opacity, 1);
+    assert.equal(view.transitionNode().props.transition.duration, 0);
+    assert.equal(view.calls.scrolls.length, 0);
+    view.unmount();
+  }
+});
+
+test('late page response cannot start a fade after a newer search or replace its count', async () => {
+  const latePage = deferred();
+  const rows = createPaginationObservations();
+  const view = await mount({ autoFinishExit: false, pageRead: (query, _signal, index) => index === 2
+    ? latePage.promise : Promise.resolve(pagination.paginateMockObservations(rows, query)) });
+  await view.click('다음 페이지');
+  const oldQuery = view.calls.pages.at(-1).query;
+  await view.search('수국');
+  latePage.resolve(pagination.paginateMockObservations(rows, oldQuery)); await view.settle();
+  assert.equal(view.grid().observations.length, 1);
+  assert.equal(view.transitionNode().props.animate.opacity, 1);
+  assert.equal(view.calls.prefetch.length, 2);
+  assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node).includes('총 1개')));
+});
+
+test('failed request does not fade or advance; retry fades only after a successful response', async () => {
+  const view = await mount({ autoFinishExit: false, pageRead: (query, _signal, index) => index === 2
+    ? Promise.reject(new Error('Synthetic page failure')) : Promise.resolve(pagination.paginateMockObservations(createPaginationObservations(), query)) });
+  await view.click('다음 페이지');
+  assert.equal(view.transitionNode().props.animate.opacity, 1);
+  assert.equal(view.nodes((node) => node.props.role === 'alert').length, 1);
+  assert.equal(view.button('1페이지').props['aria-current'], 'page');
+  await view.click('다시 시도');
+  assert.equal(view.nodes((node) => node.props.role === 'alert').length, 0);
+  assert.equal(view.transitionNode().props.animate.opacity, 0);
+  await view.finishExit();
+  assert.equal(view.button('2페이지').props['aria-current'], 'page');
+  assert.equal(view.calls.pages.length, 3);
+});
+
+test('reduced motion commits pages without any completion event, including when enabled mid-exit', async () => {
+  const view = await mount({ autoFinishExit: false, reducedMotion: true });
+  await view.click('다음 페이지');
+  assert.equal(view.button('2페이지').props['aria-current'], 'page');
+  assert.equal(view.transitionNode().props.animate.opacity, 1);
+  assert.equal(view.transitionNode().props.transition.duration, 0);
+  await view.setReducedMotion(false);
+  await view.click('다음 페이지');
+  const old = view.transitionNode();
+  assert.equal(old.props.animate.opacity, 0);
+  await view.setReducedMotion(true);
+  assert.equal(view.grid().observations.length, 7);
+  assert.equal(view.button('3페이지').props['aria-current'], 'page');
+  old.props.onAnimationComplete(old.props.animate); await view.settle();
+  assert.equal(view.calls.pages.length, 3);
+  assert.equal(view.transitionNode().props.transition.duration, 0);
+});
+
+test('keyboard retains controls without programmatic focus/scroll; pointer navigation retains instant result scroll', async () => {
+  const view = await mount();
+  await view.click('다음 페이지', 0);
+  await view.click('다음 페이지', 0);
+  assert.equal(view.button('다음 페이지').props['aria-disabled'], true);
+  assert.equal(view.button('다음 페이지').props.disabled, undefined);
+  assert.equal(view.calls.scrolls.length, 0);
+  assert.equal(view.calls.focuses.length, 0);
+  await view.click('이전 페이지', 1);
+  assert.equal(view.calls.scrolls.length, 1);
+  assert.equal(view.calls.scrolls[0].behavior, 'instant');
+  assert.equal(view.calls.focuses.length, 0);
+  assert.equal(view.calls.mounts.filter((name) => name === 'ObservationPagination').length, 1);
+});
+
+test('obsolete fade completion cannot commit a later page or run after unmount', async () => {
+  const view = await mount({ autoFinishExit: false });
+  await view.click('다음 페이지'); const first = view.transitionNode();
+  await view.finishExit();
+  await view.click('다음 페이지'); const latest = view.transitionNode();
+  first.props.onAnimationComplete(first.props.animate); await view.settle();
+  assert.equal(view.transitionNode().props.animate, latest.props.animate);
+  assert.equal(view.button('2페이지').props['aria-current'], 'page');
+  view.unmount();
+  latest.props.onAnimationComplete(latest.props.animate);
+  assert.equal(view.calls.pages.at(-1).signal.aborted, true);
+});
+
+test('a later edit refresh does not reuse the completed page-navigation animation intent', async () => {
+  const records = createPaginationObservations();
+  const view = await mount({ autoFinishExit: false, signedIn: true,
+    pageRead: (query, _signal, index) => Promise.resolve(pagination.paginateMockObservations(index > 2 ? records.slice(0, 1) : records, query)) });
+  await view.click('다음 페이지'); await view.finishExit();
+  const selected = view.grid().observations[0];
+  view.grid().onSelectObservation(selected); await view.settle();
+  await view.nodes((node) => node.type === 'detail')[0].props.onUpdateObservation(selected.id, { name: '갱신한 관찰' });
+  await view.settle();
+  assert.equal(view.calls.pages.length, 3);
+  assert.equal(view.grid().observations.length, 1);
+  assert.equal(view.transitionNode().props.animate.opacity, 1);
+  assert.equal(view.transitionNode().props.transition.duration, 0);
 });

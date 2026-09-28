@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { PAGE_FADE } from '../utils/pageTransition';
 import { Hero } from './Hero';
 import { IntroPage } from './IntroPage';
 import { MapPage } from './MapPage';
@@ -52,27 +53,27 @@ export const AppRoutes = ({
   return (
     <AnimatePresence mode="wait">
       {currentPage === 'home' && (
-        <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div key="home" {...PAGE_FADE}>
           <Hero />
         </motion.div>
       )}
       {currentPage === 'intro' && (
-        <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div key="intro" {...PAGE_FADE}>
           <IntroPage observations={observations} onSelectSpecimen={onSelectObservation} onNavigate={onNavigate} />
         </motion.div>
       )}
       {currentPage === 'observations' && (
-        <motion.div key="observations" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div key="observations" {...PAGE_FADE}>
           <ObservationListPage revision={observationRevision} onSelect={onSelectObservation} />
         </motion.div>
       )}
       {currentPage === 'map' && (
-        <motion.div key="map" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div key="map" {...PAGE_FADE}>
           <MapPage observations={observations} onSelect={onSelectObservation} />
         </motion.div>
       )}
       {currentPage === 'upload' && (
-        <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div key="upload" {...PAGE_FADE}>
           {isPublicUserSignedIn ? (
             <UploadMockPage onCancel={() => onNavigate('observations')} onObservationCreated={onObservationCreated} />
           ) : (
@@ -91,7 +92,7 @@ export const AppRoutes = ({
         </motion.div>
       )}
       {currentPage === 'admin' && (
-        <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div key="admin" {...PAGE_FADE}>
           <Suspense fallback={<div className="min-h-screen bg-white px-6 pt-32 text-sm text-zinc-500">관리자 화면을 불러오는 중입니다.</div>}>
             <AdminPage />
           </Suspense>
