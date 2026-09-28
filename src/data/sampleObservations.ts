@@ -3,6 +3,7 @@ import type { Observation } from '../types';
 export const sampleObservations: Observation[] = [
   {
     id: 'great-tit',
+    status: 'approved',
     name: '박새',
     scientificName: 'Parus minor',
     taxon: '조류',
@@ -15,6 +16,7 @@ export const sampleObservations: Observation[] = [
   },
   {
     id: 'honeybee',
+    status: 'approved',
     name: '양봉꿀벌',
     scientificName: 'Apis mellifera',
     taxon: '곤충',
@@ -27,6 +29,7 @@ export const sampleObservations: Observation[] = [
   },
   {
     id: 'geranium',
+    status: 'approved',
     name: '쥐손이풀',
     scientificName: 'Geranium sibiricum',
     taxon: '식물',
@@ -38,6 +41,7 @@ export const sampleObservations: Observation[] = [
   },
   {
     id: 'capsella',
+    status: 'approved',
     name: '냉이',
     scientificName: 'Capsella bursa-pastoris',
     taxon: '식물',
@@ -50,6 +54,7 @@ export const sampleObservations: Observation[] = [
   },
   {
     id: 'butterfly',
+    status: 'approved',
     name: '나비류',
     scientificName: 'Lepidoptera sp.',
     taxon: '곤충',
@@ -61,6 +66,7 @@ export const sampleObservations: Observation[] = [
   },
   {
     id: 'dayflower',
+    status: 'approved',
     name: '닭의장풀',
     scientificName: 'Commelina communis',
     taxon: '식물',

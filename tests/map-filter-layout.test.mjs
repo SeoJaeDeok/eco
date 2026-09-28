@@ -8,6 +8,8 @@ import * as filters from '../src/utils/observationFilters.ts';
 import * as months from '../src/utils/observationMonth.ts';
 import { createMapFilterLayoutFixture } from './fixtures/map-filter-layout.mjs';
 import { createMapMonthFixture } from './fixtures/map-month-filter.mjs';
+import { mockObservationRepository } from '../src/repositories/mockObservationRepository.ts';
+import { mockTaxonomyTreeRepository } from '../src/repositories/mockTaxonomyTreeRepository.ts';
 
 // Component/effect contract harness, not React DOM, CSS geometry or a browser.
 const mountMap = async (fixture, overrides = {}) => {
@@ -614,6 +616,44 @@ test('month controls expose multi-select buttons with focus styles and a non-col
 
 const yearSelect = (view, includeHidden = false) => view.nodes((node) => node.type === 'select', includeHidden)[0];
 const yearValues = (view) => view.nodes((node) => node.type === 'option').map((node) => node.props.value);
+
+test('ordinary mock repository feeds visible year options into the actual MapPage', async () => {
+  const observations = await mockObservationRepository.listObservations();
+  const view = await mountMap({ observations, repository: mockTaxonomyTreeRepository });
+  const expectedIds = ['great-tit', 'honeybee', 'geranium', 'capsella', 'butterfly', 'dayflower'];
+  assert.deepEqual(ids(view), expectedIds);
+  assert.deepEqual(yearValues(view), ['', 2026]);
+  await view.click(view.button('분류 탐색'));
+  await view.click(view.button('Plantae 하위 분류 펼치기'));
+  await view.selectYear(2026);
+  await view.click(monthButton(view, 5));
+  await assertResultsAgree(view);
+  assert.deepEqual(ids(view), expectedIds);
+  await view.click(monthButton(view, 4));
+  await view.click(monthButton(view, 5));
+  assert.equal(ids(view).length, 0);
+  assert.deepEqual(yearValues(view), ['', 2026]);
+  await view.click(view.button('필터 접기'));
+  assert.equal(yearSelect(view), undefined);
+  assert.equal(yearSelect(view, true).props.value, 2026);
+  assert.match(view.text(view.nodes((node) => node.props['aria-label'] === '적용 중인 필터')[0]), /관찰 연도: 2026년.*관찰 월: 4월/);
+  await view.click(view.button('관찰 월 필터 해제'));
+  assert.deepEqual(ids(view), expectedIds);
+  assert.equal(yearSelect(view, true).props.value, 2026);
+  await view.click(view.button('필터 열기'));
+  assert.equal(view.button('Plantae 하위 분류 접기').props['aria-expanded'], true);
+  await view.click(monthButton(view, 5));
+  await view.selectYear('');
+  assert.equal(monthButton(view, 5).props['aria-pressed'], true);
+  await view.search('Geranium');
+  assert.deepEqual(ids(view), ['geranium']);
+  assert.deepEqual(yearValues(view), ['', 2026]);
+  await view.click(view.button('전체 보기'));
+  assert.deepEqual(ids(view), expectedIds);
+  assert.equal(view.button('전체 월').props['aria-pressed'], true);
+  assert.equal(view.mapMounts, 1);
+  assert.equal(view.mapUnmounts, 0);
+});
 
 test('year selector in MapPage stays based on unfiltered approved data while year and months intersect', async () => {
   const fixture = createMapMonthFixture();
