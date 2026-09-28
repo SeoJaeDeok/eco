@@ -10,7 +10,7 @@ import { createMapFilterLayoutFixture } from './fixtures/map-filter-layout.mjs';
 import { createMapMonthFixture } from './fixtures/map-month-filter.mjs';
 
 // Component/effect contract harness, not React DOM, CSS geometry or a browser.
-const mountMap = async (fixture) => {
+const mountMap = async (fixture, overrides = {}) => {
   const instances = new Map();
   const effects = [];
   let current;
@@ -110,7 +110,7 @@ const mountMap = async (fixture) => {
   const render = () => {
     dirty = false;
     instances.forEach((frame) => { frame.seen = false; });
-    tree = renderNode(jsx(Page, { observations, onSelect: (record) => selected.push(record.id) }));
+    tree = renderNode(jsx(Page, { observations, onSelect: (record) => selected.push(record.id), ...overrides }));
     for (const [path, frame] of instances) {
       if (!frame.seen) { frame.slots.forEach((slot) => slot.cleanup?.()); instances.delete(path); }
     }
@@ -431,6 +431,21 @@ const monthButton = (view, month) => {
   assert.equal(buttons.length, 1);
   return buttons[0];
 };
+
+test('fixture dependency injection avoids the configured taxonomy repository and map component', async () => {
+  const fixture = createMapMonthFixture();
+  const denied = () => assert.fail('Configured repository must not run in the isolated fixture');
+  const view = await mountMap({ ...fixture, repository: { getRootNodes: denied, getChildren: denied, getObservationIdsForSelection: denied } }, {
+    taxonomyRepository: fixture.repository,
+    MapComponent: (props) => ({ type: 'map-preview', props }),
+  });
+  await openPath(view, fixture);
+  await view.click(view.button('계Plantae'));
+  await view.click(monthButton(view, 5));
+  assert.equal(ids(view).length, 25);
+  assert.equal(fixture.calls.selection, 1);
+  assert.equal(view.mapMounts, 0); // The environment-selected map component was not mounted.
+});
 const assertResultsAgree = async (view) => {
   const before = view.selected.length;
   for (const button of resultButtons(view)) await view.click(button);

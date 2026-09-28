@@ -6,29 +6,29 @@
     <title>Eco Map local month fixture</title>
   </head>
   <body>
+    <p id="fixture-status" role="status" style="position: absolute; top: 8px; left: 16px; right: 16px; z-index: 50; font-family: sans-serif;">
+      테스트 화면 모듈을 불러오는 중입니다.
+    </p>
+    <noscript>이 테스트 화면은 JavaScript가 필요합니다.</noscript>
     <div id="root"></div>
     <script type="module">
-      import React from 'react';
-      import { createRoot } from 'react-dom/client';
-      import { MapPage } from '../../src/components/MapPage.tsx';
-      import { activeTaxonomyTreeRepository } from '../../src/repositories/taxonomyTreeRepositoryProvider.ts';
-      import { getActiveMapProviderKind } from '../../src/features/map/mapProvider.ts';
-      import { createMapMonthFixture } from './map-month-filter.mjs';
-      import '../../src/index.css';
-
-      if (import.meta.env.VITE_OBSERVATION_REPOSITORY !== 'mock' || getActiveMapProviderKind() !== 'static') {
-        throw new Error('This fixture requires local mock/static mode.');
-      }
-      const fixture = createMapMonthFixture();
-      Object.assign(activeTaxonomyTreeRepository, fixture.repository);
-      function Fixture() {
-        const [selected, setSelected] = React.useState(null);
-        return React.createElement(React.Fragment, null,
-          React.createElement('p', { className: 'absolute top-2 left-4 right-4 text-xs', role: 'status' },
-            selected ? `선택: ${selected.name}` : '로컬 합성 자료 / 공개 33건, 5월 27건, 4월과 5월 28건'),
-          React.createElement(MapPage, { observations: fixture.observations, onSelect: setSelected }));
-      }
-      createRoot(document.getElementById('root')).render(React.createElement(Fixture));
+      const status = document.getElementById('fixture-status');
+      const reportFailure = (category) => {
+        status.hidden = false;
+        status.setAttribute('role', 'alert');
+        status.textContent = `테스트 화면 ${category} 실패. 개발 서버와 파일 상태를 확인해 주세요.`;
+      };
+      import('./map-month-filter-browser.mjs').then(({ mountMapMonthFixture }) => {
+        try {
+          status.textContent = '테스트 화면을 그리는 중입니다.';
+          mountMapMonthFixture(document.getElementById('root'), {
+            onReady: () => { status.hidden = true; },
+            onRenderError: () => reportFailure('렌더링'),
+          });
+        } catch {
+          reportFailure('초기화');
+        }
+      }, () => reportFailure('모듈 불러오기'));
     </script>
   </body>
 </html>

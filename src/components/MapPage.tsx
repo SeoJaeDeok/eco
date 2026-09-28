@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { Check, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { TAXA } from '../constants/taxon';
 import { activeTaxonomyTreeRepository } from '../repositories/taxonomyTreeRepositoryProvider';
+import type { TaxonomyTreeRepository } from '../repositories/taxonomyTreeRepository';
 import {
   filterMapObservations,
   getObservationSpeciesGroups,
@@ -18,6 +19,8 @@ import { TaxonomyFilterStatus, TaxonomyTreePanel } from './map/TaxonomyTreePanel
 interface MapPageProps {
   observations: Observation[];
   onSelect: (obs: Observation) => void;
+  taxonomyRepository?: TaxonomyTreeRepository;
+  MapComponent?: typeof MapPreview;
 }
 
 const SPECIES_SUGGESTION_LIMIT = 6;
@@ -29,7 +32,12 @@ const getTaxonCount = (observations: Observation[], taxon: Taxon) => {
 const getTaxonButtonClassName = 'px-3 py-1.5 text-[10px] font-sans tracking-wide transition-all border';
 const getResetButtonClassName = 'min-h-11 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500 transition-colors hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-700';
 
-export const MapPage = ({ observations, onSelect }: MapPageProps) => {
+export const MapPage = ({
+  observations,
+  onSelect,
+  taxonomyRepository = activeTaxonomyTreeRepository,
+  MapComponent = MapPreview,
+}: MapPageProps) => {
   const [areFiltersExpanded, setAreFiltersExpanded] = useState(true);
   const filterControlsId = useId();
   const filterResultsId = `${filterControlsId}-results`;
@@ -57,7 +65,7 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
         setIsLoadingTaxonomyFilter(true);
         setTaxonomyFilterError(null);
         setTaxonomyObservationIds(new Set());
-        const ids = await activeTaxonomyTreeRepository.getObservationIdsForSelection(selectedTaxonomyNode);
+        const ids = await taxonomyRepository.getObservationIdsForSelection(selectedTaxonomyNode);
 
         if (!isCurrent) return;
         setTaxonomyObservationIds(new Set(ids));
@@ -77,7 +85,7 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
     return () => {
       isCurrent = false;
     };
-  }, [selectedTaxonomyNode]);
+  }, [selectedTaxonomyNode, taxonomyRepository]);
 
   const filteredObservations = useMemo(() => {
     return filterMapObservations(observations, {
@@ -138,7 +146,7 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
   return (
     <div className="h-screen flex flex-col pt-20" id="map-page">
       <div className="flex-1 w-full bg-zinc-100 overflow-hidden relative">
-        <MapPreview
+        <MapComponent
           observations={filteredObservations}
           onSelect={onSelect}
           title="정적 생태지도 표시"
@@ -297,7 +305,7 @@ export const MapPage = ({ observations, onSelect }: MapPageProps) => {
 
             <p className="mt-3 text-[11px] leading-5 text-zinc-500">분류 옆 숫자는 전체 기록 기준</p>
             <TaxonomyTreePanel
-              repository={activeTaxonomyTreeRepository}
+              repository={taxonomyRepository}
               selectedNode={selectedTaxonomyNode}
               onSelectNode={(node) => setSelectedTaxonomyNode(node)}
             />
