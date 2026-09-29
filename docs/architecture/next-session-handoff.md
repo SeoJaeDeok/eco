@@ -4,7 +4,48 @@
 
 This document records Phase 28 local verification reports and Preview preparation, the mock approval/date correction, inherited Phase 28A work and historical Phase 27 closeout. Preserve deployed work; do not execute integration, deployment or another feature without a separate request.
 
-## Current State: Phase 28 Preview Shared Summary Correction
+## Current State: Phase 28 Preview Summary User Verification
+
+- Date: 2026-09-29, documentation-only follow-up. Existing feature branch
+  `feature/phase-28b-observation-month-filter` starts clean at local/remote
+  `d6c34ca`; fetched main/origin/main remain `a3887a7`. Preserve all backups/features.
+- Operator replied `에러 없고 검증 완료했어` to the d6c34ca Preview common-summary
+  follow-up. Record **operator-reported guided-flow PASS** and no errors reported
+  in that scope. No repeated summary manual check is requested. It is not Codex
+  browser evidence or an all-Phase-28 live verification report.
+- Guided scope: common numbers across intro/list/map (page two when available),
+  list search/photo independence, reload and narrow header. Individual case values,
+  second-page data sufficiency and device matrix were not supplied. Do not invent them.
+- e81327e has explicit Preview/commit/build operator confirmation. d6c34ca is the
+  requested new Preview target of the completion report; no separate structured
+  deployment fields/tool status were received. The forthcoming doc-only commit's
+  Preview status remains unobserved until separately checked, not a visual PASS.
+- The feature fix/push is complete: hidden list-only Navbar flag removed, separate
+  summary state and bounded approved ID/name read. Preserve name.trim() species
+  semantics, exact count and budget/failure handling; no full observation/photo
+  download restored. Other list cards remain omitted. No new code changes here.
+- Prior fix checks: 174 tests/typecheck/build PASS and audit zero. Not rerun in this
+  docs-only update. Current checks: diff/Markdown/whitespace/EOF/secret/forbidden
+  paths and fresh dev-inclusive audit zero. App checks skipped per working guide.
+- New [Preview verification record](phase-28-preview-smoke.md) distinguishes the
+  common-summary result from live query evidence. Actual range/count/search/photo,
+  real detail/images, real observed-date combinations and list/map separation are
+  still NOT_RUN/unreported. Real Kakao/build-log review PARTIAL. Previous 15 local
+  mock/fixture PASS and old 16-item ledger remain historical, not promoted.
+- Next: complete the remaining already-authorized read-only Preview evidence using
+  existing public records, with insufficient data marked PARTIAL. Do not repeat the
+  completed summary flow or create observations/accounts/SQL to fill coverage gaps.
+  No confirmed remaining summary defect, but Production readiness is not established.
+- This task commits/pushes only intended docs to the same feature branch. No main
+  merge/push, Production, source/tests/packages/settings/DB writes, phase archive or
+  next feature. Report actual doc commit/hash after push; do not self-amend or repeat
+  commits just to record deployment status. Earlier environment confirmation remains valid.
+
+**한국어:** 공통 요약 문제는 사용자 확인으로 해결됐습니다. 이번 문서는 그 결과만
+정확히 기록하며, 실제 서버 요청과 날짜 자료 검증까지 전부 끝난 것으로 쓰지 않습니다.
+남은 읽기 검증 후에만 별도 Production 판단을 진행합니다.
+
+## Previous State: Phase 28 Preview Shared Summary Correction
 
 - Date: 2026-09-29. Existing branch `feature/phase-28b-observation-month-filter`;
   started clean at local/remote `e81327e`. Main/origin/main remain `a3887a7` after

@@ -1,6 +1,32 @@
 # Phase 28 Integration And Release Readiness
 
-## Current Preview Correction (2026-09-29)
+## Current Operator Follow-Up (2026-09-29)
+
+- Corrected candidate `d6c34ca` was normally pushed; local/remote feature matched
+  and worktree was clean. Main/origin/main remain `a3887a7` after fetch.
+- Operator responded `에러 없고 검증 완료했어` to the targeted new-Preview summary
+  check. **Common-summary defect resolution PASS, operator-reported guided-flow
+  completion**, not Codex browser inspection or a completed live request matrix.
+- Scope: intro/list/map common summary, list search/photo independence, reload and
+  narrow header. Do not invent individual measurements, record counts, successful
+  second-page coverage where data may be insufficient, or all-device verification.
+- New structured Dashboard status fields were not separately supplied in that
+  short response; preserve the requested d6c34ca Preview context without copying
+  e81327e's explicit deployment fields or claiming tool-observed Ready status.
+- Prior correction checks remain 174 Node tests/typecheck/build PASS and audit zero,
+  not rerun here. This document-only update checks formatting/security/scope and
+  freshly runs the dev-inclusive audit (zero); app checks are skipped under the
+  docs-only exception. Source/tests/packages/configuration remain d6c34ca's code.
+- Actual server range/count/search/photo, real detail/images, observed-date/date
+  combinations and map/list separation remain NOT_RUN/unreported at the requested
+  evidence level. Kakao and build-log review remain PARTIAL. No new reported summary
+  defect, but not Production readiness. No local fixture result is promoted to live.
+- See [Preview read verification](phase-28-preview-smoke.md) for the scoped report,
+  read budgets and remaining checks. The authorized documentation commit/push stays
+  on the feature branch; its new deployment status/visual evidence are separate.
+  No main merge/push, Production, code/DB/settings changes or Phase 28 closeout.
+
+## Previous Preview Correction Preparation (2026-09-29)
 
 - Phase 28C-1 authorized a normal feature push and read-only Preview verification.
   Actual pushed candidate: `e81327e`, 15 commits / 34 files from `a3887a7` before

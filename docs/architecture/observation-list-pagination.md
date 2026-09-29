@@ -2,6 +2,13 @@
 
 ## Shared Navbar Summary Correction (2026-09-29)
 
+- Follow-up: correction `d6c34ca` was committed and pushed on the feature branch.
+  The operator answered `에러 없고 검증 완료했어` to its targeted Preview check:
+  **common-summary guided-flow PASS, operator-reported**, with no reported errors.
+  This does not establish all live pagination/network cases or sufficient data for
+  page two. No Codex browser run or all-device claim. See the
+  [scoped Preview record](phase-28-preview-smoke.md); verification paragraphs below
+  describe the correction session before that response, not a request to repeat it.
 - Operator report from the general Preview app at `e81327e`: the common
   species/records text near `정적 디자인 시안` disappears on the list. This is
   a reported visibility defect, not literal question marks or proof of mock mode.
