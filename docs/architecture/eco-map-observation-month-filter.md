@@ -5,7 +5,8 @@
 - Phase 28B, implemented locally on `feature/phase-28b-observation-month-filter`.
 - Started from clean Phase 28A `dea0ad2`, not main. Main remains `a3887a7`;
   previous feature/backup branches and all Phase 28A work are preserved.
-- Record date: 2026-09-28 (Asia/Seoul). No merge, push or deployment.
+- Implementation record: 2026-09-28; operator-result review: 2026-09-29
+  (Asia/Seoul). No merge, push or deployment.
 - Original code/test commit: `cc908f5 feat: filter eco map observations by month`;
   original documentation: `e5d5798`.
 - The user's follow-up explicitly approves year selection, superseding the initial
@@ -16,21 +17,73 @@
 - The documentation-only integration review recorded at `bacecae` identified B1
   in candidate `6a52cd3`. The approved follow-up now resolves that mismatch in
   code and automated tests by explicitly approving only six public mock samples.
-  All 16 operator checklist items remain **NOT_RUN**; live/browser verification
-  and deployment approval are still outstanding. See
+  The earlier 16-item checklist is retained as historical NOT_RUN evidence, not
+  upgraded as a batch. The new 15-item operator PASS is recorded separately below;
+  actual Supabase and deployment approval remain outstanding. See
   [Phase 28 integration readiness](phase-28-integration-release-readiness.md).
 - Phase 28A local automatic-scroll correction remains operator-confirmed PASS.
   Its actual Supabase range/count/search/photo/detail/image checks remain NOT_RUN.
   The historical Phase 27 tested Production release is `258daaa`; the docs-only
   `a3887a7` deployment is still unobserved, not upgraded to PASS by this task.
 
-**한국어:** 기본 mock 공개 자료 6개에 빠져 있던 승인 상태를 명시했습니다.
-연도 선택 연결 문제는 코드와 자동 검사에서 해소했습니다. 사용자 확인 16개와
-Supabase 실조회는 여전히 NOT_RUN이며, 전체 배포 검증 완료라는 뜻은 아닙니다.
+**한국어:** 기본 mock의 연도 선택 문제는 코드·기존 자동 검사와 사용자 화면 확인으로
+해결을 확인했습니다. 이번 15개 항목만 사용자 확인 PASS로 기록합니다. 이전 16개
+확인표와 Supabase·Kakao까지 일괄 PASS로 바꾸지 않으며, Production 준비 완료는 아닙니다.
+
+## Operator Follow-Up After Mock Correction (2026-09-29)
+
+- Reviewed branch HEAD: `5af0ce5`, including correction `419f654`. Only documents
+  differ between those commits; no later application change was found on entry.
+- Evidence source: **operator-reported local manual verification**, not Codex
+  browser inspection. After the original template's NOT_RUN entries, the operator
+  reported completion and explicitly clarified: `네, 이번 15개 모두 PASS이고 제외 항목은 기존 상태 유지`.
+- The following 15 PASS results use that clarification, not an inference from the
+  completion wording alone. Actual Supabase stays NOT_RUN and real Kakao PARTIAL.
+  The earlier 16-item checklist is not converted into an all-PASS checklist.
+
+| Environment | Confirmed check | Operator result |
+| --- | --- | --- |
+| General mock app | Map and existing observations displayed | PASS |
+| General mock app | Six default observations and 2026 year option | PASS |
+| General mock app | 2026 / May: six observations | PASS |
+| General mock app | 2026 / April only: zero observations | PASS |
+| General mock app | All months retains year and restores six | PASS |
+| General mock app | Collapse/reopen retains date and tree state | PASS |
+| Synthetic date fixture | Actual MapPage displays without blank screen | PASS |
+| Synthetic date fixture | All years/all months: 33 | PASS |
+| Synthetic date fixture | All years/May: 27 | PASS |
+| Synthetic date fixture | Year/month combinations and independent clears | PASS |
+| Synthetic date fixture | Narrow window and keyboard operation | PASS |
+| Synthetic pagination fixture | Page sizes 20 / 20 / 7 | PASS |
+| Synthetic pagination fixture | Card opacity transition retained | PASS |
+| Synthetic pagination fixture | No automatic top scroll for page 1 / 2 navigation | PASS |
+| Synthetic pagination fixture | Closing detail retains the current page | PASS |
+
+The counts belong only to the specified mock/fixture datasets, never the live DB.
+The blank error field is not an explicit no-error claim. No pixel measurements,
+all-device coverage, new live request, or independent Codex rendering PASS is added.
+No request to repeat these tests is made; the report's grading is now confirmed.
+The prior 28A operator PASS for the original scroll defect remains valid history.
+
+B1 is resolved in code, historical regression tests and the operator's general
+mock app check. The date fixture's original blank screen is also operator PASS.
+Generic combination PASS does not assert separate outcomes for every older
+13/12/0 case, exception, device or prior checklist item. Narrow-window PASS is
+not an all-mobile-device claim. Supabase records were not part of this report.
+Actual Supabase 28A/28B reads stay **NOT_RUN**; real Kakao stays **PARTIAL**.
+No confirmed code blocker to preparing Preview integration verification was found.
+This is not Production readiness or permission to push/deploy.
+
+This documentation-only session rereads the relevant source/commits and checks
+diff, Markdown fences/tables, whitespace/EOF, forbidden tracked paths and secret-like
+additions. It does not rerun Node tests, typecheck, build or audit, following the
+working guide's docs-only exception. The 26-test before/after result, full 162 PASS,
+typecheck/build PASS and zero-vulnerability audit are the 2026-09-28 implementation
+results below. Server availability/browser rendering are not rechecked this time.
 
 ## Default Mock Contract Correction (2026-09-28)
 
-This is an authorized code/test follow-up from `bacecae`, not a docs-only task.
+Historical authorized code/test follow-up from `bacecae`, not the current docs-only task.
 Code/test commit: `419f654 fix: align public mock observations with approval status`.
 `src/data/sampleObservations.ts` supplies the ordinary app through
 `mockObservationRepository` -> App's collection read -> AppRoutes -> MapPage.
@@ -55,7 +108,7 @@ repository's six records and real mock taxonomy repository through year/month,
 empty result, collapse, branch retention, independent clears, search and full reset.
 The harness replaces React DOM/effects/map rendering; it is not browser geometry.
 
-| Current follow-up check | Result and evidence |
+| Historical correction check | Result and evidence |
 | --- | --- |
 | Before source correction | Focused 26 tests: 21 PASS, 5 FAIL; new failures reproduce absent status and empty default/legacy/MapPage year options |
 | After source correction | Same focused 26 tests: all PASS, with no test expectation changed to hide the failures |
@@ -84,7 +137,9 @@ These expectations come from six source dates (May 6, 8, 10, 11, 12 and 13), not
 from using the filter under test to generate expected counts. Two unlinked records
 remain eligible for date filters; taxonomy selection retains its existing rules.
 
-Optional local confirmation, no accounts or data writes:
+Previously supplied local confirmation steps, retained for reference, not a
+request to repeat the reported checks. Port availability was verified only in
+that implementation session:
 
 1. Open `http://127.0.0.1:3005/`, enter 생태지도: six results and the 2026 option.
 2. Select 2026 and May: six; switch May off and April on: zero with choices retained.
@@ -208,8 +263,9 @@ NOT_RUN. TypeScript optional status is not a substitute for repository/RLS acces
 control, and undefined must not be globally promoted to approved.
 
 The authorized correction above makes the known samples explicit at source and
-covers default-repository-to-MapPage behavior. B1 is resolved at code/test level;
-remaining browser/live checks still prevent a claim of full release verification.
+covers default-repository-to-MapPage behavior. B1 is resolved at code/test level
+and now by operator general mock app confirmation. Remaining live checks and
+unreported exception/device cases prevent a claim of full release verification.
 
 With no available years the native select retains all years and an empty-data note.
 If a selected year disappears during refresh it stays selected and appears as
@@ -226,7 +282,8 @@ native `type="button"` toggles have `aria-pressed`, a named fieldset, visible
 focus styles and a check icon in addition to selected colors. Decorative icons
 are hidden from assistive technology. Four/six-column grid tracks wrap months
 without a new horizontal scroller. Native buttons provide Enter/Space behavior.
-Actual focus painting and narrow-screen geometry still require browser checks.
+The operator's new date-fixture narrow-window/keyboard check is PASS. No measured
+geometry, assistive-technology matrix or all-mobile-device result is claimed.
 
 - The controls live inside the existing mounted `hidden` region. Collapse keeps
   selections/results while removing controls and compact results from layout/Tab.
@@ -427,6 +484,7 @@ no self-hash amendment or Phase 28 completion archive.
 
 Next: B1 is corrected in code/tests; decide whether to authorize feature-branch
 Preview deployment and actual Supabase integrated
-reads as described in `phase-28-integration-release-readiness.md`. The supplied
-operator checklist remains NOT_RUN. Do not start a fix, feature or deployment
+reads as described in `phase-28-integration-release-readiness.md`. Preserve the
+historical 16-item NOT_RUN table separately from the new 15-item operator PASS.
+Do not start a fix, feature or deployment
 automatically; old Production/Preview approval is not current authorization.

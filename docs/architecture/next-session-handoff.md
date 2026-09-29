@@ -2,9 +2,64 @@
 
 ## Purpose
 
-This document records the Phase 28B mock approval/date-contract correction, earlier integration review, inherited Phase 28A work and historical Phase 27 closeout. Preserve deployed work; do not execute integration, deployment or another feature without a separate request.
+This document records Phase 28 local verification reports and Preview preparation, the mock approval/date correction, inherited Phase 28A work and historical Phase 27 closeout. Preserve deployed work; do not execute integration, deployment or another feature without a separate request.
 
-## Current State: Phase 28B Mock Contract Corrected Locally
+## Current State: Phase 28 Preview Verification Preparation
+
+- Date: 2026-09-29 (Asia/Seoul), documentation-only review from clean
+  `feature/phase-28b-observation-month-filter` at `5af0ce5`. Local main/cached
+  origin/main remain `a3887a7`, no fetch/push. Candidate range: 14 commits/34 files,
+  both 28A and 28B included. Changes since code correction `419f654` are docs only.
+- Operator clarified `네, 이번 15개 모두 PASS이고 제외 항목은 기존 상태 유지`.
+  Record **operator-reported manual verification PASS** for general mock six,
+  synthetic date fixture five, synthetic pagination fixture four. This replaces
+  the new template's NOT_RUN values only; retain the original 16-item table as
+  historical evidence, not an all-PASS conversion. No test repeat is requested.
+- General mock: six records/year 2026, May six/April zero, month-clear year retained,
+  collapse date/tree state PASS. Date fixture: actual MapPage visible, 33/all,
+  27/May, combinations/clears and narrow/keyboard PASS. Pagination fixture: 20/20/7,
+  fade, no 1 / 2 automatic top scroll and detail-close page retention PASS.
+- B1 is resolved in code/historical tests: six intended public samples now have
+  explicit approved status, without changing other fields, unknown-status rules,
+  pending/rejected protection or Supabase mapper/query. B1 general mock visual
+  resolution and fixture blank-screen resolution now have operator PASS;
+  no Codex browser check or live Supabase result is claimed.
+- No confirmed code blocker to **Preview integration verification preparation**.
+  This is not Production readiness. Read-only source review confirms list server
+  range/count/search/photo predicates and twenty-record size, fade/no-auto-scroll,
+  detail/image state; independent map collection and observed-date year/month
+  AND/OR logic; shared map/list/count result; date clears and tree state retained.
+  Tree global summaries and existing map/tree server row limits remain separate.
+- Historical 2026-09-28 checks: focused 26 (five failures before fix, all PASS after),
+  full 162 PASS, typecheck/build PASS, audit zero at that run. **Not rerun today**.
+  Docs-only exception from the working guide applies. This session checks Git,
+  source, diff/Markdown/whitespace/EOF, forbidden paths and secret-like additions.
+  It does not inspect a browser, server availability or live network responses.
+- Actual Supabase remains **NOT_RUN**, actual Kakao **PARTIAL**, explicitly outside
+  the local completion report. Fixture counts are not DB expected counts. No
+  all-mobile-device claim or measured pixel/scroll assertion. Preserve earlier
+  28A operator confirmation of the original scroll defect separately.
+- Before a later approved Preview smoke, verify real range/count/search/photo,
+  legacy detail/images, actual observed_date/year options/month results, and
+  list/map data separation using existing public records. Insufficient data means
+  PARTIAL, not new account/observation creation or SQL. Domain restrictions may
+  leave real Kakao partial without blocking other Preview UI/read checks.
+- Changed documents only: `eco-map-observation-month-filter.md`,
+  `phase-28-integration-release-readiness.md`, this handoff. App/tests/packages,
+  DB/migration/RLS/RPC/Edge Functions and Auth/Storage/Kakao/Vercel settings unchanged.
+  Main, feature and backup branches preserved. No merge/push/deployment, archive
+  or next feature. Next decision: separate feature-branch Preview deployment and
+  read-only verification approval; historical approvals are not reusable.
+
+**한국어:** 이번 15개는 사용자 수동 확인 PASS로 기록했습니다. 기본 mock의
+연도 선택 문제와 fixture 빈 화면도 해결 확인됐으며 Preview 통합 검증 준비가
+가능합니다. 다만 실제 Supabase와 Kakao 확인이 남아 있어 Production 준비 완료는
+아니며 push·배포는 별도 승인입니다.
+
+## Previous State: Phase 28B Mock Contract Corrected Locally
+
+Historical implementation and test evidence from 2026-09-28 follows. Results,
+server availability and manual statuses below describe that earlier checkpoint.
 
 - Date: 2026-09-28 (Asia/Seoul). Continued clean Phase 28B branch
   `feature/phase-28b-observation-month-filter` from `bacecae`, no new branch.

@@ -2,24 +2,72 @@
 
 ## Decision And Evidence Scope
 
-- Review and correction date: 2026-09-28 (Asia/Seoul).
-- **B1 corrected locally; release verification still incomplete.** The later
-  authorized code/test fix explicitly approves six intended public mock samples,
-  without weakening the year-option guard or changing Supabase. Browser/live
-  read checks and separate Preview/deployment authorization are outstanding.
-- No new user manual PASS was supplied. All 16 requested 28B checks are NOT_RUN.
-  The blank-screen correction is implemented, not operator-confirmed resolved.
-- The original `bacecae` review was documentation-only. The follow-up changes one
-  mock sample file and two test files plus three documents. Packages/settings and
-  Supabase code are unchanged. No merge/push/deployment, SQL or service data write.
+- Latest record review: 2026-09-29 (Asia/Seoul), documentation only.
+- **Preview integration verification preparation is possible:** no confirmed
+  code blocker remains after B1's six-sample correction. This is **not Production
+  deployment readiness**; actual Supabase reads and real Kakao remain unverified.
+- The operator explicitly confirms the new **15 items PASS**: general mock app six,
+  synthetic date fixture five, synthetic pagination fixture four. This supersedes
+  their initial NOT_RUN template only for those items. The old 16-item checklist
+  is not upgraded as a batch. No Codex browser or live Supabase PASS is claimed.
+- Current review candidate: `5af0ce5`, with correction `419f654`; the intervening
+  change is documentation only. No app/test/package or settings change this session.
+  No merge/push/deployment, SQL, accounts or observation writes.
 - Prior Phase 26/27 Production or Preview authorization is not reusable here.
   Phase 28 remains open; this document is not deployment approval.
 
-**한국어:** 기본 mock 앱의 승인 상태 누락은 코드와 자동 검사에서 해결했습니다.
-사용자 화면 확인 16개와 Supabase 실조회는 남아 있으며 배포 준비 완료는 아닙니다.
-이번 수정은 공개 샘플 6개의 상태 보강으로 제한했고 승인 기준은 바꾸지 않았습니다.
+**한국어:** 확인된 코드 blocker는 없어 Preview 통합 검증 준비가 가능합니다.
+이번 15개 항목은 사용자 수동 확인 PASS이며, 기본 mock 연결 문제도 화면에서 해결됐습니다.
+실제 Supabase 조회는 미검증이므로 Production 준비 완료는 아닙니다.
 
-## Current Correction And Verification
+## Current Record And Candidate (2026-09-29)
+
+- Clean existing Phase 28B branch at `5af0ce5`; local main and cached origin/main
+  both `a3887a7`. No fetch/remote operation in this documentation task.
+- Actual range `a3887a7..5af0ce5`: **14 commits, 34 files**. Both 28A and 28B,
+  fixture initialization and the public mock status correction are included.
+  Relative to the correction snapshot below, `5af0ce5` updates only three docs.
+  The new record-only commit's actual hash is reported after commit, not self-amended.
+- Fresh source review confirms: same approved/search/taxon/registered-photo query
+  builds items and exact count before 20-row range; stable order; selected detail,
+  page-only image handling, card-only fade and no pagination scroll/focus call.
+- AppRoutes passes the standalone list a revision, not map observations. App's
+  collection read is for home/intro/map. Map date parsing uses observed_date via
+  the mapper; one year AND OR-months AND existing filters. Options use unfiltered
+  loaded observations, and map/compact list/count share one final filtered array.
+  Independent date clears/global reset and mounted tree state remain intact.
+- Tree queries retain separate approved-linked global summaries/cache; map/tree
+  single reads remain subject to the existing, unmeasured server row cap. Neither
+  receives the list's current twenty items. No complete-DB date coverage claim.
+- Phase 26 provider/layout, Phase 27 auth/intro behavior, Supabase mapper and
+  package/migration/deployment settings remain unchanged by this correction/review.
+
+| Evidence | Current disposition |
+| --- | --- |
+| B1 correction | Resolved by 419f654 and operator general mock app PASS; six public sample statuses only, no unknown-to-approved fallback or pending/rejected relaxation |
+| Operator general mock app | Six items PASS, including six records/year 2026, May six/April zero, month clear and collapse state |
+| Operator synthetic date fixture | Five items PASS, including visible actual MapPage, 33/all and 27/May, date combinations/clears, narrow-window keyboard |
+| Operator synthetic pagination fixture | Four items PASS: 20/20/7, opacity transition, no automatic top scroll for 1 / 2, detail-close page retention |
+| Original 16-item checklist | Preserved as historical NOT_RUN; not converted to all PASS |
+| Automated regression | Historical: five focused failures before correction, 26 PASS after, full 162 PASS on 2026-09-28; not rerun |
+| Typecheck / build / security audit | Historical PASS / PASS / zero vulnerabilities on 2026-09-28; not rerun |
+| Current documentation checks | Diff, Markdown, whitespace/EOF, forbidden tracked paths and secret-like diff checked before commit |
+| Codex browser / server checks | Not performed this session; earlier tool/HTTP evidence is historical |
+| Actual Supabase 28A and 28B | NOT_RUN, explicitly excluded from the user's completion report |
+| Actual Kakao | PARTIAL, separate from mock/static checks |
+
+Detailed confirmed items and the operator's clarification are recorded in
+[the date-filter follow-up](eco-map-observation-month-filter.md#operator-follow-up-after-mock-correction-2026-09-29).
+No reported FAIL or new code defect is established, but the blank error field is
+not independently verified absence of errors. Docs-only typecheck/build skip is
+permitted by the working guide; no code/dependency change or release is performed.
+The next action needs **separate feature-branch Preview push/deployment and read-only
+verification approval**. No old approval is reused and no deployment starts here.
+
+## Historical Correction And Verification (2026-09-28)
+
+The following results are retained from the implementation session, not rerun
+or newly observed by the 2026-09-29 documentation review.
 
 - Continued from `bacecae` on the existing Phase 28B branch. Main and cached
   origin/main remain `a3887a7`; no remote operation is performed in this follow-up.
@@ -177,8 +225,9 @@ Original separately approved correction proposal (now implemented at sample sour
 
 ## Integration Boundary Review
 
-Source review remains applicable; the following manual/live column preserves the
-original review. The correction's newly executed suite is recorded above, not live PASS.
+Source review was rechecked on 2026-09-29. The following manual/live column preserves
+earlier evidence; see the latest record above for the new operator completion report.
+The correction suite is historical, not newly executed or live PASS.
 
 | Area | Confirmed implementation / existing automated coverage | Manual or live evidence | Readiness implication |
 | --- | --- | --- | --- |
@@ -260,10 +309,16 @@ scoped correction, not automatic RLS/DB/Auth changes.
 
 ## Gates And Next Decision
 
-- **B1 resolved in code/tests:** six public sample declarations and actual mock
-  path coverage; no other confirmed blocker identified in this correction.
-- **Unverified, not confirmed defects:** supplied operator checklist, live
-  Supabase queries/count/search/images/dates/separation, browser layout and Kakao.
+- **B1 resolved in code/tests and operator general mock app verification:** six
+  public sample declarations and actual mock path coverage; no other confirmed
+  code blocker identified in this review.
+- Preview integration verification preparation is possible, subject to separate
+  authorization and fresh pre-push checks; not Production readiness. The new
+  15-item PASS scope is confirmed; do not request those same local tests again.
+- **Unverified, not confirmed defects:** live Supabase queries/count/search/images/
+  dates/separation, real Kakao, and individually unreported earlier checklist,
+  exception/device cases. Do not erase the new 15 local operator PASS results or
+  expand them to all cases.
 - After reviewing the correction and remaining checks, user decides whether to authorize
   feature-branch Preview push and read-only integrated smoke. That authorization
   does not permit main push, Production deployment or promotion.
