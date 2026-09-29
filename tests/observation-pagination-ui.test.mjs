@@ -8,6 +8,7 @@ import ts from 'typescript';
 import * as pagination from '../src/utils/observationPagination.ts';
 import * as taxa from '../src/constants/taxon.ts';
 import * as pageTransition from '../src/utils/pageTransition.ts';
+import * as stats from '../src/utils/observationStats.ts';
 import { createPaginationObservations } from './fixtures/observation-pagination.mjs';
 
 const deferred = () => {
@@ -20,11 +21,17 @@ const emptyAuth = { user: null, profile: null, isAdmin: false };
 // Real App -> AppRoutes -> ObservationListPage orchestration, injected I/O and shallow leaf UI.
 // Not a real DOM, layout, navigation or Supabase session test.
 const mount = async ({ initialPage = 'observations', pageRead, observations = createPaginationObservations(), signedIn = false, admin = false,
-  reducedMotion = false, autoFinishExit = true, imageRead = async () => {} } = {}) => {
-  const instances = new Map(), effects = [], calls = { all: 0, count: 0, pages: [], details: [], updates: [], adminUpdates: [], prefetch: [], mounts: [], scrolls: [], windowScrolls: [], focuses: [] };
+  reducedMotion = false, autoFinishExit = true, imageRead = async () => {}, summaryRead, actualNavbar = false } = {}) => {
+  const instances = new Map(), effects = [], calls = { all: 0, count: 0, summary: [], pages: [], details: [], updates: [], adminUpdates: [], prefetch: [], mounts: [], scrolls: [], windowScrolls: [], focuses: [] };
   let current, dirty = false, tree;
   const rows = observations;
   const repository = {
+    async getPublicObservationSummary(signal) {
+      calls.summary.push(signal);
+      if (summaryRead) return summaryRead(signal, calls.summary.length);
+      const approved = rows.filter((row) => row.status === 'approved');
+      return { observationCount: approved.length, uniqueSpeciesCount: stats.countUniqueSpecies(approved) };
+    },
     async listObservations() { calls.all++; return [...rows]; },
     async countUniqueSpecies() { calls.count++; return 1; },
     async listPublicObservationsPage(query, signal) {
@@ -66,7 +73,7 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
   const jsx = (type, props, key) => ({ type, props: props ?? {}, key });
   const root = fileURLToPath(new URL('../src/', import.meta.url));
   const path = (name) => resolve(root, name);
-  const components = ['App.tsx', 'components/AppRoutes.tsx', 'components/ObservationListPage.tsx',
+  const components = ['App.tsx', 'components/Navbar.tsx', 'components/AppRoutes.tsx', 'components/ObservationListPage.tsx',
     'components/observations/ObservationListHeader.tsx', 'components/observations/ObservationTaxonFilter.tsx',
     'components/observations/ObservationPagination.tsx', 'components/ui/TaxonFilterButton.tsx', 'components/ui/SearchInput.tsx'];
   const modules = new Map([
@@ -87,7 +94,7 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
       prefetchObservationImages: async (items) => { calls.prefetch.push(items.map((item) => item.id)); await imageRead(items); },
       prefetchObservationImage: async () => {}, withCachedObservationImageUrl: (item) => item,
     }],
-    ...[['Navbar', 'navbar'], ['Hero', 'hero'], ['IntroPage', 'intro'], ['MapPage', 'map'], ['UploadMockPage', 'upload'],
+    ...[['Navbar', 'navbar'], ['auth/PublicLoginPanel', 'login-panel'], ['Hero', 'hero'], ['IntroPage', 'intro'], ['MapPage', 'map'], ['UploadMockPage', 'upload'],
       ['ObservationDetail', 'detail'], ['auth/UploadLoginGate', 'gate'], ['observations/ObservationGrid', 'grid']]
       .map(([name, value]) => [path(`components/${name}`), { [name.split('/').at(-1)]: value }]),
   ]);
@@ -109,11 +116,15 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
       if (name === 'react') return react;
       if (name === 'react/jsx-runtime') return { jsx, jsxs: jsx, Fragment: 'fragment' };
       if (name === 'motion/react') return { AnimatePresence: 'animate', motion: { div: 'motion-div' }, useReducedMotion: () => reducedMotion };
-      if (name === 'lucide-react') return { Search: 'search-icon', RotateCw: 'reload-icon', ChevronLeft: 'left', ChevronRight: 'right' };
+      if (name === 'lucide-react') return { Menu: 'menu-icon', X: 'close-icon', Search: 'search-icon', RotateCw: 'reload-icon', ChevronLeft: 'left', ChevronRight: 'right' };
       return load(resolve(dirname(actual), name));
     } });
     modules.set(file, exports); return exports;
   };
+  if (actualNavbar) {
+    const Navbar = load(path('components/Navbar.tsx')).Navbar;
+    modules.set(path('components/Navbar'), { Navbar: (props) => jsx('navbar', { ...props, children: jsx(Navbar, props) }) });
+  }
   const App = load(path('App.tsx')).default;
   const renderNode = (node, location = 'root') => {
     if (Array.isArray(node)) return node.map((child, i) => renderNode(child, `${location}.${child?.key ?? i}`));
@@ -187,21 +198,93 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
   };
 };
 
-test('App restored list requests only a page, not the collection or species count; routes keep map/intro separate', async () => {
+test('App restored list requests a page and independent narrow summary, never full collection or old species read', async () => {
   const view = await mount();
   assert.equal(view.calls.all, 0); assert.equal(view.calls.count, 0);
   assert.equal(view.grid().observations.length, 20);
   assert.equal(view.calls.prefetch[0].length, 20);
-  assert.equal(view.nodes((node) => node.type === 'navbar')[0].props.showObservationStats, false);
+  assert.equal(view.nodes((node) => node.type === 'navbar')[0].props.publicSummary.observationCount, 47);
   await view.navigate('map');
   assert.equal(view.calls.all, 1);
-  assert.equal(view.nodes((node) => node.type === 'navbar')[0].props.showObservationStats, true);
+  assert.equal(view.nodes((node) => node.type === 'navbar')[0].props.publicSummary.observationCount, 47);
   assert.equal(view.nodes((node) => node.type === 'map')[0].props.observations.length, 47);
   await view.navigate('intro');
   assert.equal(view.nodes((node) => node.type === 'intro')[0].props.observations.length, 47);
   assert.equal(view.calls.all, 1);
   await view.navigate('observations');
   assert.equal(view.calls.all, 1); assert.equal(view.calls.count, 0);
+  assert.equal(view.calls.summary.length, 1);
+});
+
+test('actual Navbar preserves global summary across routes, page two, filters and selected detail', async () => {
+  const view = await mount({ actualNavbar: true, initialPage: 'intro' });
+  const summary = () => view.nodes((node) => node.props.role === 'status').map(view.text).find((text) => text.includes('SPECIES'));
+  assert.equal(summary(), '2 SPECIES / 47 RECORDS');
+  await view.navigate('observations'); await view.click('다음 페이지');
+  assert.equal(summary(), '2 SPECIES / 47 RECORDS');
+  view.grid().onSelectObservation(view.grid().observations[0]); await view.settle();
+  view.nodes((node) => node.type === 'detail')[0].props.onClose(); await view.settle();
+  assert.equal(view.calls.pages.at(-1).query.page, 2);
+  await view.search('뒤 페이지 수국');
+  assert.equal(view.grid().observations.length, 1);
+  assert.equal(summary(), '2 SPECIES / 47 RECORDS');
+  await view.click('사진 없음');
+  assert.equal(summary(), '2 SPECIES / 47 RECORDS');
+  await view.navigate('map');
+  assert.equal(summary(), '2 SPECIES / 47 RECORDS');
+  assert.equal(view.calls.summary.length, 1);
+});
+
+test('fresh/restored list mounts render actual summary without visiting collection screens', async () => {
+  for (let visit = 0; visit < 2; visit++) {
+    const view = await mount({ actualNavbar: true });
+    assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node) === '2 SPECIES / 47 RECORDS'));
+    assert.equal(view.calls.all, 0); assert.equal(view.calls.count, 0);
+    assert.equal(view.calls.summary.length, 1);
+    assert.deepEqual(view.calls.prefetch.map((items) => items.length), [20]);
+    view.unmount();
+  }
+});
+
+test('actual summary distinguishes loading, failure, retry and verified zero without blocking list', async () => {
+  const request = deferred();
+  const view = await mount({ actualNavbar: true, summaryRead: (_signal, attempt) => attempt === 1 ? request.promise : Promise.resolve({ observationCount: 0, uniqueSpeciesCount: 0 }) });
+  assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node) === '공개 요약 불러오는 중'));
+  assert.equal(view.grid().observations.length, 20);
+  request.reject(new Error('fixture')); await view.settle();
+  assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node) === '공개 요약 조회 실패'));
+  await view.click('공개 요약 다시 조회');
+  assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node) === '0 SPECIES / 0 RECORDS'));
+  assert.equal(view.calls.pages.length, 1);
+});
+
+test('summary refresh retains confirmed values, rejects stale results and follows existing edit revision', async () => {
+  const second = deferred(), third = deferred();
+  const view = await mount({ actualNavbar: true, signedIn: true, summaryRead: (_signal, attempt) => attempt === 1
+    ? Promise.resolve({ observationCount: 47, uniqueSpeciesCount: 2 }) : attempt === 2 ? second.promise : third.promise });
+  const selected = view.grid().observations[0];
+  view.grid().onSelectObservation(selected); await view.settle();
+  const edit = view.nodes((node) => node.type === 'detail')[0].props.onUpdateObservation;
+  await edit(selected.id, { name: '다른 이름' }); await view.settle();
+  assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node).includes('2 SPECIES / 47 RECORDS갱신 중')));
+  await edit(selected.id, { name: '또 다른 이름' }); await view.settle();
+  assert.equal(view.calls.summary[1].aborted, true);
+  third.resolve({ observationCount: 47, uniqueSpeciesCount: 3 }); await view.settle();
+  second.resolve({ observationCount: 1, uniqueSpeciesCount: 1 }); await view.settle();
+  assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node) === '3 SPECIES / 47 RECORDS'));
+});
+
+test('summary refresh failure labels retained values and navigation does not retry in a loop', async () => {
+  const view = await mount({ actualNavbar: true, signedIn: true, summaryRead: (_signal, attempt) => attempt === 1
+    ? Promise.resolve({ observationCount: 47, uniqueSpeciesCount: 2 }) : Promise.reject(new Error('fixture')) });
+  const selected = view.grid().observations[0];
+  view.grid().onSelectObservation(selected); await view.settle();
+  await view.nodes((node) => node.type === 'detail')[0].props.onUpdateObservation(selected.id, { name: '수정 이름' });
+  await view.settle();
+  assert.ok(view.nodes((node) => node.props.role === 'status').some((node) => view.text(node) === '2 SPECIES / 47 RECORDS갱신 실패 · 이전 확인값'));
+  await view.navigate('map'); await view.navigate('intro'); await view.navigate('observations');
+  assert.equal(view.calls.summary.length, 2);
+  assert.ok(view.button('공개 요약 다시 조회'));
 });
 
 test('page controls show exact range, final count and preserve the page across detail open/close', async () => {

@@ -21,7 +21,7 @@ import {
   withCachedObservationImageUrl,
 } from './utils/observationImagePrefetch';
 import { normalizeObserverDisplayName } from './utils/observerDisplay';
-import { countUniqueSpecies } from './utils/observationStats';
+import type { PublicObservationSummary } from './repositories/observationRepository';
 import type { AuthSessionState, AuthSignUpResult } from './repositories/authRepository';
 import type { Observation, OwnerObservationUpdateInput, PageId } from './types';
 
@@ -56,7 +56,9 @@ export default function App({ authRefreshReturn = null }: AppProps) {
   const [authRefresh] = useState(() => createPublicAuthRefresh());
   const [needsManualAuthRefresh, setNeedsManualAuthRefresh] = useState(false);
   const [observations, setObservations] = useState<Observation[]>([]);
-  const [uniqueSpeciesCount, setUniqueSpeciesCount] = useState(0);
+  const [publicSummary, setPublicSummary] = useState<PublicObservationSummary | null>(null);
+  const [summaryStatus, setSummaryStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [summaryRetry, setSummaryRetry] = useState(0);
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
   const [isLoadingObservations, setIsLoadingObservations] = useState(false);
   const [observationRevision, setObservationRevision] = useState(0);
@@ -75,6 +77,25 @@ export default function App({ authRefreshReturn = null }: AppProps) {
   const imageRefreshRetryKeysRef = useRef(new Set<string>());
   // These screens retain their full-collection behavior. The list owns an independent page query.
   const needsObservationCollection = currentPage === 'home' || currentPage === 'intro' || currentPage === 'map';
+  const needsPublicSummary = currentPage !== 'admin';
+
+  useEffect(() => {
+    if (!needsPublicSummary) return;
+    const controller = new AbortController();
+    let isCurrent = true;
+    setSummaryStatus('loading');
+    void (async () => {
+      try {
+        const summary = await activeObservationRepository.getPublicObservationSummary(controller.signal);
+        if (!isCurrent) return;
+        setPublicSummary(summary);
+        setSummaryStatus('ready');
+      } catch {
+        if (isCurrent) setSummaryStatus('error');
+      }
+    })();
+    return () => { isCurrent = false; controller.abort(); };
+  }, [needsPublicSummary, observationRevision, summaryRetry]);
 
   useEffect(() => {
     if (!needsObservationCollection || loadedCollectionRevision === observationRevision) {
@@ -91,7 +112,6 @@ export default function App({ authRefreshReturn = null }: AppProps) {
 
         if (!isCurrent) return;
         setObservations(nextObservations);
-        setUniqueSpeciesCount(countUniqueSpecies(nextObservations));
         setLoadedCollectionRevision(observationRevision);
         void prefetchObservationImages(nextObservations);
       } catch {
@@ -232,7 +252,6 @@ export default function App({ authRefreshReturn = null }: AppProps) {
         observation,
         ...currentObservations.filter((currentObservation) => currentObservation.id !== observation.id),
       ];
-      setUniqueSpeciesCount(countUniqueSpecies(nextObservations));
       return nextObservations;
     });
   }, []);
@@ -250,7 +269,6 @@ export default function App({ authRefreshReturn = null }: AppProps) {
         return currentObservation.id === updatedObservation.id ? updatedObservation : currentObservation;
       });
 
-      setUniqueSpeciesCount(countUniqueSpecies(nextObservations));
       return nextObservations;
     });
 
@@ -381,9 +399,9 @@ export default function App({ authRefreshReturn = null }: AppProps) {
 
       <Navbar
         onNavigate={navigate}
-        observationCount={observations.length}
-        uniqueSpeciesCount={uniqueSpeciesCount}
-        showObservationStats={currentPage !== 'observations'}
+        publicSummary={publicSummary}
+        summaryStatus={summaryStatus}
+        onRetrySummary={() => setSummaryRetry((retry) => retry + 1)}
         publicAuthDisplayName={publicAuthDisplayName}
         publicAuthError={publicAuthError}
         publicAuthNotice={publicAuthNotice}

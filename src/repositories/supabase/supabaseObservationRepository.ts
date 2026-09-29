@@ -115,6 +115,43 @@ const getCurrentContributor = async () => {
 };
 
 export const supabaseObservationRepository: ObservationRepository = {
+  async getPublicObservationSummary(signal) {
+    // Bound narrow-field reads independently of map/list rows and image signing.
+    const batchSize = 500;
+    const maxRecords = 10_000;
+    const maxRequests = 20;
+    const ids = new Set<string>();
+    const names: { name: string }[] = [];
+    let expectedCount: number | null = null;
+    for (let request = 0; request < maxRequests; request++) {
+      signal?.throwIfAborted();
+      let query = getSupabaseClient().from(OBSERVATIONS_TABLE)
+        .select('id,name', { count: 'exact' })
+        .eq('status', 'approved').order('id', { ascending: true })
+        .range(ids.size, ids.size + batchSize - 1).retry(false);
+      if (signal) query = query.abortSignal(signal);
+      const { data, count, error } = await query;
+      signal?.throwIfAborted();
+      if (error || count === null || !Number.isSafeInteger(count) || count < 0
+        || count > maxRecords || (expectedCount !== null && count !== expectedCount)
+        || !Array.isArray(data) || data.length > Math.min(batchSize, count - ids.size)) {
+        throw new Error('Public summary unavailable or changed during reading.');
+      }
+      expectedCount = count;
+      for (const row of data) {
+        if (typeof row.id !== 'string' || !row.id || typeof row.name !== 'string' || ids.has(row.id)) {
+          throw new Error('Invalid or overlapping public summary rows.');
+        }
+        ids.add(row.id);
+        names.push({ name: row.name });
+      }
+      if (ids.size === count) {
+        return { observationCount: count, uniqueSpeciesCount: countUniqueSpecies(names) };
+      }
+      if (data.length === 0) break;
+    }
+    throw new Error('Public summary read budget exceeded or incomplete.');
+  },
   async listPublicObservationsPage(options, signal) {
     validateObservationPageQuery(options);
     let page = options.page;

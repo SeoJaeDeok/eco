@@ -1,6 +1,58 @@
 # Phase 28 Integration And Release Readiness
 
-## Decision And Evidence Scope
+## Current Preview Correction (2026-09-29)
+
+- Phase 28C-1 authorized a normal feature push and read-only Preview verification.
+  Actual pushed candidate: `e81327e`, 15 commits / 34 files from `a3887a7` before
+  this correction. Local/remote feature matched, main/origin/main stayed `a3887a7`.
+  No tracked push workflow or active pre-push hook initiated DB deployment.
+- Operator Dashboard confirmation: main is Production; this branch is Preview;
+  existing all-Preview variables apply without unexpected override; repository
+  mode is configured Supabase and the shared connection is ready. No values were
+  read/recorded or settings changed. Reuse that confirmation for this same branch.
+- Operator confirms `e81327e` environment Preview, matching commit and successful
+  build. Pre-push checks then ran 162 tests/typecheck/build PASS and dev-inclusive
+  audit zero. These are distinct from the earlier historical 162-test run.
+- The requested live matrix was not completed. Instead the operator reported a
+  reproducible common Navbar summary omission on the list. No other live item is
+  inferred PASS, including server request evidence and build-log secret review.
+- Explicit new authorization permits only this App/repository/test correction,
+  documentation and normal feature push/Preview refresh. No main integration,
+  Production, new functionality, package/DB/RLS/settings/account/observation writes.
+- Confirmed cause and correction: App deliberately hid the Navbar numeric group
+  on the list. Common summary now has a separate approved-only repository method
+  and App state; page/search/date filters cannot replace it with twenty items or
+  matching-result counts. Species uses existing trimmed-name uniqueness including
+  legacy records; records uses exact approved count. List auxiliary cards stay omitted.
+- Supabase summary reads only ID/name in batches of at most 500, up to 20 requests
+  and 10,000 rows; checks count/completeness/duplicates, handles smaller server caps,
+  and fails rather than undercounts. No image operations or full-row read restored.
+  Above-budget datasets need a separately scoped server-summary decision, not RPC
+  changes here. Equal-count concurrent edits are not covered by a snapshot guarantee.
+- Fresh post-correction checks: **174 tests PASS**, typecheck/build PASS, audit zero.
+  Actual component/SDK tests use injected I/O, not a live PostgreSQL/browser check.
+  Local port 3005/current modules respond; browser connection fails before inspection.
+  New code requires a new Preview deployment and operator screen check, not reuse
+  of `e81327e` evidence. No confirmed remaining code failure in the tested scope;
+  Production readiness is still withheld pending actual read verification.
+- Known unchanged boundaries: twenty-row list; registered-image filtering; fade/
+  no automatic scroll; selected detail; independent map date source; global linked
+  tree summaries; Phase 26 provider and Phase 27 auth/intro behavior. Map/tree row
+  cap remains unmeasured and independent of summary coverage.
+- Next check after feature push: Preview/commit/build, intro -> list -> page two ->
+  map, search/photo changes, fresh/restored list mount and narrow header. Confirm
+  stable common counts and independent list matching counts. Existing live Supabase
+  matrix remains outstanding; insufficient real records mean PARTIAL, never new data.
+- Actual Supabase query evidence remains NOT_RUN/unreported. Actual Kakao PARTIAL;
+  build-log review PARTIAL. The original 15 mock/fixture PASS and older 16-item ledger
+  remain historical. Do not promote either to new Preview or all-device verification.
+
+Details: [shared summary correction](observation-list-pagination.md#shared-navbar-summary-correction-2026-09-29).
+No Preview smoke document existed on entry; no full-success smoke record is created.
+The new correction commit/hash and push/deployment outcome are reported after the
+normal commit/push, without self-amend or repeated status-only commits.
+
+## Previous Decision And Evidence Scope
 
 - Latest record review: 2026-09-29 (Asia/Seoul), documentation only.
 - **Preview integration verification preparation is possible:** no confirmed

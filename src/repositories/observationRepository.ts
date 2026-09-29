@@ -8,7 +8,13 @@ import type { ObservationPage, ObservationPageQuery } from '../utils/observation
 
 export type ObservationRepositoryKind = 'mock' | 'supabase';
 
+export interface PublicObservationSummary {
+  observationCount: number;
+  uniqueSpeciesCount: number;
+}
+
 export interface ObservationRepository {
+  getPublicObservationSummary(signal?: AbortSignal): Promise<PublicObservationSummary>;
   listPublicObservationsPage(query: ObservationPageQuery, signal?: AbortSignal): Promise<ObservationPage>;
   listObservations(): Promise<Observation[]>;
   getObservationById(id: string): Promise<Observation | null>;

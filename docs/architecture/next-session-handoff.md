@@ -4,7 +4,61 @@
 
 This document records Phase 28 local verification reports and Preview preparation, the mock approval/date correction, inherited Phase 28A work and historical Phase 27 closeout. Preserve deployed work; do not execute integration, deployment or another feature without a separate request.
 
-## Current State: Phase 28 Preview Verification Preparation
+## Current State: Phase 28 Preview Shared Summary Correction
+
+- Date: 2026-09-29. Existing branch `feature/phase-28b-observation-month-filter`;
+  started clean at local/remote `e81327e`. Main/origin/main remain `a3887a7` after
+  fetch. Preserve all feature/backup branches; no main merge/push or Production.
+- Phase 28C-1 feature push is complete at `e81327e`. Operator confirmed existing
+  all-Preview scope, no unexpected override, Supabase mode/shared connection and
+  main Production branch, then Preview/matching commit/build PASS. This is not
+  live request or visual smoke PASS. Do not repeat the same environment question.
+- During general-app Preview verification the operator reported Navbar
+  species/records disappearing on the list and explicitly approved the small
+  code/test fix and feature push. `App`'s list-only hide prop was the actual cause.
+  It is not a literal question-mark defect or evidence of mock runtime mode.
+- Common summary now uses `getPublicObservationSummary` through existing providers,
+  separate App state and actual Navbar on every public screen. Existing definition
+  is unique nonempty trimmed observation names; exact approved observation count.
+  Legacy names remain. No taxonomy-cache count or list-page/filtered-count substitute.
+- New Supabase read selects only ID/name with exact count, approved predicate and
+  ID order: at most 500 per request, 20 requests / 10,000 records per refresh.
+  Incomplete/changed/invalid responses fail visibly. No image signing/prefetch or
+  full-row reads for summary; no aggregate SQL/RPC. This has linear narrow-read
+  cost and no transactional snapshot or unlimited-scale promise. Map/tree caps remain.
+- Loading/failed/zero are distinct. Confirmed values survive refresh with previous-
+  value labels; retry is explicit. Abort/current-response guards prevent stale
+  commits. Public navigation, list page/filter, detail and date changes do not
+  reread summary. Existing create/update revisions still refresh it. No writes
+  were exercised against shared services; tests inject isolated callbacks only.
+- Existing list 20-row query/photo/count, fade/no-auto-scroll, dates/tree, map provider,
+  auth refresh and intro links stay intact. Other list auxiliary cards stay omitted.
+- Fresh correction validation: **174 Node tests PASS**, typecheck/build PASS,
+  dev-inclusive audit zero. The first run had 13 VM-harness errors due to missing
+  AbortController; supplying the standard global resolved them without auth changes.
+  Pre-push 162 PASS and prior implementation 162 PASS remain separate checkpoints.
+- Current local server `http://127.0.0.1:3005/` serves this workspace and changed
+  App/Navbar transforms; only HTTP/module checks, no browser render PASS. Browser
+  connection failed before inspection. Narrow layout and actual new summary query
+  need operator verification on the new Preview commit after feature push.
+- Update only existing pagination/readiness/handoff docs for this report. No
+  completed Preview smoke file existed or is fabricated. Commit and normal push
+  of this fix are authorized on this feature only; actual new hash/push outcome
+  are in Git/final report, deployment state needs a separate observation.
+- Remaining live matrix: real range/count/search/photo/detail/images, observed-date
+  options/combinations and list/map separation still NOT_RUN/unreported. Kakao and
+  build-log review PARTIAL. Prior 15 local mock/fixture PASS and historical 16-item
+  ledger are not changed. New Preview build success is not new visual PASS.
+- Next: confirm new Preview/commit/build, then common summary across intro/list/
+  page two/map, filters, fresh list and narrow header; continue authorized read-only
+  integration checks with existing public records. No new records/accounts, SQL,
+  setting changes, Production approval assumption, Phase 28 archive or next feature.
+
+**한국어:** 목록에서 공통 요약을 숨기던 조건을 제거하고 정확한 별도 읽기를
+연결했습니다. 자동 검사 174개는 통과했지만 새 Preview 화면과 실제 읽기 확인은
+남아 있습니다. 기존 환경 확인을 다시 요구하지 않으며 기능 브랜치만 push합니다.
+
+## Previous State: Phase 28 Preview Verification Preparation
 
 - Date: 2026-09-29 (Asia/Seoul), documentation-only review from clean
   `feature/phase-28b-observation-month-filter` at `5af0ce5`. Local main/cached

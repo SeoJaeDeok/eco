@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X } from 'lucide-react';
+import { Menu, RotateCw, X } from 'lucide-react';
 import { PublicLoginPanel, type PublicSignUpResult } from './auth/PublicLoginPanel';
 import type { PageId } from '../types';
+import type { PublicObservationSummary } from '../repositories/observationRepository';
 
 interface NavbarProps {
   onNavigate: (page: PageId) => void;
-  observationCount: number;
-  uniqueSpeciesCount?: number;
-  showObservationStats?: boolean;
+  publicSummary: PublicObservationSummary | null;
+  summaryStatus: 'loading' | 'ready' | 'error';
+  onRetrySummary: () => void;
   publicAuthDisplayName: string;
   publicAuthError: string | null;
   publicAuthNotice: string | null;
@@ -25,9 +26,9 @@ interface NavbarProps {
 
 export const Navbar = ({
   onNavigate,
-  observationCount,
-  uniqueSpeciesCount,
-  showObservationStats = true,
+  publicSummary,
+  summaryStatus,
+  onRetrySummary,
   publicAuthDisplayName,
   publicAuthError,
   publicAuthNotice,
@@ -105,7 +106,7 @@ export const Navbar = ({
 
   return (
     <header className="fixed top-0 left-0 z-50 w-full border-b border-black bg-white/80 backdrop-blur-sm">
-      <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6 md:px-10">
+      <div className="relative mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-y-2 px-6 py-6 md:px-10">
         <button
           type="button"
           className="cursor-pointer text-[13px] font-medium tracking-[0.2em] transition-opacity hover:opacity-60"
@@ -115,19 +116,30 @@ export const Navbar = ({
           KNU BIODIVERSITY
         </button>
 
-        <div className="hidden items-center gap-3 rounded-full border border-zinc-100 bg-zinc-50/70 px-3 py-1 lg:flex">
-          <div className="flex items-center gap-1.5">
+        <div className="order-last flex w-full min-w-0 flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border border-zinc-100 bg-zinc-50/70 px-3 py-1 lg:order-none lg:w-auto">
+          <div className="flex shrink-0 items-center gap-1.5">
             <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-400" />
             <span className="font-mono text-[10px] font-semibold uppercase tracking-tighter text-zinc-700">정적 디자인 시안</span>
           </div>
-          {showObservationStats && (
-            <>
-              <span className="text-[9px] font-light opacity-20">|</span>
-              <span className="font-mono text-[10px] font-semibold uppercase tracking-tighter text-zinc-700 opacity-60">
-                {uniqueSpeciesCount ?? observationCount} SPECIES / {observationCount} RECORDS
-              </span>
-            </>
-          )}
+          <span className="text-[9px] font-light opacity-20" aria-hidden="true">|</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-1 font-mono text-[10px] font-semibold uppercase text-zinc-700 opacity-60">
+            <span role="status" aria-busy={summaryStatus === 'loading'} className="min-w-[11rem] break-words tabular-nums">
+              {publicSummary
+                ? `${publicSummary.uniqueSpeciesCount} SPECIES / ${publicSummary.observationCount} RECORDS`
+                : summaryStatus === 'error' ? '공개 요약 조회 실패' : '공개 요약 불러오는 중'}
+              {publicSummary && summaryStatus !== 'ready' && (
+                <span className="block text-[9px] font-normal">
+                  {summaryStatus === 'loading' ? '갱신 중 · 이전 확인값' : '갱신 실패 · 이전 확인값'}
+                </span>
+              )}
+            </span>
+            {summaryStatus === 'error' && (
+              <button type="button" onClick={onRetrySummary} title="공개 요약 다시 조회"
+                aria-label="공개 요약 다시 조회" className="inline-flex h-6 w-6 shrink-0 items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2">
+                <RotateCw size={12} aria-hidden="true" />
+              </button>
+            )}
+          </div>
         </div>
 
         <nav className="hidden items-center gap-8 text-sm font-light md:flex">

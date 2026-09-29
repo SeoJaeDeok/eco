@@ -25,6 +25,11 @@ const getMockObservations = () => sampleObservations.map((observation) => (
 ));
 
 export const mockObservationRepository: ObservationRepository = {
+  async getPublicObservationSummary(signal) {
+    signal?.throwIfAborted();
+    const observations = getMockObservations().filter((observation) => observation.status === 'approved');
+    return { observationCount: observations.length, uniqueSpeciesCount: countUniqueSpecies(observations) };
+  },
   listPublicObservationsPage: async (query, signal) => {
     signal?.throwIfAborted();
     return paginateMockObservations(getMockObservations(), query);

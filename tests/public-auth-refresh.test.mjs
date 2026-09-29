@@ -83,7 +83,8 @@ const mountApp = async ({ repository = {}, storage = storageFixture(), restored 
     './repositories/adminObservationRepositoryProvider': { activeAdminObservationRepository: {} },
     './repositories/observationRepositoryProvider': {
       getConfiguredObservationRepositoryKind: () => 'mock',
-      activeObservationRepository: { listObservations: async () => [], countUniqueSpecies: async () => 0 },
+      activeObservationRepository: { listObservations: async () => [], countUniqueSpecies: async () => 0,
+        getPublicObservationSummary: async () => ({ observationCount: 0, uniqueSpeciesCount: 0 }) },
     },
     './utils/observationImagePrefetch': { prefetchObservationImages() {} },
     './utils/observationStats': { countUniqueSpecies: () => 0 },
@@ -106,7 +107,7 @@ const mountApp = async ({ repository = {}, storage = storageFixture(), restored 
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2020 },
   });
   const exports = {};
-  runInNewContext(outputText, { exports, window, require(name) {
+  runInNewContext(outputText, { exports, window, AbortController, require(name) {
     assert.ok(stubs[name], 'Only reviewed local imports allowed'); return stubs[name];
   } });
   const render = () => {

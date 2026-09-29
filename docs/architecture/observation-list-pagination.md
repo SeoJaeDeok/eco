@@ -1,5 +1,98 @@
 # Public Observation List Pagination
 
+## Shared Navbar Summary Correction (2026-09-29)
+
+- Operator report from the general Preview app at `e81327e`: the common
+  species/records text near `정적 디자인 시안` disappears on the list. This is
+  a reported visibility defect, not literal question marks or proof of mock mode.
+  The operator confirmed Supabase-mode Preview configuration; runtime/network
+  verification of that environment remains separate and incomplete.
+- Confirmed cause: App passed `showObservationStats={currentPage !== 'observations'}`
+  to Navbar. Navbar hid the entire numeric group, not just unavailable digits.
+  The shared observation array was not replaced with twenty list items. The old
+  summary counted names and length of the collection read for home/intro/map.
+- The user's new request supersedes the earlier Navbar omission only. List-only
+  species cards and taxon dashboards remain omitted. The original wording,
+  common badge and separators remain; narrow layouts wrap the badge onto its own
+  header row. Loading has reserved numeric space; no false zero or hidden group.
+
+### Definition, Source And Read Budget
+
+- `ObservationRepository.getPublicObservationSummary(signal)` returns independent
+  `observationCount` and `uniqueSpeciesCount`. Provider delegation remains intact;
+  UI does not call Supabase. Default mock summary explicitly includes approved
+  samples only. Pending/rejected/unknown states are not promoted.
+- Species retains the exact existing `countUniqueSpecies` definition: distinct
+  nonempty `name.trim()` values, case-sensitive. It is not scientific-name identity,
+  distinct taxon IDs or taxonomy-cache row count. Legacy unlinked observations
+  remain included. Only the helper parameter is narrowed to names, not its logic.
+- Supabase selects only `id,name` from approved observations, ordered by unique ID,
+  with `count: 'exact'` and explicit ranges. No joins, image metadata, coordinates,
+  signed URL work, prefetch, raw SQL aggregate or new RPC. Records uses exact count,
+  never current page length or the filtered list's totalCount.
+- One request can return at most 500 narrow rows. An App refresh is bounded to
+  20 requests and 10,000 approved records. If a lower server row cap truncates a
+  batch, advance by the actual returned length, not the requested 500. A result is
+  committed only after distinct returned IDs account for the exact count.
+  Missing counts, malformed/duplicate rows, zero progress, changing counts, errors
+  or budget overflow fail visibly; a truncated species count is never labelled total.
+- A count-only HEAD was considered: it cannot provide distinct trimmed names.
+  The narrow read obtains both names and exact count, avoiding a redundant HEAD.
+  The schema grants already permit observation ID/name public SELECT; live grants
+  were not revalidated or changed. No assumption that PostgREST aggregates are enabled.
+- Cost is linear in approved name rows within this budget, with exact counts per
+  batch. No performance improvement or unlimited-scale support is claimed. Above
+  the budget a separately approved server-summary design would be needed; do not
+  raise permissions or show partial names as complete. Offset reads are not a
+  transactional snapshot: equal-count concurrent replacements/renames may escape
+  the count/duplicate guards. No snapshot guarantee is introduced.
+- Previously the common figures could silently inherit the map collection cap.
+  The corrected common summary represents the complete approved set only when its
+  own completeness checks pass; it can exceed loaded map/tree totals. Map/tree
+  row limits are unchanged. The list's filtered count/range remains separate.
+
+### Shared State And Verification
+
+- App owns summary/value/status separately from observations and list results.
+  First public entry (including restored list entry) reads the summary; navigation,
+  list pagination/search/photo changes, detail open/close and map date selections
+  do not trigger another summary request. No requirement to visit map/intro first.
+  Existing state/hash routing and full-reload route behavior are not changed.
+- Existing successful create/update read revisions invalidate summary without
+  changing write logic. Abort/current-request guards reject late responses. No
+  persistent cache, polling, auth-data storage or cross-provider cache is added.
+  Unmount clears the App-local cache; fresh mounts use the active provider again.
+- Previously confirmed numbers remain during refresh, explicitly labelled previous
+  values on refresh failure. Initial loading/failure and verified zero are distinct;
+  failure has a keyboard-accessible retry icon. The rest of the list is not blocked.
+- Fresh automated verification: **174 Node tests PASS**, typecheck/build PASS,
+  dev-inclusive audit 0 vulnerabilities at this run. Twelve new tests exercise
+  actual SDK transport with injected fetch, actual App/Navbar/list orchestration,
+  multi-batch/capped responses, status/legacy/name semantics, page/filter independence,
+  fresh list mounts, loading/error/zero/retry and stale/revision behavior. These are
+  not a live database or browser CSS test. The old hide-on-list assertion is replaced
+  intentionally. Auth tests receive the standard AbortController in their VM.
+- First full run found 13 test-harness failures from that missing browser global;
+  after supplying it, all 174 pass. No auth application behavior was changed.
+- Existing local server at `http://127.0.0.1:3005/` serves the current workspace's
+  root and changed App/Navbar module transforms. Browser connection failed before
+  inspection; HTTP/module success is not a visual PASS. Local layout is PARTIAL.
+- New Preview deployment and visual results must be confirmed for the new commit
+  after the authorized feature-only push. `e81327e` has operator-confirmed Preview
+  build success, not full live smoke PASS. Other Supabase range/count/photo/detail/
+  date/separation checks remain NOT_RUN/unreported; actual Kakao remains PARTIAL.
+  Production is unchanged. No package, DB, RLS, settings or observation/account writes.
+
+Official references checked 2026-09-29:
+[Supabase select/count](https://supabase.com/docs/reference/javascript/select),
+[PostgREST aggregates](https://docs.postgrest.org/en/stable/references/api/aggregate_functions.html).
+Aggregate functions are disabled by default and are not enabled by this correction.
+
+**한국어:** 목록에서 공통 숫자를 숨기던 조건을 제거했습니다. 종 수는 기존의
+관찰 이름 중복 제거 기준을 유지하고, 전체 승인 건수와 함께 별도로 조회합니다.
+모든 사진이나 관찰 전체 필드를 다시 내려받지는 않습니다. 집계를 끝내지 못하면
+잘못된 숫자 대신 조회 실패와 재시도를 표시합니다. 새 Preview 화면 확인은 남아 있습니다.
+
 ## Scope And Decisions
 
 - Phase 28A, implementation on `feature/phase-28a-observation-list-pagination`.
@@ -9,8 +102,10 @@
 - Twenty **observation records**, not twenty distinct species, per page.
 - Operator approved registered-photo metadata as the photo-filter criterion.
   Display/signing success is not a registration test.
-- Operator approved omitting whole-array species/taxon statistics **on the list
-  screen only**, including its Navbar statistics. Taxon selection remains.
+- Originally the operator approved omitting whole-array species/taxon statistics
+  **on the list screen only**, including its Navbar statistics. The correction
+  above restores only the common Navbar summary by subsequent explicit request.
+  Taxon selection remains.
   Exact matching observation count, visible range and page navigation replace
   those supplementary statistics. Server aggregates could restore them later;
   they are deferred for scope, not technically impossible.
@@ -107,9 +202,9 @@ existing provider. `AppRoutes` passes a read revision, not the shared array.
 List entry/restoration, page changes and detail selection do not request the
 full collection or species-count method. The actual App/route tests cover this.
 
-Home (existing Navbar statistics), introduction and Eco Map still use the
-existing full-collection path. App derives their species count from its single
-returned array instead of downloading it twice. That collection is cached by
+Home, introduction and Eco Map still use the existing full-collection path.
+Originally App derived Navbar counts from that array; the correction above now
+uses a separate narrow summary read. The map/intro collection is cached by
 read revision. Entering home before the list can therefore already have made a
 full read for home; this is not represented as a page-only home experience.
 The list never replaces map/intro observations with its twenty items.
