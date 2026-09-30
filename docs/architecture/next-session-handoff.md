@@ -4,7 +4,102 @@
 
 This document records Phase 28 local verification reports and Preview preparation, the mock approval/date correction, inherited Phase 28A work and historical Phase 27 closeout. Preserve deployed work; do not execute integration, deployment or another feature without a separate request.
 
-## Current State: Phase 28 Preview Summary User Verification
+## Current State: Phase 28 API And Preview Evidence Consolidated
+
+- Date: 2026-09-30. Branch `feature/phase-28b-observation-month-filter`; entry
+  local/remote `8435383`, main/origin/main `a3887a7`. Three intentional dirty docs
+  contain the prior successful API run; preserve them in one consolidation commit.
+  Existing feature/backup branches stay intact. No reset, stash or unrelated edits.
+- User replied `전부 검증했고 에러는 없어` to the combined 8435383 Preview target
+  comparison and remaining six-step UI check. Record `preview_target_match=confirmed_by_operator`
+  in the context of that collective reply: deployment-used Supabase mode, shared
+  project/bucket and override scope. Codex did not compare protected Preview config
+  or operate its browser. No separate values/field-by-field answers were supplied.
+- `OPERATOR_PREVIEW_UI` guided-flow PASS: list pagination/count display, global
+  search/photo UI, real detail/image display and page retention, fade/no automatic
+  top scroll, available year/month choices/clears/collapse, list/map separation,
+  narrow layout/keyboard. No errors reported. Do not request the same smoke again.
+- Preserve `LIVE_API_FROM_LOCAL_PUBLIC_CONFIG` run `1790730570782`: approved count
+  22, page sizes 20+2, search/count 6, photo references 6/16, linked/legacy detail,
+  one signed-image HEAD and independent date checks. These are the earlier run's
+  counts, not fresh UI measurements. No API rerun or recreated result.json.
+  The local general app remains mock; the dedicated public client had no session.
+- Actual date diversity is only one year/month. Multiple-year/month and differing
+  observed/created-date cases remain PARTIAL. `data_changed_since_api_check=unknown`.
+  `map_coverage=unknown`: no exact Preview unfiltered input count was supplied.
+  Current map queries remain server-cap-limited; metadata completeness and UI
+  separation PASS do not prove complete map coverage or unlimited dataset support.
+- Real Kakao and build-log review remain PARTIAL; email/console absence is unknown
+  for this report. Do not promote these from the general no-error reply. Existing
+  d6c34ca summary PASS, earlier 15 mock/fixture PASS and older 16-item ledger remain
+  distinct; the confirmed Preview visual target is `8435383`.
+- No confirmed core query failure or target mismatch remains. **Production 배포
+  승인 검토 가능**, subject to the recorded limits and a separate release decision.
+  No main integration/push, Production promotion, Phase 28 archive or new feature.
+- Current changes are these three documents only. Historical 174 tests/typecheck/
+  build remain prior results; repeat app checks are skipped per docs-only guidance.
+  Fresh document/security/scope checks PASS; dev-inclusive audit exits 0 with zero
+  vulnerabilities. Commit/push is authorized for this feature only. Do not amend
+  or loop deployment-status commits.
+- The consolidation commit's app/tests/assets/packages/lock/deployment files must
+  match `8435383`; built artifacts/environment are not independently compared.
+  Its Preview is unobserved at writing, with no new visual PASS; report actual hash
+  and deployment status after push. The automatic temporary harness remains intact.
+
+See [consolidated Preview results](phase-28-preview-smoke.md#consolidated-api-and-operator-preview-result-2026-09-30)
+and [release readiness](phase-28-integration-release-readiness.md).
+
+**한국어:** API 결과와 사용자 Preview 완료 보고를 구분해 정리했습니다. 문서만
+커밋·기능 브랜치 push하며 앱·계정·관찰·설정은 바꾸지 않습니다. 다음 작업은 남은
+제한을 검토한 뒤 사용자가 Production 배포 승인 여부를 따로 결정하는 것입니다.
+
+## Previous State: Phase 28 Automatic Public API Read Evidence
+
+- Date: 2026-09-30. Same branch `feature/phase-28b-observation-month-filter`,
+  HEAD/local remote `8435383`; main/origin/main `a3887a7`. Began clean; this task
+  leaves only three verification documents modified, with no commit/push/merge or
+  deployment authorized. Keep existing features/backups. Do not reset to older code.
+- User requested automatic configuration acquisition and direct read execution,
+  superseding the hidden local-input instructions. The temporary harness was
+  reviewed/extended outside the repository; no app/test/package changes.
+- 8435383 Preview/commit/build is operator-confirmed and matching successful
+  non-Production deployment metadata was found. Preview HTML returns an access-
+  protection redirect; no bypass or new authentication. Its public configuration
+  could not be compared with local settings. No new Preview UI inspection.
+- Existing Vite ports 3000/3002/3003/3004/3005 are this workspace in mock mode.
+  The actual public Supabase client/provider/Storage modules served on port 3000
+  provided a consistent public pair/bucket in memory. No env file was read, no
+  mode was changed and no config was saved. The dedicated repository harness uses
+  Supabase; the general local app remains mock. **preview_target_match=unknown**.
+- Real local-config LIVE_API run `1790730570782` completed with exit 0 at 10:09
+  Asia/Seoul. Approved count 22; first 20, second/final 2; exact counts/ranges and
+  ordering agree. A later-page observation appears in global search (6 results).
+  Registered-photo counts 6/16 agree with independent raw-reference comparisons.
+- Linked and legacy detail pass. One signed image HEAD is 200/image type, not a
+  browser image-display PASS. Date projection reads 22/22, one year/month; actual
+  helper combinations agree with an independent date oracle. Multiple-year/month
+  and observed/created-date contrast cases remain PARTIAL due to available data.
+- Distinguish these API results from the protected Preview target, actual App/map
+  request coverage and UI clear/fade/scroll/keyboard behavior, which remain unobserved
+  in this follow-up. Existing map/server row limit is unchanged and coverage unknown.
+  Real Kakao/build-log review remain PARTIAL; summary OPERATOR_UI PASS is historical.
+- Read [Preview smoke evidence](phase-28-preview-smoke.md#automatic-public-read-follow-up-2026-09-30)
+  and [integration readiness](phase-28-integration-release-readiness.md) for exact
+  scope, counts, safe result identity and limitations. No core query FAIL was seen
+  in the exercised local target, but Production readiness is not established.
+- Current tests: temporary zero/47-record/negative-response harness self-checks and
+  document format/security/scope checks. The 174 application tests, typecheck/build
+  and audit are historical, not rerun in this documentation-only repository change.
+- Next prerequisite is a working authorized browser path to the protected Preview
+  to bind the target and verify UI/network behavior. Do not repeat key-input scripts,
+  change protection/settings, create test records/accounts, or promote to Production.
+  No Phase 28 archive or next feature. Latest user explicitly says no new commit/push.
+
+**한국어:** 사용자가 명령이나 키를 입력하지 않아도 실제 공개 조회 22건으로 검사를
+진행했습니다. API에서 페이지·검색·사진·기본 날짜 조건은 확인했지만, Preview와 같은
+대상인지와 실제 화면 검증은 구분해 남겼습니다. 앱·데이터·계정·설정은 바꾸지 않았습니다.
+
+## Previous State: Phase 28 Preview Summary User Verification
 
 - Date: 2026-09-29, documentation-only follow-up. Existing feature branch
   `feature/phase-28b-observation-month-filter` starts clean at local/remote

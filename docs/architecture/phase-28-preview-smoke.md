@@ -1,6 +1,199 @@
 # Phase 28 Preview Read Verification
 
-## Current Result And Evidence Boundary
+## Consolidated API And Operator Preview Result (2026-09-30)
+
+**한국어:** `8435383` Preview의 연결 확인과 남은 화면 점검을 한 번에 요청한 뒤,
+사용자가 `전부 검증했고 에러는 없어`라고 답했습니다. 요청한 범위의 사용자 수동
+확인 PASS로 기록합니다. 실제 API 검사는 앞서 실행한 결과를 보존하며 반복하지
+않았습니다. Codex가 보호된 Preview 설정이나 화면을 직접 검사한 결과는 아닙니다.
+
+### Target And Reporting Scope
+
+- Actual operator Preview target: `8435383`, previously confirmed Preview/build
+  success; its app source matches summary correction `d6c34ca` (four docs differ).
+- `preview_target_match=confirmed_by_operator`: the collective completion reply
+  covers the combined request to compare the deployment-used Supabase mode,
+  shared project, image bucket and absence of a conflicting branch override on
+  the operator's own screen. This is not `confirmed_by_tool`, not an inference
+  from matching counts/names, and not a comparison of today's settings alone.
+  No values were requested or supplied; no individual configuration fields were
+  returned separately. The API run's original unknown target provenance remains
+  in its historical record below; this later operator confirmation supplies the link.
+- The seven UI rows below record completion of the six-step guided flow, not
+  separately instrumented test runs. The operator supplied no new numeric counts,
+  device inventory, pixel measurements, map input total or console/log transcript.
+  `data_changed_since_api_check=unknown`; do not label the earlier API counts as
+  current UI measurements. No repeat of the earlier common-summary PASS was asked.
+- Evidence labels: `STATIC` is source review; `LIVE_API_FROM_LOCAL_PUBLIC_CONFIG`
+  is the preserved real public API run; `OPERATOR_PREVIEW_UI` is the user's manual
+  Preview report; `NOT_RUN` means that specific check was not performed/reported.
+
+### Consolidated Evidence Matrix
+
+| Check | Status | Evidence | Boundary |
+| --- | --- | --- | --- |
+| Public Supabase connection | PASS | LIVE_API_FROM_LOCAL_PUBLIC_CONFIG; operator target confirmation above | Dedicated public client without user session; local general app remains mock |
+| First page range/count | PASS | LIVE_API_FROM_LOCAL_PUBLIC_CONFIG | At run time: approved count 22, range 0-19, 20 rows; exact count-only crosscheck |
+| Second/final page | PASS | LIVE_API_FROM_LOCAL_PUBLIC_CONFIG | Range 20-39, 2 rows; no page overlap in the checked interval, not a snapshot guarantee |
+| Global search and filtered count | PASS | LIVE_API_FROM_LOCAL_PUBLIC_CONFIG | Page-two record found by new search; independently checked result/count 6 |
+| Registered-photo filter | PASS | LIVE_API_FROM_LOCAL_PUBLIC_CONFIG | Reference present 6 / absent 16; raw-field comparison, not image loading success |
+| Detail and image access | PASS | LIVE_API_FROM_LOCAL_PUBLIC_CONFIG | Linked and legacy detail; one signed image HEAD succeeds, not browser rendering evidence |
+| Actual date fields/options | PASS within loaded metadata | LIVE_API_FROM_LOCAL_PUBLIC_CONFIG | 22/22 metadata rows; independent calendar-date check, one year/month only |
+| Public list pages/count display | PASS, guided flow | OPERATOR_PREVIEW_UI | Operator completed page/range/card check; no fresh per-page numbers supplied |
+| Search and photo UI | PASS, guided flow | OPERATOR_PREVIEW_UI | Search/filter result and page-one reset check; API counts retain their original timestamp |
+| Detail/image display and page preservation | PASS, guided flow | OPERATOR_PREVIEW_UI | Requested existing-image and linked/legacy detail flow; no all-images guarantee |
+| Fade and no automatic top scroll | PASS, guided flow | OPERATOR_PREVIEW_UI | No measured scroll tolerance; shorter last-page document may still clamp its maximum scroll |
+| Year/month selection and independent clears | PASS for available data, guided flow | OPERATOR_PREVIEW_UI | Includes collapse/selection/tree retention; unavailable multi-year/month cases remain PARTIAL |
+| List/map data separation | PASS, guided flow; source confirmed | OPERATOR_PREVIEW_UI; STATIC | Page two does not replace the map source; not a browser request trace or complete map-row comparison |
+| Narrow layout and keyboard | PASS, guided flow | OPERATOR_PREVIEW_UI | No claim about every mobile device or exhaustive accessibility audit |
+| Diverse dates and observed/created contrast | PARTIAL | LIVE_API_FROM_LOCAL_PUBLIC_CONFIG | Actual dataset has only one year/month and no differing observed/created date example |
+| Map collection coverage | PARTIAL; map_coverage=unknown | STATIC; NOT_RUN for exact Preview input comparison | No actual unfiltered map total supplied; metadata completeness does not prove map collection completeness |
+| Real Kakao camera/marker/resize | PARTIAL | NOT_RUN for a specific new real-map report | Guided instructions allowed fallback; collective completion does not establish real Kakao availability |
+| Build-log secret review | PARTIAL | NOT_RUN for a specific log review report | Build success/no reported errors is not a secret audit |
+| Raw email / console secret-like output | unknown | NOT_RUN for explicit absence confirmation | No errors reported; no separate no/yes/unknown answers supplied |
+
+### Coverage, Checks And Next Decision
+
+- Static map input review: `listObservations()` selects approved observations,
+  orders by observed date and uses the existing un-ranged collection query. There
+  is no date/taxonomy/coordinate exclusion in that repository read; the configured
+  server cap remains. Kakao separately skips non-finite coordinates. Map result
+  count, marker count, linked taxonomy counts and filtered list counts are not
+  interchangeable. Neither a 22-row metadata projection nor the operator's
+  separation PASS establishes the exact Preview map input or large-data coverage.
+- No confirmed core read failure or target mismatch remains in the collected
+  evidence. **Production 배포 승인 검토 가능**, with these limits disclosed; this is
+  not Production release approval, deployment completion or all-exception PASS.
+  Review map coverage, real Kakao and build-log follow-up in the separate release
+  decision. Do not create observations/accounts or change settings to fill gaps.
+- This consolidation preserves the three intentionally dirty documents and the
+  earlier run identity/results. No new API run, recreated result file or TEMP
+  cleanup; the automatic harness is preserved. Source/tests/assets/package/lock/
+  deployment configuration are unchanged. No observation/account/settings writes.
+- Historical 174 Node tests/typecheck/build remain prior results. For this docs-only
+  consolidation, application checks are skipped under the working guide. Fresh
+  diff/Markdown/table/whitespace/EOF, forbidden-file, secret-like and docs-only scope
+  checks PASS. Fresh `npm.cmd audit --include=dev --audit-level=high --json` exits 0,
+  with zero vulnerabilities at this run; no package update or audit fix.
+- One consolidation commit/push is authorized on the existing feature branch.
+  Main/origin/main remain `a3887a7`; no Production promotion, archive or next feature.
+  A resulting documentation Preview is unobserved at writing and is not visually
+  reverified. Report its actual commit/deployment state after push without repeating
+  documentation commits. Identical source does not prove identical built assets
+  or build-time environment. Actual manual visual PASS belongs to `8435383`.
+
+## Automatic Public Read Follow-Up (2026-09-30)
+
+This section preserves the API run before the later operator confirmation above.
+Its then-unknown target/UI state is historical, not the current consolidated state.
+
+**한국어:** 사용자의 주소·키 입력 없이 실제 공개 API 검사를 실행했습니다.
+공개 관찰 22건이 20건과 2건으로 나뉘며, 검색 6건과 사진 등록 6건/미등록
+16건을 확인했습니다. 단, 설정은 로컬 앱의 공개 모듈에서 확보했습니다.
+Preview와 같은 프로젝트인지 확인하지 못했으므로 Preview 전체 검증 완료는 아닙니다.
+
+### Target And Configuration Provenance
+
+- Reviewed code: `8435383`, feature local/remote unchanged; main/origin/main
+  `a3887a7`. `d6c34ca..8435383` changes four documents only. Source, tests,
+  public assets, package files and deployment configuration remain the reviewed code.
+- Operator answered `preview yes pass` for the `8435383` environment/commit/build
+  question. Public GitHub deployment metadata independently identified that SHA
+  as Preview, non-Production, with a successful deployment status. The deployment
+  ref is the matching SHA, not a branch-name string. This is deployment evidence,
+  not database or browser-render evidence.
+- The matching Preview HTML request returned HTTP 302 to Vercel access protection.
+  No redirect/protection bypass, new login/CLI installation or setting change.
+  Existing browser tooling could not connect; no authenticated browser inspection.
+- Existing local Vite listeners 3000/3002/3003/3004/3005 serve this workspace's
+  current App, but all report **mock** mode. Their public Supabase initialization
+  modules also expose a connection pair. Port 3000 supplied the pair; client,
+  repository-provider and Storage module values were compared in memory. Only the
+  four requested public variables were extracted using a syntax parser, not eval.
+- The dedicated harness explicitly uses the actual Supabase repository with a
+  separate public client; **the local general app remains mock**. No env value or
+  running app mode was changed. Source category: `LOCAL_VITE_PUBLIC_MODULES`;
+  `preview_target_match=unknown`. API results below are **local-config LIVE_API**,
+  not evidence that Preview uses the same project or displays the same data.
+- Public-key type was checked before any Data API request; secret/service-role and
+  user-token inputs are rejected. Decoding an anon payload is a type screen, not
+  signature verification. No credentials, URLs, headers, object paths or rows were
+  printed or saved. No `.env.local` or other secret environment file was read.
+
+### Actual Execution And Evidence
+
+- Successful run ID: `1790730570782`; start `2026-09-30T01:09:30.782Z`
+  (10:09:30.782 Asia/Seoul); process exit **0**, matching completion ID, no FAIL
+  in its result. Codex ran the noninteractive process and read `result.json` itself.
+  Earlier automatic discovery attempts exited 1 before Data API access; they are
+  superseded by this run, not hidden app failures or earlier PASS reuse.
+- Actual repository/query-builder/mapper code was loaded from the unchanged local
+  candidate with the installed SDK. Only the client and bulk image-signing boundary
+  were injected. List queries are real requests, not a copied lookalike query.
+- The image boundary skips bulk signing during repeated page checks. A selected
+  detail uses the real Storage helper once; one signed-image HEAD follows. This is
+  not a test of every card's image work, prefetch or actual browser rendering.
+- Observed traffic: 18 observation GET/HEAD requests, one signed-URL POST and one
+  image HEAD. Explicit approved predicates; no Auth/login, RPC, resolver, writes,
+  uploads/deletes or settings operations. Reads/signing can create remote logs.
+- Budgets: at most 32 guarded SDK requests, 15-second request timeout, 4 MiB
+  cumulative SDK response budget, one signing operation; metadata projection at
+  most 200 rows. Deep final-page checks above 2,000 records are skipped. No full
+  observation download was introduced into the app or used to compute count.
+
+| Check | Status / evidence | Observed scope or limitation |
+| --- | --- | --- |
+| Public connection and count | PASS / LIVE_API | Exact count-only approved read: 22; dedicated client has no user session |
+| First page | PASS / LIVE_API | Actual range 0-19, 20 rows, Content-Range 0-19/22; SDK count 22 and separate same-condition HEAD agree |
+| Second/final page | PASS / LIVE_API | Range 20-39, 2 rows, Content-Range 20-21/22; no overlap with first page in this run |
+| Ordering and public predicate | PASS / LIVE_API | observed_date DESC, id DESC; request and returned row order/status checked; not a separate RLS attack test |
+| Whole-public search | PASS / LIVE_API | A page-two record appears in page-one search; count/result 6; server condition present and original fields independently compared across the already-read 22 records |
+| Broad taxon filter | PASS / LIVE_API, limited diversity | Server predicate/HEAD/result agree, 22 matching rows; no different-taxon exclusion case in this dataset |
+| Registered-photo filter | PASS / LIVE_API | With reference 6, without 16; same-condition count; independent raw-reference predicate agrees across 22 records; not based on signing/display success |
+| Detail and legacy detail | PASS / LIVE_API | One linked detail with lineage and one unlinked detail mapped correctly; identifiers/dates compared only in memory |
+| Image access | PASS / LIVE_API; visual NOT_RUN | One runtime signing succeeds and image HEAD returns 200/image type; no body download or browser decode claim |
+| Observed-date options | PASS / LIVE_API metadata scope | Separate capped metadata query returns 22/22, one valid year; mapper/date helper agrees with independent calendar-date parsing |
+| Year/month combinations | PASS within available data / LIVE_API | Five helper invocations on live metadata agree with independent original-field filtering; only one year/month exists, so several conditions coincide |
+| Multiple years/months, observed vs created date contrast | PARTIAL / LIVE_API data limitation | No multiple-year/month comparison or differing observed/created calendar-date example; previous synthetic tests remain separate |
+| Date clears, empty-result UI, animation, scroll, keyboard | NOT_RUN for new Preview UI | API results do not establish rendered controls, interaction/state retention or image display |
+| List/map/summary separation | STATIC confirmed; Preview network NOT_RUN | Actual App keeps separate reads/states; no list-triggered full read restored; harness is not a browser request trace |
+| Map data coverage | PARTIAL / NOT_RUN actual map request | Narrow metadata projection covers this run's 22 approved rows; actual MapPage collection/server row-cap impact remains unknown |
+| Common summary UI | Existing OPERATOR_UI PASS | Preserve d6c34ca guided-flow report; no repeat requested and no new aggregate/network audit claimed |
+| Kakao regression / build-log review | PARTIAL / NOT_RUN this follow-up | No new real-map or log inspection |
+
+Exact approved count was stable at the start/end and during relevant checks. This
+does not establish a snapshot or rule out equal-count concurrent edits. Numeric
+results belong only to the automatically acquired local public connection, not
+mock samples, fixtures or an assumed Preview/Production project.
+
+### Temporary Tool, Checks And Remaining Gate
+
+- Existing TEMP `eco-phase28-read-verification-20260930/verify.cjs` was extended
+  with an automatic configuration entry. Its temporary `public-config.cjs` loader
+  was consolidated into that existing script after execution and removed. The
+  documented safe result was identity-checked and removed after reading; no other
+  TEMP files were touched. The existing self-contained script remains outside Git.
+  The interactive route was not used or requested again. No config file was created.
+- The result allowlist was checked before reading: only run/time/commit, source
+  categories, booleans, counts/ranges and safe status/error codes. No raw rows,
+  UUIDs, coordinates, paths, URLs, keys or stack traces. The fresh run/completion
+  identity was checked; self-tests do not overwrite live results.
+- Temporary harness syntax and zero/47-record/negative-response self-checks pass
+  with fake transport. These are not new application Node tests or live data.
+  The historical 174 application tests/typecheck/build/audit results remain dated
+  prior results; not rerun because tracked changes are documents only and no push
+  or package change is performed. Document format/security/scope checks run here.
+- **No core query failure was observed for this local connection.** The remaining
+  verification blocker is access to the protected Preview through a working,
+  authorized browser, so its target identity and UI/network behavior can be checked.
+  Do not disable protection, collect credentials, change local modes or promote to
+  Production to obtain that evidence. No repeated manual key-entry instructions.
+- This follow-up changes only these verification documents and temporary tools.
+  No app/tests/packages/DB/observations/accounts/settings changes; no new commit,
+  push, merge, deployment, phase archive or next feature. Production readiness is
+  still withheld. Keep the historical records below rather than upgrading them.
+
+## Previous Result And Evidence Boundary (2026-09-29)
 
 - Record date: 2026-09-29 (Asia/Seoul).
 - Branch: `feature/phase-28b-observation-month-filter`. Main/origin/main remain
