@@ -120,7 +120,7 @@ export const supabaseObservationRepository: ObservationRepository = {
   async deleteObservation(id) {
     await requireCurrentUserId();
     const { data, error } = await getSupabaseClient().from(OBSERVATIONS_TABLE)
-      .delete().eq('id', id).select('id,image_path,observer_id').maybeSingle();
+      .delete().eq('id', id).eq('status', 'approved').select('id,image_path,observer_id').maybeSingle();
     if (error || !data || data.id !== id) throw new Error('Observation deletion failed or not allowed.');
     invalidateTaxonomyTreeCache();
     const imageCleanup = await cleanupDeletedObservationImage(data.image_path, data.observer_id);

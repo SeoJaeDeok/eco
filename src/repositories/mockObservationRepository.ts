@@ -30,7 +30,8 @@ export const mockObservationRepository: ObservationRepository = {
     const { activeAuthRepository } = await import('./authRepositoryProvider');
     const session = await activeAuthRepository.getSessionState();
     const observation = getMockObservations().find((item) => item.id === id);
-    if (!session.user || !observation || (!session.isAdmin && observation.observerId !== session.user.id)) {
+    if (!session.user || !observation || observation.status !== 'approved'
+      || (!session.isAdmin && observation.observerId !== session.user.id)) {
       throw new Error('Observation deletion not allowed.');
     }
     markMockObservationDeleted(id);

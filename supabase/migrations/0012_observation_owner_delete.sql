@@ -7,9 +7,13 @@ grant delete on public.observations to authenticated;
 
 create policy "Owners can delete own observations"
 on public.observations for delete to authenticated
-using (observer_id = (select auth.uid()));
+using (status = 'approved' and observer_id = (select auth.uid()));
 
--- Reuse the existing 0001 admin policy and public.is_admin(), without widening SELECT.
--- Non-approved owner rows remain inaccessible through the current public read path.
+-- Narrow the existing admin DELETE policy to the confirmed approved-only MVP.
+-- Without this change, restoring the table grant would also enable hidden-row deletion.
+alter policy "Admins can delete observations" on public.observations
+using (status = 'approved' and public.is_admin());
+
+-- Reuse public.is_admin(); SELECT/UPDATE and private owner visibility are unchanged.
 -- Storage policies are deliberately unchanged.
 commit;

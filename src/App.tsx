@@ -492,7 +492,7 @@ export default function App({ authRefreshReturn = null }: AppProps) {
             observation={selectedObservation}
             canEdit={canEditSelectedObservation}
             authState={publicAuthState}
-            canDelete={Boolean(publicAuthState.user && (publicAuthState.isAdmin || selectedObservation.observerId === publicAuthState.user.id))}
+            canDelete={Boolean(selectedObservation.status === 'approved' && publicAuthState.user && (publicAuthState.isAdmin || selectedObservation.observerId === publicAuthState.user.id))}
             onDeleteObservation={handleDeleteObservation}
             onClose={() => setSelectedObservation(null)}
             onUpdateObservation={handleObservationUpdated}

@@ -10,12 +10,13 @@ const empty = { user:null,profile:null,isAdmin:false };
 const session = (id='owner',isAdmin=false)=>({...empty,user:{id},isAdmin});
 const row={id:'record',image_path:'trusted-path',observer_id:'owner'};
 
-const deletionRepository = (actor,{cleanup='removed',databaseError=false}={})=>{
+const deletionRepository = (actor,{cleanup='removed',databaseError=false,status='approved'}={})=>{
   const calls=[];
   const client=createClient('https://fixture.invalid','fixture-public-key',{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},global:{fetch:async(input,init)=>{
     const params=new URL(input).searchParams;calls.push({method:init.method,params});
     assert.equal(init.method,'DELETE');assert.equal(params.get('id'),'eq.record');assert.equal(params.get('select'),'id,image_path,observer_id');
-    const allowed=actor.user&&(actor.isAdmin||actor.user.id===row.observer_id);
+    assert.equal(params.get('status'),'eq.approved');
+    const allowed=status==='approved'&&actor.user&&(actor.isAdmin||actor.user.id===row.observer_id);
     return new Response(JSON.stringify(databaseError?{code:'42501',message:'denied'}:allowed?[row]:[]),{status:databaseError?403:200,headers:{'content-type':'application/json'}});
   }}});
   client.auth.getUser=async()=>({data:{user:actor.user},error:null});
@@ -81,12 +82,14 @@ test('0012 is a new grant/owner policy candidate and preserves existing SELECT/U
   const sql=readFileSync(new URL('../supabase/migrations/0012_observation_owner_delete.sql',import.meta.url),'utf8');
   assert.match(sql,/grant delete on public\.observations to authenticated/i);
   assert.match(sql,/for delete to authenticated[\s\S]*observer_id = \(select auth.uid\(\)\)/i);
+  assert.match(sql,/using \(status = 'approved' and observer_id = \(select auth.uid\(\)\)\)/);
+  assert.match(sql,/alter policy "Admins can delete observations" on public.observations\s+using \(status = 'approved' and public.is_admin\(\)\)/);
   assert.doesNotMatch(sql,/create policy[\s\S]*for (?:select|update)|alter table storage|drop policy/i);
 });
 
 test('actual admin route switches to all states and delegates deletion through the admin repository',async()=>{
   const view=componentHarness();let allReads=0,pendingReads=0,deleted=null,notified=null;
-  const observation={id:'admin-row',status:'rejected'};
+  const observation={id:'admin-row',status:'approved'};
   const repository={
     async listPendingObservations(){pendingReads++;return [];},
     async listAllObservations(){allReads++;return deleted?[]:[observation];},
@@ -106,4 +109,33 @@ test('actual admin route switches to all states and delegates deletion through t
   assert.equal(deleted,observation.id);assert.equal(notified,observation.id);assert.equal(allReads,2);
   assert.equal(view.nodes(n=>n.type==='admin-list')[0].props.observations.length,0);
   assert.ok(view.nodes(n=>n.props.role==='status').some(n=>view.text(n).includes('이미지 파일 정리')));
+});
+
+test('approved-only deletion rejects pending/rejected in SDK and actual mock paths for owner and admin',async()=>{
+  for(const status of ['pending','rejected'])for(const actor of [session(),session('admin',true)]){
+    const live=deletionRepository(actor,{status});await assert.rejects(live.repository.deleteObservation('record'));
+    assert.equal(live.calls.length,1);
+    let deleted=false;
+    const repository=compileSource('src/repositories/mockObservationRepository.ts',{
+      '../data/sampleObservations':{sampleObservations:[{id:'record',status,observerId:'owner'}]},
+      '../utils/observationStats':stats,'../utils/observationPagination':pagination,
+      './authRepositoryProvider':{activeAuthRepository:{getSessionState:async()=>actor}},
+      './mockObservationDeletion':{deletedMockObservationIds:new Set(),markMockObservationDeleted(){deleted=true;}},
+    }).mockObservationRepository;
+    await assert.rejects(repository.deleteObservation('record'));assert.equal(deleted,false);
+  }
+});
+
+test('actual admin detail only renders deletion for approved observations',async()=>{
+  const view=componentHarness();
+  const Component=compileSource('src/components/admin/AdminObservationReviewPanel.tsx',{
+    ...view.modules,'../TaxonBadge':{TaxonBadge:'taxon-badge'},'../ui/ImageFrame':{ImageFrame:'image-frame'},
+    '../ui/DeleteConfirmation':{DeleteConfirmation:'delete-confirmation'},
+  }).AdminObservationReviewPanel;
+  const observation={id:'record',name:'fixture',coords:{lat:0,lng:0},status:'pending'};
+  await view.mount(Component,{observation,actionInProgressId:null,actionError:null,onApprove(){},onReject(){},async onDelete(){}});
+  for(const status of ['pending','rejected',undefined,'approved']){
+    await view.update({observation:{...observation,status}});
+    assert.equal(view.nodes(n=>n.type==='delete-confirmation').length,status==='approved'?1:0);
+  }
 });
