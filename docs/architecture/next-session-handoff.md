@@ -4,7 +4,64 @@
 
 This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current State: Phase 29 And 32 Manual Migration Readiness
+## Current State: 0014 Admin Helper Permission Correction Prepared
+
+- Same stacked branch `feature/phase-29-32-observation-delete-comments-fast-track`,
+  entry `23d634a`, Phase 28 base `2b2ce5a`. Main/origin/main stay `a3887a7`.
+- Operator ran 0012-pre: **FAIL**, only `admin_helper_not_public=false`. Further
+  operator-reported read-only metadata: `public.is_admin()` has the reviewed
+  zero-argument boolean signature; PUBLIC EXECUTE absent, anon direct/effective
+  EXECUTE present, authenticated EXECUTE present, no anon inheritance/ownership.
+  Examined anon policy expressions/dependencies and other review counts were zero.
+  This is not Codex remote execution or public UI regression proof.
+- `owner_default_grants_anon_execute=true` is the known creator-default condition.
+  0001 revokes PUBLIC, not direct anon. Under the same creation/default conditions
+  a fresh function can therefore acquire anon EXECUTE. **Current grant origin is
+  unknown**; defaults do not regrant to an existing function. No fresh DB was created
+  or reset to reproduce it. Do not treat this known default as a new blocking gate.
+- User authorized preparation only of the next canonical candidate:
+  `0014_revoke_anon_is_admin_execute.sql`. Its only statement revokes EXECUTE on
+  `public.is_admin()` from anon. Authenticated/PUBLIC/table grants, RLS, other
+  functions, role memberships and global default privileges are unchanged. No
+  ALTER DEFAULT PRIVILEGES, app/test/package modification or new feature.
+- **0001~0013 and original 0012-pre are unchanged from `23d634a`**. Two new
+  [0014 pre](sql-checks/0014-pre-apply.sql)/[post](sql-checks/0014-post-apply.sql)
+  catalog-only checks compare reviewed helper properties/body, direct/effective
+  permissions, role flags and actual public observation/image policy structures.
+  All booleans must be true. Additional/unknown dependencies stop for review.
+  The new SQL is prepared, not yet executed on PostgreSQL.
+- Canonical replay remains `0001 -> ... -> 0012 -> 0013 -> 0014`. The current DB's
+  **one-time manual order** is 0014 pre -> single 0014 REVOKE -> 0014 post -> original
+  0012 pre -> 0012 apply/post -> 0013 pre/apply/post. This works because 0014 depends
+  only on the existing helper/role, not on 0012/0013. Do not renumber files or infer
+  a migration-tool history entry from SQL Editor success.
+- After 0014-post, rerun the old 0012-pre unchanged: effective anon denial should
+  make `admin_helper_not_public=true`; all other preconditions are untouched but
+  still need rechecking. Never skip the old gate, retry blindly or invent rollback.
+  **exact rollback SQL: not documented**; anon re-GRANT is not an approved undo.
+- This solves this helper's final full-replay state, not defaults for every future
+  function. Future security/helper migrations must explicitly review per-function
+  PUBLIC/anon/authenticated EXECUTE. Do not mass-change existing functions.
+- Current SQL static/scope/order and document/security checks **PASS**. Existing
+  focused migration-readiness tests: **3 PASS**, protecting the prior checks; new
+  0014 comparisons ran in a separate local static checker. Not a DB runtime/replay
+  test. **213 Node tests, typecheck/build PASS and audit 0
+  remain historical** from the preceding readiness session, not rerun now.
+- **0014/0012/0013 remote NOT_APPLIED; REVOKE not run; live smoke NOT_RUN.** No
+  remote DB/account/observation/comment/image mutation, push, merge or deployment.
+  No Verified status, archive, Phase 30/31 or next feature. Existing scope remains
+  approved-only owner/admin deletion and best-effort image cleanup; identification
+  comments do not change taxonomy.
+- Read [0014 prerequisite and manual order](phase-29-32-fast-track-readiness.md#0014-helper-permission-prerequisite).
+  Next interaction starts **0014 Step 1 - pre-apply**, only when the user proceeds.
+  Show the real local precheck file then wait for the user's boolean result. This
+  preparation task must not immediately instruct remote application.
+
+**한국어:** 0012 사전 검사 실패 원인을 기록하고, anon 권한 하나만 회수하는 0014
+후보와 검사를 준비했습니다. 기존 migration은 그대로입니다. 현재 DB에는 아무것도
+적용하지 않았고, 다음은 사용자가 진행을 요청하면 0014 사전 검사부터 시작하는 것입니다.
+
+## Previous State: Phase 29 And 32 Manual Migration Readiness
 
 - 2026-10-05. Branch `feature/phase-29-32-observation-delete-comments-fast-track`
   starts from Phase 28 `2b2ce5a`. Main/origin/main remain `a3887a7`; prior features

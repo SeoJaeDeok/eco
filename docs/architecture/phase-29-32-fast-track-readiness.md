@@ -7,16 +7,149 @@
   containing Phase 28 + 29 + 32; it did not restart from main.
 - Initial implementation: `4e4f9eb`; prior documentation: `77a394e`.
   Final approved-only code/migration correction: `62c57c0`.
-  This readiness follow-up revises the unapplied 0012 and matching deletion guards
-  to the user's newly confirmed approved-only scope. Use the current files, not
-  the earlier 0012 revision. 0013 and 0001~0011 remain unchanged.
-- State: manual application preparation complete, subject to target prechecks;
-  **not Verified, not released**. Both migrations are remote **NOT_APPLIED**.
+  The earlier readiness commit is `23d634a`. The current follow-up adds only 0014,
+  its two catalog checks and readiness/handoff documentation; 0001~0013 and all
+  existing checks are unchanged from `23d634a`. No application/test/package edits.
+- State: **0012-pre FAIL** on the operator's target; limited 0014 correction
+  prepared, not yet applied. **Not Verified, not released**. 0014/0012/0013 are
+  all remote **NOT_APPLIED**, live smoke **NOT_RUN**.
 - Existing Phase 28/backup branches are preserved. No push, merge or deployment.
 - Phase 30/31 skipped intentionally; no Phase history archive or new feature.
 - Phase 28 API/Preview evidence remains historical and is not a live PASS for
   this newly modified application. Its coverage/date diversity/Kakao/log limits
   remain recorded in [Phase 28 readiness](phase-28-integration-release-readiness.md).
+
+## 0014 Helper Permission Prerequisite
+
+### Evidence And Cause
+
+The operator ran the original 0012 precheck and reported only
+`admin_helper_not_public=false`. Follow-up read-only diagnostics found the reviewed
+zero-argument boolean `public.is_admin()`, no PUBLIC EXECUTE, direct/effective anon
+EXECUTE, authenticated EXECUTE, no inherited anon EXECUTE and no anon ownership.
+The operator subsequently reported booleans true and review counts zero: no helper
+reference in the examined anon policy qual/with_check or catalog dependencies, no
+other policy function/public callable function/readable view requiring review, and
+`owner_default_grants_anon_execute=true`. This is **operator-reported catalog
+evidence**, not a Codex remote query, browser smoke or newly executed result file.
+
+Local 0001 creates the helper, revokes PUBLIC and grants authenticated, but does not
+explicitly revoke anon. With the reported creator/default-permission conditions,
+new function creation can assign a direct anon grant that PUBLIC revoke does not
+remove. This is a reproducibility gap, not evidence of when/how the current grant
+originally appeared: **grant origin = unknown**. Defaults do not continuously regrant
+permissions to an existing function. The inference about fresh creation follows
+[PostgreSQL default privileges](https://www.postgresql.org/docs/current/sql-alterdefaultprivileges.html);
+an existing function's permissions are preserved by
+[CREATE OR REPLACE FUNCTION](https://www.postgresql.org/docs/current/sql-createfunction.html).
+No fresh database replay or remote modification was performed to test this inference.
+
+### Exact Correction And Limits
+
+The complete [0014_revoke_anon_is_admin_execute.sql](../../supabase/migrations/0014_revoke_anon_is_admin_execute.sql)
+contains **one statement only**: revoke EXECUTE on `public.is_admin()` from `anon`.
+It relies on the existing 0001 helper and anon role, not on 0012/0013 policies or
+comments schema. It is not a Phase 29 feature expansion. It leaves authenticated
+admin functionality, PUBLIC rights, table grants, roles, RLS and public observation/
+image read definitions unchanged. No CASCADE, other function change, data write,
+global default change or `ALTER DEFAULT PRIVILEGES` is included.
+
+After the entire canonical replay finishes, this helper's direct anon EXECUTE is
+explicitly removed. Effective denial also requires the checked lack of PUBLIC,
+ownership/bypass or inherited execution routes. A different environment with such
+routes needs review; 0014 does not silently remove other roles' grants.
+The known owner default anon grant remains unchanged and is **not a blocker or a
+false-required gate** in the new checks. Neither 0014 nor this decision fixes default
+EXECUTE on every future new function.
+
+Future security/helper-function migrations must explicitly review per-function
+PUBLIC/anon/authenticated EXECUTE. Retain authenticated only when required, and
+explicitly revoke anon when not required. Do not infer safety from a PUBLIC revoke
+alone. No other existing function is bulk-hardened in this task.
+
+### Pre/Post Read-Only Checks
+
+- [0014 pre-apply](sql-checks/0014-pre-apply.sql): expect all true. It checks the
+  exact signature/no overload, reviewed SQL/STABLE/SECURITY DEFINER/search_path/body,
+  PUBLIC denial, direct and effective anon grant, authenticated direct/effective
+  grant, no role bypass, anon ownership/inherited/grant-chain exceptions, actual
+  anon policy expressions and function dependencies, and the reviewed observation/
+  image public/admin SELECT structures and read grants.
+- [0014 post-apply](sql-checks/0014-post-apply.sql): expect all true. The only
+  intended changed checks are anon **direct ACL absent** and **effective EXECUTE
+  absent**. All helper/role/policy/read-grant checks repeat the precheck. The known
+  default privilege is deliberately omitted from pass gates, not changed or ignored
+  as a future-function risk.
+- Comparisons use actual qual/with_check and catalog references, not names alone.
+  Public observation/image predicates are compared with the reviewed 0001/0002
+  definitions. Post is not a stored pre-run snapshot: equality means the same
+  reviewed baseline passed both runs. Deparser differences, custom functions/views,
+  additional policies or grant chains cause a stop for review, not an automatic fix.
+  Conservative function/view checks cover the known application public paths;
+  absence of catalog references alone cannot prove absence of arbitrary dynamic SQL.
+- Only booleans are returned. No function is invoked, no raw ACL/body/application
+  rows/identities/configuration are returned, and no grants are modified. These two
+  new files are **not yet run against PostgreSQL**; local review is STATIC only.
+
+### Link Back To The Original 0012 Precheck
+
+The original [0012-pre-apply.sql](sql-checks/0012-pre-apply.sql) is byte-for-byte
+unchanged in Git. Its `admin_helper_not_public` is the negation of anon's effective
+EXECUTE. A successful 0014 postcheck explicitly proves that effective privilege is
+absent, so this predicate should become true. The helper, authenticated permission,
+role flags, table/column metadata and all observation SELECT/DELETE grant/policy
+preconditions are untouched by the single function REVOKE. They were reported true
+previously, but must be rechecked for intervening drift. Do not infer a fresh complete
+0012-pre PASS from 0014-post alone or weaken the old check.
+
+### Two Different Orders
+
+**Canonical repository replay:** `0001 -> ... -> 0012 -> 0013 -> 0014`.
+Four-digit numbering and all existing names/content/order remain intact. Pre/post
+files under docs are manual gates, not automatically interleaved migration bodies.
+The anon grant may exist until 0014 in a fresh replay with these defaults; do not
+expose an incomplete replay as the hardened final state.
+
+**One-time current-target manual order**, to unblock the stopped 0012-pre:
+
+1. 0014 pre-apply; every boolean true.
+2. Entire single-statement 0014; operator reports execution success.
+3. 0014 post-apply; every boolean true.
+4. Original 0012 pre-apply, from the beginning; every boolean true.
+5. Resume the existing steps below: 0012 apply -> 0012 post -> 0013 pre ->
+   0013 apply -> 0013 post, waiting for the operator after each step.
+
+This exception is possible because 0014 only touches the already-existing helper
+ACL and has no 0012/0013 schema dependency. Do not rename/reorder files or execute
+the whole pending batch to work around the gate. Manual SQL Editor application may
+not update the migration tool's ledger; record the operator result separately and
+review actual metadata/ledger before any future CLI operation. No history-repair or
+CLI command is authorized here.
+
+On false/null/error, stop and diagnose read-only. Do not repeat the migration or
+add a compensating GRANT. **exact rollback SQL: not documented**. Restoring anon
+EXECUTE is not an approved rollback: no evidence establishes that it was intended.
+The present task prepares files only; no instruction to execute them immediately,
+no remote SQL, no accounts/observations/comments/images touched, and no push/deploy.
+
+### Current Preparation Checks
+
+Local checks **PASS** for the one-statement target/role, read-only catalog SQL structure,
+reviewed helper/policy definitions, consistent pre/post predicates, unchanged
+0012-pre and 0001~0013, unique next migration number/order, Markdown/SQL whitespace/
+EOF/links, forbidden tracked files and secret-like changes. No PostgreSQL parser,
+server execution or full replay is claimed. Existing focused command
+`node --test tests/migration-readiness.test.mjs`: **3 PASS, 0 failed**. These existing
+tests protect 0012/0013 contracts; the new 0014 structure/definition comparisons were
+checked separately by a local read-only Node checker. This is not a full-suite run.
+The first old-file comparison failed because the checker stripped an existing UTF-8
+BOM in 0010; preserving it in the checker made the equality check pass. No existing
+migration was edited to satisfy the comparison, and no DB failure was involved.
+The prior **213 tests, typecheck/build PASS and audit 0** belong to `23d634a`'s
+readiness session. They are not rerun for this SQL/check/docs-only change: app and
+dependency inputs are unchanged, no push/release is taking place. Deno/Docker/WSL/
+Supabase local stack are not needed or started. These fresh local results do not
+replace the pending operator execution of 0014 pre/post or actual role/live tests.
 
 ## Implemented Scope
 
@@ -51,7 +184,8 @@ The final unapplied 0012 explicitly requires approved for both owner and admin,
 reuses `public.is_admin()` and preserves existing SELECT/UPDATE policies. Minimal
 matching guards are in the Supabase/mock repositories and public/admin buttons.
 This is a real authorization-scope correction after `77a394e`, not a style rewrite.
-0013 is not revised and no 0014 is added.
+0013 was not revised. That scope correction did not add 0014; the later separately
+authorized 0014 above is only helper EXECUTE hardening, not deletion-scope expansion.
 
 Accepted image boundary: owner/admin approved observation row deletion is supported;
 image cleanup is **best-effort** after DB success, from the trusted returned path.
@@ -66,14 +200,14 @@ taxonomy, and does not invoke a resolver. Comments on a subsequently hidden pare
 remain outside the public author's read/delete UI; admin policy permits administrative
 access. Observation deletion cascades comments in DB, not a frontend delete loop.
 
-## Fresh Checks (2026-10-05)
+## Previous Checks At 23d634a (2026-10-05)
 
 | Check | Result | Meaning |
 | --- | --- | --- |
-| TypeScript `npm.cmd run typecheck` | PASS | Actual current run |
-| `node --loader ./tests/ts-extension-loader.mjs --test tests/*.test.mjs` | 213 PASS, 0 failed | Current full run; previous 208/174 are historical |
-| `npm.cmd run build` | PASS | Vite application entry, not fixture entry |
-| `npm.cmd audit --include=dev --audit-level=high --registry=https://registry.npmjs.org/` | PASS, 0 vulnerabilities | This audit time only; no auto fix |
+| TypeScript `npm.cmd run typecheck` | Historical PASS | Previous 23d634a readiness run |
+| `node --loader ./tests/ts-extension-loader.mjs --test tests/*.test.mjs` | Historical 213 PASS, 0 failed | Previous 23d634a full run, not rerun for 0014 |
+| `npm.cmd run build` | Historical PASS | Previous Vite application build, not fixture entry |
+| `npm.cmd audit --include=dev --audit-level=high --registry=https://registry.npmjs.org/` | Historical PASS, 0 vulnerabilities | That audit time only; no auto fix or new audit |
 | SQL policy/privilege/cascade shape and pre/post files | PASS, STATIC | Candidate review and read-only/digest contracts, not a PostgreSQL parser/runtime run |
 | Mock/repository/UI contracts | PASS | Fake SDK transport and component hook harness, not browser DOM |
 | Local fixture HTML/entry/TSX/CSS | Historical serving PASS | Checked in the preceding implementation session, not rerun here |
@@ -83,7 +217,7 @@ access. Observation deletion cascades comments in DB, not a frontend delete loop
 | Real Kakao | PARTIAL, inherited | Provider unchanged; regression tests pass, no live map action |
 
 Previous 208 tests/typecheck/build/audit belong to the implementation session;
-they are not substituted for this run. Current build reports a non-fatal mixed
+the 213-test readiness session followed it. That readiness build reported a non-fatal mixed
 static/dynamic auth-provider import warning and plugin timing notice, not a failure.
 The dynamic auth import in mock deletion delays lookup and is not claimed as a
 separate bundle optimization. No dependency/config change to suppress warnings.
@@ -127,6 +261,10 @@ Supabase Dashboard SQL Editor yourself. Use each whole linked file without editi
 the migration body. The pre/post files read only system catalogs and return booleans;
 they do not return observations, comments, identities, connection values or paths.
 Migration files contain their own transaction; verification files are separate reads.
+
+**Current target is paused before this sequence. First follow the one-time 0014
+order above, then return here.** The 0014 file is the single REVOKE statement;
+unlike 0012/0013, it does not add transaction wrapper commands.
 
 1. Run [0012 pre-apply](sql-checks/0012-pre-apply.sql).
 2. Confirm **every result is true**. It checks table/RLS, reviewed admin helper,
@@ -191,7 +329,7 @@ authorized live smoke, request Preview integration separately. No push/deploymen
 or old Phase 28 approval is reused for these schema/write changes. Deployment before
 migrations would produce comment/delete errors and is not an acceptable release plan.
 
-## Change Boundary
+## Previous Change Boundary At 23d634a
 
 This follow-up changes only unapplied 0012, four matching deletion guards, focused
 tests, four read-only SQL check files and four readiness documents. The initial
@@ -204,7 +342,7 @@ are not a guarantee against every possible secret. No JSON/TOML settings or Deno
 code changed; no additional parser/Deno rerun is needed. Docker/WSL/Supabase local
 stack was not started. Local normal commits only, no amend or self-hash edits.
 
-**한국어:** 삭제 범위와 이미지 정리 한계를 확정했고 수동 적용 준비를 마쳤습니다.
-0012의 관리자 권한도 승인된 관찰로 제한했습니다. 위 8단계에서 검사 결과를 하나씩
-확인하세요. 실제 DB는 그대로이며, 적용 후 별도 승인한 테스트 기록으로 권한·댓글을
-검증해야 합니다. 실제 이미지 삭제, push와 배포는 이번 작업에서 하지 않습니다.
+**한국어:** 현재는 0012 사전 검사에서 멈춘 상태입니다. 기본 권한에 따른 재발을 막기
+위해 0014에 함수 하나의 anon 권한 회수만 남겼습니다. 전체 설치 순서는 0012, 0013,
+0014지만, 현재 DB에서는 0014 검사·수동 보정·재검사 후 기존 0012 사전 검사로 돌아갑니다.
+아직 어느 migration도 원격 적용하지 않았으며, 앱 코드나 전역 기본 권한도 바꾸지 않았습니다.
