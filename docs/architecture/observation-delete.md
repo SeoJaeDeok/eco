@@ -6,28 +6,36 @@
 Stacked on Phase 28 `2b2ce5a`, not on main (`a3887a7`). No remote SQL, real
 observation deletion, Storage mutation, push or deployment was performed.
 
-Public detail offers confirmation to the signed-in owner or admin. Anonymous
-and non-owner users do not receive that control. The hidden admin route can
-switch its existing pending list to the existing all-status repository query.
-It delegates deletion to `AdminObservationRepository.deleteObservationAsAdmin`.
-This does not expose an admin link in Navbar or replace backend authorization.
+**Phase 29 MVP deletion scope = approved observations visible through
+the current public observation path**
 
-## Authorization And An Explicit Limit
+The user confirmed this scope after `77a394e`. Owners may delete their own approved
+observations; admins may delete any approved observation. Anonymous and authenticated
+non-owner users cannot delete. Owner pending/rejected deletion is **deferred, not a
+bug or an unresolved blocker**: private owner SELECT and its UI need a later design.
+No private owner list, broader public SELECT or trusted delete RPC is introduced.
+
+The existing hidden admin all-status review can still read/moderate records, but
+only approved records expose deletion. Its deletion delegates to
+`AdminObservationRepository.deleteObservationAsAdmin`; no new Navbar/admin route.
+
+## Final Authorization And Candidate Correction
 
 - Existing owner identity: `observations.observer_id`, referencing `profiles.id`.
 - Existing admin authority: `public.is_admin()`, backed by `profiles.role`.
-- `0001` already contains an admin DELETE policy; later migrations revoke the
-  authenticated table DELETE grant. New `0012` restores that grant and adds
-  owner DELETE, without changing existing SELECT/UPDATE policies or columns.
-- **Public owner deletion currently reaches approved observations only.**
-  Existing SELECT RLS does not expose an owner's pending/rejected rows. Ordinary
-  Supabase DELETE is constrained by SELECT visibility; an owner DELETE policy
-  alone does not make those hidden rows accessible.
-- Admin SELECT already reaches all statuses, so admin deletion is not restricted
-  to approved rows. Anonymous DELETE remains ungranted; RLS denies non-owners.
-- Supporting owner deletion of hidden rows needs a separately agreed narrow
-  database path. No owner SELECT widening or new delete RPC was silently added.
-  This scope question remains open, not an implementation PASS for every owner row.
+- `0001` contains an all-status admin DELETE policy; `0003/0004` revoke the table
+  grant. Restoring the grant in the original 0012 would enable all-status admin
+  deletion, which conflicts with the newly confirmed MVP. This is a real scope/
+  authorization mismatch, not a stylistic migration rewrite.
+- The **unapplied 0012 candidate is revised in `62c57c0`, after `77a394e`**: owner policy now
+  explicitly requires approved; `ALTER POLICY` narrows the existing admin DELETE
+  policy to approved using the same `public.is_admin()`. SELECT/UPDATE stay intact.
+  No 0014, new RPC, admin helper, Storage grant or permission expansion.
+- Supabase DELETE additionally filters `status=approved`; mock rejects other
+  statuses and public/admin deletion controls follow the same condition.
+- 0013 and 0001~0011 are byte-for-byte unchanged. Use the current final 0012 file,
+  not its earlier `4e4f9eb`/`77a394e` revision. Anonymous DELETE remains ungranted;
+  the only DELETE policies are approved owner and approved admin, protecting non-owners.
 
 The SELECT dependency follows the [Supabase delete reference](https://supabase.com/docs/reference/javascript/delete).
 RLS grants/policies remain subject to actual database verification after manual application.
@@ -36,7 +44,7 @@ RLS grants/policies remain subject to actual database verification after manual 
 
 `ObservationRepository.deleteObservation(id)` returns only
 `imageCleanup = not-needed / removed / unconfirmed`. Supabase requires an existing
-user session, deletes one ID, and requests only `id,image_path,observer_id` from
+user session, deletes one approved ID, and requests only `id,image_path,observer_id` from
 the deleted row. Missing/denied rows do not trigger Storage cleanup. No new login.
 
 After DB success, `cleanupDeletedObservationImage` accepts only the returned
@@ -55,6 +63,17 @@ widening, service-role client, Edge Function or automatic orphan retry was added
 Previously issued signed URLs can remain usable until expiry. Operators need a
 separately reviewed orphan cleanup process; do not retain sensitive paths in logs.
 
+Accepted operational boundary (not a blocker for this MVP migration readiness):
+- owner/admin observation row deletion: supported for the approved MVP;
+- image cleanup: best-effort;
+- cleanup permission failure can leave an orphan object;
+- observation deletion remains successful;
+- full Storage cleanup authorization is a later operational hardening task.
+
+File deletion must use Storage API, not direct SQL deletion of `storage.objects`
+metadata. No such SQL or new cleanup permission is included, consistent with the
+[Supabase Storage deletion guidance](https://supabase.com/docs/guides/storage/management/delete-objects).
+
 `DeleteConfirmation` requires a second click, guards duplicate submissions and
 offers safe error retry. App closes the deleted detail, removes the record from
 the loaded collection and increments its existing observation revision. This
@@ -72,55 +91,39 @@ without mutating bundled samples; listeners cascade its in-memory comments.
 
 **Full executable candidate:** [0012_observation_owner_delete.sql](../../supabase/migrations/0012_observation_owner_delete.sql).
 Read the entire linked file; it is the sole migration body, not an excerpt.
-No existing migration was edited. Apply only after separate review/approval,
-backup/restore planning and checking the live policy definitions for drift.
+0012 is remote **NOT_APPLIED**; only this unapplied candidate was corrected.
+Existing 0001~0011 and the comments candidate 0013 are unchanged. Check the actual
+target's boolean preconditions and preserve recovery information before applying.
 
 ### Pre-Apply Read-Only SQL (Not Run)
 
-These checks describe the reviewed baseline. Every boolean should be `true`;
-otherwise stop and inspect the difference, rather than replacing existing policy.
-
-```sql
-select
-  to_regprocedure('public.is_admin()') is not null as admin_helper_exists,
-  exists (select 1 from pg_class where oid = 'public.observations'::regclass
-          and relrowsecurity) as observation_rls_enabled,
-  not has_table_privilege('anon', 'public.observations', 'DELETE') as anon_delete_denied,
-  not has_table_privilege('authenticated', 'public.observations', 'DELETE') as baseline_delete_ungranted,
-  exists (select 1 from pg_policies where schemaname = 'public'
-          and tablename = 'observations' and cmd = 'DELETE'
-          and qual like '%is_admin%') as existing_admin_delete_policy,
-  not exists (select 1 from pg_policies where schemaname = 'public'
-          and tablename = 'observations'
-          and policyname = 'Owners can delete own observations') as new_policy_absent;
-```
+Execute the entire [0012-pre-apply.sql](sql-checks/0012-pre-apply.sql). It checks
+table/RLS, role bypass flags, the reviewed admin helper body/privilege, exact public
+SELECT and baseline admin DELETE definitions, absence of extra SELECT/DELETE/ALL
+policies, owner-policy name availability and the revoked DELETE baseline. These
+objects/grants indicate the candidate has not already been applied; SQL Editor
+manual application is not inferred from a migration-history filename alone.
+All booleans must be `true`; false/null/error means stop, not retry the migration.
 
 ### Post-Apply Read-Only SQL (Not Run)
 
-Expected all `true`. Catalog checks are **not** live owner/non-owner/anon RLS tests.
-
-```sql
-select
-  has_table_privilege('authenticated', 'public.observations', 'DELETE') as delete_granted,
-  not has_table_privilege('anon', 'public.observations', 'DELETE') as anon_still_denied,
-  exists (select 1 from pg_class where oid = 'public.observations'::regclass
-          and relrowsecurity) as rls_still_enabled,
-  exists (select 1 from pg_policies where schemaname = 'public'
-          and tablename = 'observations' and cmd = 'DELETE'
-          and policyname = 'Owners can delete own observations'
-          and qual like '%observer_id%' and qual like '%auth.uid%') as owner_delete_present,
-  exists (select 1 from pg_policies where schemaname = 'public'
-          and tablename = 'observations' and cmd = 'DELETE'
-          and qual like '%is_admin%') as admin_delete_preserved;
-```
+Execute [0012-post-apply.sql](sql-checks/0012-post-apply.sql). Expect all `true`:
+authenticated DELETE, anon denial, exact approved-and-owner/admin expressions,
+no third DELETE/ALL policy, unchanged approved public SELECT and owner/admin UPDATE.
+This checks non-owner protection structurally, not by deleting a real row.
+Expression comparisons normalize deparser whitespace/parentheses/text casts; any
+unexpected definition fails closed. A formatting/version false result needs review,
+not automatic policy alteration. Catalog checks are **not** live role-session tests.
 
 ### Rollback Concept
 
-Revoking the newly restored DELETE grant and removing only the new owner policy
-can disable the feature, but cannot restore deleted observations, cascaded comments
-or objects. Preserve the pre-apply privilege/policy inventory and backups first.
-Exact rollback SQL and data restoration procedures require a separate review;
-none was executed or represented as a tested recovery plan.
+**exact rollback SQL not documented**. Concepts only: disable the newly restored
+DELETE grant, remove the new owner policy and review restoration of the previous
+admin DELETE definition. None restores deleted observations, comments or objects.
+Preserve baseline privileges/policies and recovery data. No executable rollback
+is invented or run. The user accepts this documented limitation for readiness;
+it alone does not block manual application preparation. Rollback execution would
+still require an exact reviewed plan and separate approval.
 
 ## Verification
 
@@ -131,6 +134,7 @@ search retention, admin repository delegation, safe cleanup and tree refresh.
 SQL is checked as a candidate, not executed against PostgreSQL. Shared DB deletion,
 real Storage removal and real browser interaction remain NOT_RUN/PARTIAL.
 
-**한국어:** 삭제 버튼, 재확인, 목록·지도·요약 갱신을 구현했습니다. 실제 DB 적용과
-삭제 실험은 하지 않았습니다. 작성자의 비공개 기록 삭제 범위와 이미지 파일의
-실제 정리 권한은 별도 확인이 필요합니다. 관찰 삭제 성공과 파일 삭제 성공은 다릅니다.
+**한국어:** 이번 삭제 범위는 승인된 공개 관찰로 확정됐습니다. 작성자의 비공개
+기록 삭제는 후속 기능이며 버그가 아닙니다. 관리자도 이번에는 approved만 삭제하도록
+0012와 버튼/조회 조건을 제한했습니다. 파일 정리 실패가 관찰 삭제 성공을 취소하지
+않습니다. 실제 DB 적용과 삭제 실험은 하지 않았습니다.

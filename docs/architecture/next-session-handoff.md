@@ -4,46 +4,69 @@
 
 This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current State: Phase 29 And 32 Local Fast-Track Candidate
+## Current State: Phase 29 And 32 Manual Migration Readiness
 
 - 2026-10-05. Branch `feature/phase-29-32-observation-delete-comments-fast-track`
   starts from Phase 28 `2b2ce5a`. Main/origin/main remain `a3887a7`; prior features
   and backups are preserved. This branch includes Phase 28 + 29 + 32, not 30/31.
-- Implementation commit: `4e4f9eb feat: add observation deletion and identification comments`.
-  The following documentation commit does not change that tested application code.
+- Initial implementation: `4e4f9eb`; entry documentation HEAD: `77a394e`.
+  Approved-only code/migration correction: `62c57c0`.
+  The current follow-up changes the unapplied 0012 and four matching deletion guards
+  to the confirmed approved-only scope. It is not documentation-only. Final normal
+  commit hashes are reported after creation; no amend or self-hash loop.
+- **Phase 29 MVP deletion scope = approved observations visible through the current public observation path**.
+  Owner may delete own approved observations; admin any approved observations.
+  Non-owner/anon cannot delete. Owner pending/rejected deletion is **deferred, not
+  a bug or unresolved blocker**; no private owner SELECT, own-record page or RPC.
 - Local observation delete: owner/admin confirmation; DB-first trusted-path
   best-effort image cleanup; detail closes and list/map/summary/tree refresh without
-  reload. Admin reuses all-status query; public pending/rejected protection stays.
+  reload. Admin all-status review remains, but deletion controls/queries require
+  approved. Public pending/rejected protection stays.
 - New comments repository/provider/detail UI: approved-parent public read, logged-in
   create, own/admin confirmed delete, comment/identification kinds, 1000-character
   plain text, safe nickname, 20-row more, independent errors and stale response guards.
   Identification never changes official taxonomy. Mock cascade is memory-only.
-- New **unapplied candidates** `0012_observation_owner_delete.sql` and
-  `0013_observation_comments.sql`; existing migrations unchanged. No SQL, actual
-  observation/comment/account writes, package/settings changes, push or deployment.
-- Permission limit: owner pending/rejected rows are hidden by preserved SELECT RLS.
-  Public owner deletion therefore reaches approved records only. Scope question
-  remains unanswered; do not silently widen SELECT or add a delete RPC. Admin all-
-  status deletion is supported. Storage object DELETE policies are absent for both
-  roles; cleanup may leave orphans with a safe warning. No frontend service-role.
-- Fresh automated run: **208 Node tests PASS**, typecheck/build PASS, dev-inclusive
-  audit 0 vulnerabilities. Candidate SQL checks are static; live RLS/trigger/cascade
-  and real Storage deletion are NOT_RUN. Prior 174 tests belong to Phase 28 history.
-- Actual detail fixture is served at
+- Both candidates are remote **NOT_APPLIED**. Original 0012 would restore the grant
+  for 0001's all-status admin DELETE policy, conflicting with the confirmed scope.
+  Current 0012 explicitly requires approved for owner and admin via the existing
+  `public.is_admin()`. SELECT/UPDATE are unchanged. Use this final file, not the old
+  revision. **0001~0011 and 0013 are unchanged**, no 0014 added.
+- Storage DELETE policies remain absent. Cleanup may leave an orphan with a safe
+  warning; observation row deletion remains successful. This accepted best-effort
+  limit does not block MVP migration preparation. Full cleanup authorization is
+  later hardening. No Storage RLS/Edge Function/service-role or SQL object deletion.
+- Fresh readiness run: **213 Node tests PASS**, typecheck/build PASS, dev-inclusive
+  audit 0 vulnerabilities at this run. Previous 208/174 results are historical.
+  New tests cover non-approved denial and read-only pre/post SQL contracts. SQL
+  syntax/definition review is STATIC, not an executed PostgreSQL parser/runtime.
+  Live RLS/trigger/cascade and actual Storage deletion remain **NOT_RUN**.
+- The preceding implementation session served the actual detail fixture at
   `http://127.0.0.1:3000/tests/fixtures/observation-community.html`, isolated 27 comments
-  and role selector; no real login/writes. HTML/proxy/modules/CSS checked. Browser
-  tool failed at initialization, so visual/keyboard/layout remains PARTIAL. Existing
-  Phase 28 user PASS is not promoted to this modified app's live PASS.
+  and role selector; no real login/writes. Its HTML/proxy/modules/CSS checks are
+  historical, not repeated now. Browser initialization failed then, so visual/
+  keyboard/layout remains PARTIAL. Phase 28 user PASS is not this modified app's PASS.
 - Read [combined readiness](phase-29-32-fast-track-readiness.md),
   [deletion](observation-delete.md) and [comments](observation-comments-identification.md)
-  for full candidate links, pre/post SQL, rollback concepts and manual test steps.
-- Next: decide documented permission boundary, review migration/rollback, operator
-  manual apply under separate approval, authorized live smoke, then Preview. No
-  Phase archive, Verified status or automatic next feature. Local commits only.
+  for the full current candidates and four catalog-only boolean pre/post SQL files.
+  **exact rollback SQL not documented** for either migration. Concepts only; this
+  disclosed absence alone does not block readiness, but no improvised rollback.
+- Next exact order: 0012 precheck -> all true -> full 0012 -> 0012 postcheck;
+  then 0013 precheck -> all true -> full 0013 -> 0013 postcheck. On false/null/error,
+  stop; 0012 failure means no 0013. Do not repeat migration. Request only boolean
+  names/results or safe error codes, not rows/identities/configuration.
+- After both succeed, separately approved live smoke may use dedicated disposable
+  approved observations/comments. Never delete existing real user observations.
+  Start image-free; creating smoke records/admin targets and live image deletion
+  need separate explicit approval. Check role denial, comment kinds/delete/cascade,
+  unchanged taxonomy, list/map/tree/summary refresh and pagination preservation.
+- No SQL, observation/comment/account writes, package/settings changes, push,
+  merge or deployment in this task. Phase 30/31 and new features stay unimplemented.
+  No Phase archive or Verified status. Manual apply readiness is not live success.
 
-**한국어:** Phase 28 위에 삭제·댓글 기능을 함께 구현했습니다. 실제 DB 적용이나
-삭제·댓글 생성은 하지 않았습니다. 작성자의 비공개 기록 삭제와 이미지 정리 권한은
-별도 확인이 필요하며, 로컬 검사 통과를 실제 운영 검증 완료로 기록하지 않습니다.
+**한국어:** 삭제는 작성자 본인 또는 관리자가 승인된 관찰에만 할 수 있도록 확정했고,
+0012 후보와 앱 조건을 맞췄습니다. 0013은 그대로입니다. 이미지 정리 실패 가능성은
+허용된 제한이며 삭제 성공을 취소하지 않습니다. 사전 검사부터 위 순서대로 직접
+적용한 뒤 별도 승인한 테스트 자료로 실제 권한 검증을 진행하면 됩니다.
 
 ## Previous State: Phase 28 API And Preview Evidence Consolidated
 

@@ -4,10 +4,14 @@
 
 2026-10-05: implemented locally on the Phase 28 + 29 + 32 stacked branch.
 Migration candidate only; no shared DB comments or accounts created.
+Readiness follow-up after `77a394e`: 0013 is unchanged and remote **NOT_APPLIED**.
+Phase 29 now deletes only approved observations; its pending/rejected owner scope
+is deferred, without changing the comments permission model.
 
 `comment` is a general comment; `identification` is a reference opinion, not an
-official identification. Neither changes scientific name, taxon_id, confidence,
-match type or taxonomy. No resolver/GBIF/cache access was added. Replies, edits,
+official identification. Neither changes reported_scientific_name, taxon_id,
+taxonomy_verified_at, taxonomy confidence/match type or taxonomy itself.
+No resolver/GBIF/cache access was added. Replies, edits,
 likes, notifications, attachments, voting, reports, search and realtime are out
 of scope. Phase 30/31 are not implemented.
 
@@ -77,60 +81,38 @@ It does not alter existing observations/Storage/taxonomy policies or existing ro
 
 ### Pre-Apply Read-Only SQL (Not Run)
 
-Expected all `true`; inspect drift instead of overwriting objects if false.
-
-```sql
-select
-  to_regclass('public.observation_comments') is null as new_table_absent,
-  to_regprocedure('public.prepare_observation_comment()') is null as new_trigger_function_absent,
-  to_regclass('public.observations') is not null as observations_exist,
-  to_regclass('public.profiles') is not null as profiles_exist,
-  to_regprocedure('public.is_admin()') is not null as existing_admin_helper,
-  exists (select 1 from information_schema.columns where table_schema = 'public'
-          and table_name = 'profiles' and column_name = 'display_name') as nickname_column_exists;
-```
+Only after all 0012 post-checks pass, execute the entire
+[0013-pre-apply.sql](sql-checks/0013-pre-apply.sql). It checks observations/profiles
+RLS and keys, the existing auth.users/profile relationship, auth.uid, UUID default,
+nickname column/admin helper, previous 0012 metadata and comments table/type/function/
+index name availability. All booleans must be `true`. Already-present objects,
+false/null or an error mean stop and inspect; do not overwrite or rerun migration.
 
 ### Post-Apply Read-Only SQL (Not Run)
 
-Expected all `true`. These prove catalog/grant shape, not end-to-end RLS behavior.
+Execute the entire [0013-post-apply.sql](sql-checks/0013-post-apply.sql). Expected
+all `true`: seven columns/types/nullability/defaults, FKs and delete actions, exact
+kind/body CHECKs, valid ordered indexes, exact roles/expressions of all four
+policies, no UPDATE/ALL/extra policies, effective and direct table/column privileges,
+identity-spoof exclusion and the actual enabled author/trim/nickname trigger body.
+The trigger-body digest is derived from current 0013 with CRLF normalized to LF;
+it detects definition drift, not cryptographic authenticity. Do not reformat the
+migration body before applying. No function definition or row data is returned.
 
-```sql
-select
-  exists (select 1 from pg_class where oid = 'public.observation_comments'::regclass
-          and relrowsecurity) as rls_enabled,
-  has_table_privilege('anon', 'public.observation_comments', 'SELECT') as public_select_granted,
-  not has_table_privilege('anon', 'public.observation_comments', 'INSERT') as anon_insert_denied,
-  not has_table_privilege('anon', 'public.observation_comments', 'DELETE') as anon_delete_denied,
-  not has_table_privilege('authenticated', 'public.observation_comments', 'UPDATE') as update_denied,
-  has_column_privilege('authenticated', 'public.observation_comments', 'body', 'INSERT') as body_insert_granted,
-  not has_column_privilege('authenticated', 'public.observation_comments', 'author_id', 'INSERT') as author_spoof_ungranted,
-  not has_column_privilege('authenticated', 'public.observation_comments', 'author_display_name', 'INSERT') as name_spoof_ungranted,
-  has_table_privilege('authenticated', 'public.observation_comments', 'DELETE') as delete_granted,
-  exists (select 1 from pg_constraint where conrelid = 'public.observation_comments'::regclass
-          and confrelid = 'public.observations'::regclass and contype = 'f'
-          and confdeltype = 'c') as observation_cascade,
-  exists (select 1 from pg_constraint where conrelid = 'public.observation_comments'::regclass
-          and confrelid = 'public.profiles'::regclass and contype = 'f'
-          and confdeltype = 'n') as removed_author_nullable,
-  exists (select 1 from pg_trigger where tgrelid = 'public.observation_comments'::regclass
-          and tgname = 'observation_comments_prepare' and not tgisinternal
-          and tgenabled <> 'D') as author_guard_enabled,
-  to_regclass('public.observation_comments_observation_created_id_idx') is not null as page_index_exists;
-```
-
-Review all four policy definitions and both CHECK constraints before application;
-do not infer their correctness from a policy name alone. In a separately approved
-test environment, verify actual owner/non-owner/anon/admin sessions, denied spoof
-payloads, blank/overlong/kind rejection, approved-only reads and cascade. No such
-database writes were executed in this task.
+These are catalog/grant comparisons, not live RLS/cascade execution. PostgreSQL
+deparser differences or target drift can produce false results; report only the
+boolean name/result or safe error code. Do not modify policies to make checks green.
+Real role tests remain a separately approved smoke, never run in this task.
 
 ### Rollback Concept
 
 Stop comment writes/UI before changing schema. Preserve any comments and existing
 privileges first. Removing the new table/trigger/function would destroy comments;
-disabling application UI alone does not remove data. A reviewed exact rollback and
-backup/restore plan is still required; no automatic rollback SQL or execution here.
-Observation hard-delete cascade cannot be undone without recovery data.
+disabling application UI alone does not remove data. **exact rollback SQL not
+documented**; no executable rollback is invented or run. This disclosed absence
+does not itself block the user's requested application preparation. Actual rollback
+execution requires a separately reviewed exact plan. Hard-delete cascade cannot
+be undone without recovery data.
 
 ## Evidence And Remaining Work
 
