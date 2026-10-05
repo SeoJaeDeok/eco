@@ -75,6 +75,8 @@ export default function App({ authRefreshReturn = null }: AppProps) {
       ? AUTH_REFRESH_NOTICES[authRefreshReturn.notice] : null
   ));
   const imageRefreshRetryKeysRef = useRef(new Set<string>());
+  const deletingObservationIds = useRef(new Set<string>());
+  const [deletionNotice, setDeletionNotice] = useState<string | null>(null);
   // These screens retain their full-collection behavior. The list owns an independent page query.
   const needsObservationCollection = currentPage === 'home' || currentPage === 'intro' || currentPage === 'map';
   const needsPublicSummary = currentPage !== 'admin';
@@ -279,6 +281,25 @@ export default function App({ authRefreshReturn = null }: AppProps) {
     return updatedObservation;
   }, [publicAuthState.isAdmin]);
 
+  const handleObservationDeleted = useCallback((id: string) => {
+    setSelectedObservation((current) => current?.id === id ? null : current);
+    setObservations((current) => current.filter((observation) => observation.id !== id));
+    setObservationRevision((revision) => revision + 1);
+  }, []);
+
+  const handleDeleteObservation = useCallback(async (id: string) => {
+    if (deletingObservationIds.current.has(id)) return;
+    deletingObservationIds.current.add(id);
+    try {
+      const result = await activeObservationRepository.deleteObservation(id);
+      handleObservationDeleted(id);
+      setDeletionNotice(result.imageCleanup === 'unconfirmed'
+        ? '관찰은 삭제됐습니다. 이미지 파일 정리는 확인되지 않아 운영자 점검이 필요합니다.' : '관찰이 삭제됐습니다.');
+    } finally {
+      deletingObservationIds.current.delete(id);
+    }
+  }, [handleObservationDeleted]);
+
   const finishPublicAuth = useCallback((notice: AuthRefreshNotice | null = null) => {
     // Keep the dedicated admin route outside the public refresh workflow.
     const page = window.location.hash === ADMIN_HASH ? 'admin' : currentPage;
@@ -417,6 +438,9 @@ export default function App({ authRefreshReturn = null }: AppProps) {
       />
 
       <main className="relative z-10">
+        {deletionNotice && <div role="status" className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-xl border border-zinc-200 bg-white p-4 text-sm shadow-sm">
+          {deletionNotice}<button type="button" className="ml-3 underline focus-visible:outline-2" onClick={() => setDeletionNotice(null)}>닫기</button>
+        </div>}
         {isLoadingObservations && <p className="sr-only">관찰 데이터를 불러오는 중입니다.</p>}
         {needsObservationCollection && observationLoadError && (
           <div className="fixed left-1/2 top-24 z-50 -translate-x-1/2 border border-zinc-200 bg-white px-4 py-2 text-xs text-zinc-600 shadow-sm">
@@ -455,6 +479,7 @@ export default function App({ authRefreshReturn = null }: AppProps) {
           onNavigate={navigate}
           onSelectObservation={handleSelectObservation}
           onObservationCreated={handleObservationCreated}
+          onObservationDeleted={handleObservationDeleted}
           onPublicSignIn={handlePublicSignIn}
           onPublicSignUp={handlePublicSignUp}
         />
@@ -463,8 +488,12 @@ export default function App({ authRefreshReturn = null }: AppProps) {
       <AnimatePresence>
         {selectedObservation && (
           <ObservationDetail
+            key={selectedObservation.id}
             observation={selectedObservation}
             canEdit={canEditSelectedObservation}
+            authState={publicAuthState}
+            canDelete={Boolean(publicAuthState.user && (publicAuthState.isAdmin || selectedObservation.observerId === publicAuthState.user.id))}
+            onDeleteObservation={handleDeleteObservation}
             onClose={() => setSelectedObservation(null)}
             onUpdateObservation={handleObservationUpdated}
             onImageLoadError={handleSelectedObservationImageError}

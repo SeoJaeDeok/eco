@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AdminLoginForm } from './AdminLoginForm';
 import { AdminObservationReviewPanel } from './AdminObservationReviewPanel';
 import { AdminPendingList } from './AdminPendingList';
@@ -14,7 +14,9 @@ const createEmptySessionState = (): AuthSessionState => ({
   isAdmin: false,
 });
 
-export const AdminPage = () => {
+interface AdminPageProps { onObservationDeleted?: (id: string) => void; }
+
+export const AdminPage = ({ onObservationDeleted }: AdminPageProps) => {
   const [sessionState, setSessionState] = useState<AuthSessionState>(() => createEmptySessionState());
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -26,8 +28,13 @@ export const AdminPage = () => {
   const [pendingError, setPendingError] = useState<string | null>(null);
   const [actionInProgressId, setActionInProgressId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+  const listRequest = useRef(0);
+  useEffect(() => () => { listRequest.current++; }, []);
 
   const resetPendingState = () => {
+    listRequest.current++;
     setPendingObservations([]);
     setSelectedObservation(null);
     setPendingError(null);
@@ -36,11 +43,14 @@ export const AdminPage = () => {
   };
 
   const loadPendingObservations = useCallback(async () => {
+    const request = ++listRequest.current;
     try {
       setIsLoadingPending(true);
       setPendingError(null);
-      const nextPendingObservations = await activeAdminObservationRepository.listPendingObservations();
-
+      const nextPendingObservations = showAll
+        ? await activeAdminObservationRepository.listAllObservations()
+        : await activeAdminObservationRepository.listPendingObservations();
+      if (request !== listRequest.current) return;
       setPendingObservations(nextPendingObservations);
       setSelectedObservation((currentSelection) => {
         if (!currentSelection) {
@@ -52,13 +62,14 @@ export const AdminPage = () => {
           ?? null;
       });
     } catch {
+      if (request !== listRequest.current) return;
       setPendingObservations([]);
       setSelectedObservation(null);
-      setPendingError('Pending 기록을 불러오지 못했습니다. 관리자 권한 또는 RLS 정책을 확인해 주세요.');
+      setPendingError('관찰 기록을 불러오지 못했습니다. 관리자 권한 또는 RLS 정책을 확인해 주세요.');
     } finally {
-      setIsLoadingPending(false);
+      if (request === listRequest.current) setIsLoadingPending(false);
     }
-  }, []);
+  }, [showAll]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -184,9 +195,12 @@ export const AdminPage = () => {
 
         {!isCheckingSession && sessionState.isAdmin && (
           <div className="space-y-6">
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showAll} onChange={(event) => setShowAll(event.target.checked)} />전체 상태의 관찰</label>
+            {deleteNotice && <p role="status" className="text-sm text-zinc-600">{deleteNotice}</p>}
             <AdminSessionPanel email={sessionState.user?.email} isSigningOut={isSigningOut} onSignOut={handleSignOut} />
             <div className="grid gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)]">
               <AdminPendingList
+                showAll={showAll}
                 observations={pendingObservations}
                 selectedObservationId={selectedObservation?.id}
                 isLoading={isLoadingPending}
@@ -200,6 +214,18 @@ export const AdminPage = () => {
                 actionError={actionError}
                 onApprove={handleApproveObservation}
                 onReject={handleRejectObservation}
+                onDelete={async (observation) => {
+                  setActionInProgressId(observation.id);
+                  try {
+                    const result = await activeAdminObservationRepository.deleteObservationAsAdmin(observation.id);
+                    listRequest.current++;
+                    setSelectedObservation(null);
+                    setPendingObservations((items) => items.filter((item) => item.id !== observation.id));
+                    onObservationDeleted?.(observation.id);
+                    setDeleteNotice(result.imageCleanup === 'unconfirmed' ? '관찰은 삭제됐습니다. 이미지 파일 정리는 운영자 점검이 필요합니다.' : '관찰이 삭제됐습니다.');
+                    await loadPendingObservations();
+                  } finally { setActionInProgressId(null); }
+                }}
               />
             </div>
           </div>

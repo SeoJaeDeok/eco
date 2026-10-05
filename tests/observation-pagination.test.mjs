@@ -111,6 +111,7 @@ const makeRepository = ({ observations = createPaginationObservations(), interce
     './supabaseClient': { getSupabaseClient: () => client },
   });
   const repository = compile('src/repositories/supabase/supabaseObservationRepository.ts', {
+    './supabaseTaxonomyTreeRepository': { invalidateTaxonomyTreeCache() {} },
     '../../utils/observationPagination': pagination, './observationPageQuery': queryModule,
     '../../utils/observerDisplay': {}, '../../utils/observationStats': stats, './observationMappers': mappers,
     './supabaseClient': { getSupabaseClient: () => client },
@@ -203,7 +204,7 @@ test('actual mock summary excludes pending, rejected and unknown status without 
   const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } });
   runInNewContext(outputText, { exports, require(name) {
     const modules = { '../data/sampleObservations': { sampleObservations: rows }, '../utils/observationStats': stats,
-      '../utils/observationPagination': pagination };
+      '../utils/observationPagination': pagination, './mockObservationDeletion': { deletedMockObservationIds: new Set() } };
     assert.ok(modules[name]); return modules[name];
   } });
   assert.deepEqual(plain(await exports.mockObservationRepository.getPublicObservationSummary()), { observationCount: 2, uniqueSpeciesCount: 1 });

@@ -13,6 +13,10 @@ export interface PublicObservationSummary {
   uniqueSpeciesCount: number;
 }
 
+export interface ObservationDeleteResult {
+  imageCleanup: 'not-needed' | 'removed' | 'unconfirmed';
+}
+
 export interface ObservationRepository {
   getPublicObservationSummary(signal?: AbortSignal): Promise<PublicObservationSummary>;
   listPublicObservationsPage(query: ObservationPageQuery, signal?: AbortSignal): Promise<ObservationPage>;
@@ -22,4 +26,5 @@ export interface ObservationRepository {
   createObservation(input: CreateObservationInput): Promise<Observation>;
   createObservationWithVerifiedTaxonomy(input: VerifiedTaxonomyObservationInput): Promise<Observation>;
   updateOwnObservation(id: string, input: OwnerObservationUpdateInput): Promise<Observation>;
+  deleteObservation(id: string): Promise<ObservationDeleteResult>;
 }

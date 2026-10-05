@@ -8,6 +8,7 @@ interface AdminPendingListProps {
   errorMessage: string | null;
   onRefresh: () => void;
   onSelectObservation: (observation: Observation) => void;
+  showAll?: boolean;
 }
 
 export const AdminPendingList = ({
@@ -17,14 +18,15 @@ export const AdminPendingList = ({
   errorMessage,
   onRefresh,
   onSelectObservation,
+  showAll = false,
 }: AdminPendingListProps) => {
   return (
     <section className="border border-zinc-200 bg-white p-5 shadow-sm" id="admin-pending-list">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Pending queue</p>
-          <h2 className="mt-2 text-2xl font-serif text-zinc-950">승인 대기 기록</h2>
-          <p className="mt-2 text-xs leading-5 text-zinc-500">{observations.length} records waiting for review</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">{showAll ? 'Observation records' : 'Pending queue'}</p>
+          <h2 className="mt-2 text-2xl font-serif text-zinc-950">{showAll ? '전체 관찰 기록' : '승인 대기 기록'}</h2>
+          <p className="mt-2 text-xs leading-5 text-zinc-500">{observations.length} {showAll ? 'records' : 'records waiting for review'}</p>
         </div>
         <button
           type="button"
@@ -45,13 +47,13 @@ export const AdminPendingList = ({
 
       {isLoading && (
         <div className="border border-zinc-100 bg-zinc-50 p-4 text-sm text-zinc-500">
-          Pending 기록을 불러오는 중입니다.
+          {showAll ? '관찰 기록을 불러오는 중입니다.' : 'Pending 기록을 불러오는 중입니다.'}
         </div>
       )}
 
       {!isLoading && observations.length === 0 && (
         <div className="border border-zinc-100 bg-zinc-50 p-4 text-sm leading-6 text-zinc-500" id="admin-pending-empty">
-          현재 승인 대기 중인 관찰 기록이 없습니다.
+          {showAll ? '현재 관찰 기록이 없습니다.' : '현재 승인 대기 중인 관찰 기록이 없습니다.'}
         </div>
       )}
 

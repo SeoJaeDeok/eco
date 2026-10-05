@@ -128,6 +128,25 @@ export const removeUploadedObservationImage = async (
   return !error;
 };
 
+// Only the DELETE RETURNING row supplies these fields; UI paths are never accepted.
+export const cleanupDeletedObservationImage = async (
+  path: string | null,
+  ownerId: string | null,
+): Promise<'not-needed' | 'removed' | 'unconfirmed'> => {
+  if (!path) return 'not-needed';
+  const uuid = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+  const owned = new RegExp(`^observations/(${uuid})/${uuid}\\.(jpg|jpeg|png|webp)$`, 'i').exec(path);
+  const legacy = new RegExp(`^pending/${uuid}/${uuid}\\.(jpg|jpeg|png|webp)$`, 'i').test(path);
+  if ((!owned || !ownerId || owned[1].toLowerCase() !== ownerId.toLowerCase()) && !legacy) return 'unconfirmed';
+  try {
+    const { data, error } = await getSupabaseClient().storage.from(getObservationImageBucket()).remove([path]);
+    // RLS can hide rows and return an empty successful response. Do not call that cleanup success.
+    return !error && data?.length === 1 ? 'removed' : 'unconfirmed';
+  } catch {
+    return 'unconfirmed';
+  }
+};
+
 export const createObservationImageSignedUrl = async (
   path: string,
   expiresInSeconds = DEFAULT_SIGNED_URL_EXPIRES_IN_SECONDS,

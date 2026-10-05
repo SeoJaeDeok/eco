@@ -7,6 +7,8 @@ import {
 } from './observationMappers';
 import { resolveObservationImageSignedUrl } from './supabaseObservationImageStorage';
 import { getSupabaseClient } from './supabaseClient';
+import { supabaseAuthRepository } from './supabaseAuthRepository';
+import { supabaseObservationRepository } from './supabaseObservationRepository';
 
 const OBSERVATIONS_TABLE = 'observations';
 
@@ -39,6 +41,10 @@ const mapRequiredObservationRow = async (row: ObservationDbRow | null, message: 
 };
 
 export const supabaseAdminObservationRepository: AdminObservationRepository = {
+  async deleteObservationAsAdmin(id) {
+    if (!await supabaseAuthRepository.isCurrentUserAdmin()) throw new Error('Administrator required.');
+    return supabaseObservationRepository.deleteObservation(id);
+  },
   async listPendingObservations() {
     const { data, error } = await getSupabaseClient()
       .from(OBSERVATIONS_TABLE)

@@ -14,7 +14,9 @@ import {
   resolveObservationImageSignedUrl,
   uploadObservationImage,
   type UploadedObservationImage,
+  cleanupDeletedObservationImage,
 } from './supabaseObservationImageStorage';
+import { invalidateTaxonomyTreeCache } from './supabaseTaxonomyTreeRepository';
 import { getSupabaseClient } from './supabaseClient';
 import { buildObservationPageQuery } from './observationPageQuery';
 import { OBSERVATION_PAGE_SIZE, observationPageRange, observationTotalPages, validateObservationPageQuery } from '../../utils/observationPagination';
@@ -115,6 +117,16 @@ const getCurrentContributor = async () => {
 };
 
 export const supabaseObservationRepository: ObservationRepository = {
+  async deleteObservation(id) {
+    await requireCurrentUserId();
+    const { data, error } = await getSupabaseClient().from(OBSERVATIONS_TABLE)
+      .delete().eq('id', id).select('id,image_path,observer_id').maybeSingle();
+    if (error || !data || data.id !== id) throw new Error('Observation deletion failed or not allowed.');
+    invalidateTaxonomyTreeCache();
+    const imageCleanup = await cleanupDeletedObservationImage(data.image_path, data.observer_id);
+    if (imageCleanup === 'unconfirmed') console.warn('observation_delete_image_cleanup_unconfirmed');
+    return { imageCleanup };
+  },
   async getPublicObservationSummary(signal) {
     // Bound narrow-field reads independently of map/list rows and image signing.
     const batchSize = 500;

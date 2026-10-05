@@ -1,6 +1,7 @@
 import type { Observation } from '../../types';
 import { TaxonBadge } from '../TaxonBadge';
 import { ImageFrame } from '../ui/ImageFrame';
+import { DeleteConfirmation } from '../ui/DeleteConfirmation';
 
 interface AdminObservationReviewPanelProps {
   observation: Observation | null;
@@ -8,6 +9,7 @@ interface AdminObservationReviewPanelProps {
   actionError: string | null;
   onApprove: (observation: Observation) => void;
   onReject: (observation: Observation) => void;
+  onDelete: (observation: Observation) => Promise<void>;
 }
 
 export const AdminObservationReviewPanel = ({
@@ -16,6 +18,7 @@ export const AdminObservationReviewPanel = ({
   actionError,
   onApprove,
   onReject,
+  onDelete,
 }: AdminObservationReviewPanelProps) => {
   if (!observation) {
     return (
@@ -97,6 +100,9 @@ export const AdminObservationReviewPanel = ({
           {isActing ? '처리 중' : 'Reject'}
         </button>
       </div>
+      <DeleteConfirmation key={observation.id} label="관찰 삭제"
+        message="이 관찰과 연결된 댓글을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다."
+        disabled={isActing} onDelete={() => onDelete(observation)} />
     </section>
   );
 };

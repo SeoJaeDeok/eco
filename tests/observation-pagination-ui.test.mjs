@@ -39,6 +39,12 @@ const mount = async ({ initialPage = 'observations', pageRead, observations = cr
       return pageRead ? pageRead(query, signal, calls.pages.length) : pagination.paginateMockObservations(rows, query);
     },
     async getObservationById(id) { calls.details.push(id); return rows.find((row) => row.id === id) ?? null; },
+    async deleteObservation(id) {
+      const index = rows.findIndex((row) => row.id === id);
+      assert.ok(index >= 0);
+      rows.splice(index, 1);
+      return { imageCleanup: 'unconfirmed' };
+    },
     async updateOwnObservation(id, input) {
       calls.updates.push(id); const index = rows.findIndex((row) => row.id === id);
       rows[index] = { ...rows[index], ...input }; return rows[index];
@@ -214,6 +220,43 @@ test('App restored list requests a page and independent narrow summary, never fu
   await view.navigate('observations');
   assert.equal(view.calls.all, 1); assert.equal(view.calls.count, 0);
   assert.equal(view.calls.summary.length, 1);
+});
+
+test('observation deletion closes detail and refreshes page, map and independent summary without reload', async () => {
+  const rows = createPaginationObservations().slice(0, 21);
+  const view = await mount({ observations: rows, signedIn: true });
+  await view.click('다음 페이지');
+  view.grid().onSelectObservation(view.grid().observations[0]); await view.settle();
+  const detail = view.nodes((node) => node.type === 'detail')[0];
+  await detail.props.onDeleteObservation(detail.props.observation.id); await view.settle();
+  assert.equal(view.nodes((node) => node.type === 'detail').length, 0);
+  assert.equal(view.grid().observations.length, 20);
+  assert.equal(view.nodes((node) => node.type === 'navbar')[0].props.publicSummary.observationCount, 20);
+  assert.ok(view.calls.pages.length < 5, 'bounded page correction');
+  assert.equal(view.calls.windowScrolls.length, 0);
+  await view.navigate('map');
+  assert.equal(view.nodes((node) => node.type === 'map')[0].props.observations.length, 20);
+});
+
+test('App delete affordance follows signed-in owner/admin, never anonymous or another author', async () => {
+  for (const [signedIn, admin, owner, allowed] of [[false,false,false,false],[true,false,false,false],[true,false,true,true],[true,true,false,true]]) {
+    const rows = createPaginationObservations().slice(0, 1).map(row => ({...row, observerId: owner ? 'fixture-owner' : 'someone-else'}));
+    const view = await mount({ observations: rows, signedIn, admin });
+    view.grid().onSelectObservation(view.grid().observations[0]); await view.settle();
+    assert.equal(view.nodes(node => node.type === 'detail')[0].props.canDelete, allowed);
+    view.unmount();
+  }
+});
+
+test('deletion keeps a list search condition and late detail response cannot reopen closed detail', async () => {
+  const view = await mount({ signedIn: true });
+  await view.search('뒤 페이지 수국');
+  view.grid().onSelectObservation(view.grid().observations[0]);
+  await view.settle();
+  const detail = view.nodes(node => node.type === 'detail')[0];
+  await detail.props.onDeleteObservation(detail.props.observation.id); await view.settle();
+  assert.equal(view.calls.pages.at(-1).query.searchQuery, '뒤 페이지 수국');
+  assert.equal(view.nodes(node => node.type === 'detail').length, 0);
 });
 
 test('actual Navbar preserves global summary across routes, page two, filters and selected detail', async () => {

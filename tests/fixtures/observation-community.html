@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Eco local observation community fixture</title>
+  </head>
+  <body>
+    <p id="fixture-status" role="status">격리 테스트 화면을 불러오는 중입니다.</p>
+    <div id="root"></div>
+    <script type="module">
+      const status = document.getElementById('fixture-status');
+      const fail = () => { status.hidden = false; status.setAttribute('role', 'alert'); status.textContent = '격리 화면 초기화에 실패했습니다.'; };
+      import('./observation-community-browser.mjs').then(({ mountCommunityFixture }) => {
+        try { mountCommunityFixture(document.getElementById('root'), () => { status.hidden = true; }, fail); }
+        catch { fail(); }
+      }, fail);
+    </script>
+  </body>
+</html>

@@ -6,10 +6,18 @@ import { ObservationDetailHeader } from './observations/detail/ObservationDetail
 import { ObservationDetailImage } from './observations/detail/ObservationDetailImage';
 import { ObservationDetailInfo } from './observations/detail/ObservationDetailInfo';
 import { ObservationDetailLocation } from './observations/detail/ObservationDetailLocation';
+import { DeleteConfirmation } from './ui/DeleteConfirmation';
+import { ObservationComments } from './observations/detail/ObservationComments';
+import type { AuthSessionState } from '../repositories/authRepository';
+import type { CommentRepository } from '../repositories/commentRepository';
 
 interface ObservationDetailProps {
   observation: Observation;
   canEdit?: boolean;
+  canDelete?: boolean;
+  authState?: AuthSessionState;
+  commentRepository?: CommentRepository;
+  onDeleteObservation?: (id: string) => Promise<void>;
   onClose: () => void;
   onUpdateObservation?: (id: string, input: OwnerObservationUpdateInput) => Promise<Observation>;
   onImageLoadError?: (observation: Observation) => void;
@@ -18,6 +26,10 @@ interface ObservationDetailProps {
 export const ObservationDetail = ({
   observation,
   canEdit = false,
+  canDelete = false,
+  authState = { user: null, profile: null, isAdmin: false },
+  commentRepository,
+  onDeleteObservation,
   onClose,
   onUpdateObservation,
   onImageLoadError,
@@ -63,6 +75,9 @@ export const ObservationDetail = ({
           onClose={onClose}
           onStartEdit={() => setIsEditing(true)}
         />
+        {canDelete && onDeleteObservation && <DeleteConfirmation key={observation.id}
+          label="관찰 삭제" message="이 관찰 기록을 삭제하시겠습니까? 연결된 댓글도 삭제되며 복구할 수 없습니다."
+          disabled={isSubmittingEdit} onDelete={() => onDeleteObservation(observation.id)} />}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <ObservationDetailImage observation={observation} onImageLoadError={onImageLoadError} />
           <div className="text-left space-y-6">
@@ -85,6 +100,7 @@ export const ObservationDetail = ({
             )}
           </div>
         </div>
+        <ObservationComments key={observation.id} observationId={observation.id} authState={authState} repository={commentRepository} />
       </div>
     </motion.div>
   );

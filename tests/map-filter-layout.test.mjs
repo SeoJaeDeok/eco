@@ -37,6 +37,7 @@ const mountMap = async (fixture, overrides = {}) => {
   };
   const react = {
     useState: state,
+    useRef: (initial) => state(() => ({ current: initial }))[0],
     useId: () => state(() => `layout-test-${++nextId}`)[0],
     useMemo(factory, deps) {
       const index = current.cursor++;
@@ -162,6 +163,7 @@ const mountMap = async (fixture, overrides = {}) => {
       || node.props.tabIndex >= 0
     )),
     async updateObservations(next) { observations = next; render(); await settle(); },
+    async updateRevision(revision) { overrides.revision = revision; render(); await settle(); },
     async click(node) { node.props.onClick({ currentTarget: { focus() { focusPath = node.path; } } }); await settle(); },
     async search(value) { nodes((node) => node.type === 'input')[0].props.onChange({ target: { value } }); await settle(); },
     async selectYear(value) { nodes((node) => node.type === 'select')[0].props.onChange({ target: { value: String(value) } }); await settle(); },
@@ -616,6 +618,47 @@ test('month controls expose multi-select buttons with focus styles and a non-col
 
 const yearSelect = (view, includeHidden = false) => view.nodes((node) => node.type === 'select', includeHidden)[0];
 const yearValues = (view) => view.nodes((node) => node.type === 'option').map((node) => node.props.value);
+
+test('observation deletion revision refreshes loaded taxonomy while preserving dates and expanded branches', async () => {
+  const fixture = createMapMonthFixture();
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  await view.selectYear(2025);
+  await view.click(monthButton(view, 5));
+  await view.click(view.button('계Plantae'));
+  const before = { ...fixture.calls };
+  await view.updateObservations(fixture.observations.filter(row => row.id !== 'month-may-1'));
+  await view.updateRevision(1);
+  assert.equal(fixture.calls.roots, before.roots + 1);
+  assert.equal(fixture.calls.children, before.children + 6);
+  assert.equal(fixture.calls.selection, before.selection + 1);
+  assert.equal(yearSelect(view).props.value, 2025);
+  assert.equal(monthButton(view, 5).props['aria-pressed'], true);
+  assert.equal(view.button('Monthus 하위 분류 접기').props['aria-expanded'], true);
+  assert.ok(!ids(view).includes('month-may-1'));
+  await assertResultsAgree(view);
+  assert.equal(view.mapMounts, 1);
+  assert.equal(view.mapUnmounts, 0);
+});
+
+test('failed post-delete tree refresh retries loaded children without collapsing branches', async () => {
+  const fixture = createMapMonthFixture();
+  const view = await mountMap(fixture);
+  await openPath(view, fixture);
+  const getChildren = fixture.repository.getChildren;
+  let fail = true;
+  fixture.repository.getChildren = async (parent) => {
+    if (fail) throw new Error('temporary');
+    return getChildren(parent);
+  };
+  await view.updateRevision(1);
+  assert.ok(view.button('다시'));
+  fail = false;
+  await view.click(view.button('다시'));
+  assert.equal(view.nodes(node => node.type === 'button' && view.text(node) === '다시').length, 0);
+  assert.equal(view.button('Monthus 하위 분류 접기').props['aria-expanded'], true);
+  assert.equal(fixture.calls.children, 12);
+});
 
 test('ordinary mock repository feeds visible year options into the actual MapPage', async () => {
   const observations = await mockObservationRepository.listObservations();

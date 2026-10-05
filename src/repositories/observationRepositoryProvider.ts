@@ -15,6 +15,9 @@ const loadSupabaseObservationRepository = async (): Promise<ObservationRepositor
 };
 
 const lazySupabaseObservationRepository: ObservationRepository = {
+  async deleteObservation(id) {
+    return (await loadSupabaseObservationRepository()).deleteObservation(id);
+  },
   async getPublicObservationSummary(signal) {
     const repository = await loadSupabaseObservationRepository();
     return repository.getPublicObservationSummary(signal);

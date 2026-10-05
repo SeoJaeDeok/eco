@@ -6,6 +6,7 @@ import {
   type TaxonomyTreeObservationSummary,
 } from '../features/taxonomy/taxonomyTree';
 import type { TaxonomyTreeRepository } from './taxonomyTreeRepository';
+import { deletedMockObservationIds } from './mockObservationDeletion';
 
 const MOCK_SOURCE = 'GBIF Species Match API v2';
 const MOCK_CHECKLIST = 'mock-col-xr';
@@ -238,16 +239,18 @@ export const mockTaxonomyTreeObservationSummaries: readonly TaxonomyTreeObservat
   },
 ];
 
+const activeSummaries = () => mockTaxonomyTreeObservationSummaries.filter((row) => !deletedMockObservationIds.has(row.observationId));
+
 export const mockTaxonomyTreeRepository: TaxonomyTreeRepository = {
   async getRootNodes() {
-    return getTaxonomyTreeRootNodes(mockTaxonomyTreeObservationSummaries);
+    return getTaxonomyTreeRootNodes(activeSummaries());
   },
 
   async getChildren(parent) {
-    return getTaxonomyTreeChildren(mockTaxonomyTreeObservationSummaries, parent);
+    return getTaxonomyTreeChildren(activeSummaries(), parent);
   },
 
   async getObservationIdsForSelection(selection) {
-    return getTaxonomyTreeObservationIdsForSelection(mockTaxonomyTreeObservationSummaries, selection);
+    return getTaxonomyTreeObservationIdsForSelection(activeSummaries(), selection);
   },
 };

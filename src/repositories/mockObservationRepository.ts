@@ -3,6 +3,7 @@ import type { Observation, OwnerObservationUpdateInput } from '../types';
 import type { ObservationRepository } from './observationRepository';
 import { countUniqueSpecies } from '../utils/observationStats';
 import { paginateMockObservations } from '../utils/observationPagination';
+import { deletedMockObservationIds, markMockObservationDeleted } from './mockObservationDeletion';
 
 const updatedObservationsById = new Map<string, Observation>();
 
@@ -20,11 +21,21 @@ const mergeObservationUpdate = (
   coords: input.coords,
 });
 
-const getMockObservations = () => sampleObservations.map((observation) => (
+const getMockObservations = () => sampleObservations.filter((observation) => !deletedMockObservationIds.has(observation.id)).map((observation) => (
   updatedObservationsById.get(observation.id) ?? observation
 ));
 
 export const mockObservationRepository: ObservationRepository = {
+  async deleteObservation(id) {
+    const { activeAuthRepository } = await import('./authRepositoryProvider');
+    const session = await activeAuthRepository.getSessionState();
+    const observation = getMockObservations().find((item) => item.id === id);
+    if (!session.user || !observation || (!session.isAdmin && observation.observerId !== session.user.id)) {
+      throw new Error('Observation deletion not allowed.');
+    }
+    markMockObservationDeleted(id);
+    return { imageCleanup: 'not-needed' };
+  },
   async getPublicObservationSummary(signal) {
     signal?.throwIfAborted();
     const observations = getMockObservations().filter((observation) => observation.status === 'approved');

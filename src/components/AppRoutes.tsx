@@ -27,6 +27,7 @@ interface AppRoutesProps {
   onNavigate: (page: PageId) => void;
   onSelectObservation: (obs: Observation) => void;
   onObservationCreated: (observation: Observation) => void;
+  onObservationDeleted?: (id: string) => void;
   onPublicSignIn: (email: string, password: string) => Promise<boolean>;
   onPublicSignUp: (email: string, password: string, displayName: string) => Promise<PublicSignUpResult>;
 }
@@ -45,6 +46,7 @@ export const AppRoutes = ({
   onNavigate,
   onSelectObservation,
   onObservationCreated,
+  onObservationDeleted,
   onPublicSignIn,
   onPublicSignUp,
 }: AppRoutesProps) => {
@@ -69,7 +71,7 @@ export const AppRoutes = ({
       )}
       {currentPage === 'map' && (
         <motion.div key="map" {...PAGE_FADE}>
-          <MapPage observations={observations} onSelect={onSelectObservation} />
+          <MapPage observations={observations} onSelect={onSelectObservation} revision={observationRevision} />
         </motion.div>
       )}
       {currentPage === 'upload' && (
@@ -94,7 +96,7 @@ export const AppRoutes = ({
       {currentPage === 'admin' && (
         <motion.div key="admin" {...PAGE_FADE}>
           <Suspense fallback={<div className="min-h-screen bg-white px-6 pt-32 text-sm text-zinc-500">관리자 화면을 불러오는 중입니다.</div>}>
-            <AdminPage />
+            <AdminPage onObservationDeleted={onObservationDeleted} />
           </Suspense>
         </motion.div>
       )}

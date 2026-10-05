@@ -6,6 +6,9 @@ const loadSupabaseAdminObservationRepository = async (): Promise<AdminObservatio
 };
 
 export const activeAdminObservationRepository: AdminObservationRepository = {
+  async deleteObservationAsAdmin(id) {
+    return (await loadSupabaseAdminObservationRepository()).deleteObservationAsAdmin(id);
+  },
   async listPendingObservations() {
     const repository = await loadSupabaseAdminObservationRepository();
     return repository.listPendingObservations();

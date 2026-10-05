@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, Loader2, RotateCw, X } from 'lucide-react';
 import type { TaxonomyTreeNode, TaxonomyTreeSelection } from '../../features/taxonomy/taxonomyTree';
 import type { TaxonomyTreeRepository } from '../../repositories/taxonomyTreeRepository';
@@ -7,6 +7,7 @@ interface TaxonomyTreePanelProps {
   repository: TaxonomyTreeRepository;
   selectedNode: TaxonomyTreeSelection | null;
   onSelectNode: (node: TaxonomyTreeNode) => void;
+  revision?: number;
 }
 
 interface TaxonomyFilterStatusProps {
@@ -42,6 +43,7 @@ export const TaxonomyTreePanel = ({
   repository,
   selectedNode,
   onSelectNode,
+  revision = 0,
 }: TaxonomyTreePanelProps) => {
   const treeContentId = useId();
   const [isOpen, setIsOpen] = useState(false);
@@ -52,18 +54,62 @@ export const TaxonomyTreePanel = ({
   const [childrenByNodeKey, setChildrenByNodeKey] = useState<Record<string, TaxonomyTreeNode[]>>({});
   const [loadingChildKeys, setLoadingChildKeys] = useState<Set<string>>(() => new Set());
   const [childErrorsByNodeKey, setChildErrorsByNodeKey] = useState<Record<string, string | undefined>>({});
+  const scope = useRef({ revision, mounted: true });
+  scope.current.revision = revision;
+  useEffect(() => { scope.current.mounted = true; return () => { scope.current.mounted = false; }; }, []);
+  const previousRevision = useRef(revision);
+
+  useEffect(() => {
+    if (previousRevision.current === revision) return;
+    previousRevision.current = revision;
+    setLoadingChildKeys(new Set());
+    if (rootNodes === null) {
+      setIsLoadingRoots(false);
+      setRootError(null);
+      return;
+    }
+    let current = true;
+    const parents = [...rootNodes, ...Object.values(childrenByNodeKey).flat()]
+      .filter((node) => Object.prototype.hasOwnProperty.call(childrenByNodeKey, createNodeStateKey(node)));
+    setIsLoadingRoots(true);
+    setRootError(null);
+    void (async () => {
+      try {
+        const roots = await repository.getRootNodes();
+        const children = await Promise.all(parents.map(async (node) => [createNodeStateKey(node), await repository.getChildren(node)] as const));
+        if (!current) return;
+        setRootNodes(roots);
+        setChildrenByNodeKey(Object.fromEntries(children));
+        setChildErrorsByNodeKey({});
+      } catch {
+        if (current) setRootError('분류 집계를 갱신하지 못했습니다. 다시 시도해 주세요.');
+      } finally {
+        if (current) setIsLoadingRoots(false);
+      }
+    })();
+    return () => { current = false; };
+  }, [revision, repository]);
 
   const loadRootNodes = useCallback(async () => {
+    const requestRevision = revision;
     try {
       setIsLoadingRoots(true);
       setRootError(null);
-      setRootNodes(await repository.getRootNodes());
+      const roots = await repository.getRootNodes();
+      const parents = [...(rootNodes ?? []), ...Object.values(childrenByNodeKey).flat()]
+        .filter((node) => Object.prototype.hasOwnProperty.call(childrenByNodeKey, createNodeStateKey(node)));
+      const children = await Promise.all(parents.map(async (node) => [createNodeStateKey(node), await repository.getChildren(node)] as const));
+      if (scope.current.mounted && scope.current.revision === requestRevision) {
+        setRootNodes(roots);
+        if (parents.length) setChildrenByNodeKey(Object.fromEntries(children));
+        setChildErrorsByNodeKey({});
+      }
     } catch {
-      setRootError('분류 탐색 정보를 불러오지 못했습니다.');
+      if (scope.current.mounted && scope.current.revision === requestRevision) setRootError('분류 탐색 정보를 불러오지 못했습니다.');
     } finally {
-      setIsLoadingRoots(false);
+      if (scope.current.mounted && scope.current.revision === requestRevision) setIsLoadingRoots(false);
     }
-  }, [repository]);
+  }, [repository, revision, rootNodes, childrenByNodeKey]);
 
   useEffect(() => {
     if (isOpen && rootNodes === null && !isLoadingRoots && !rootError) {
@@ -73,6 +119,7 @@ export const TaxonomyTreePanel = ({
 
   const loadChildren = useCallback(async (node: TaxonomyTreeNode) => {
     const nodeStateKey = createNodeStateKey(node);
+    const requestRevision = revision;
 
     try {
       setLoadingChildKeys((currentKeys) => new Set(currentKeys).add(nodeStateKey));
@@ -81,23 +128,25 @@ export const TaxonomyTreePanel = ({
         [nodeStateKey]: undefined,
       }));
       const children = await repository.getChildren(node);
+      if (!scope.current.mounted || scope.current.revision !== requestRevision) return;
       setChildrenByNodeKey((currentChildren) => ({
         ...currentChildren,
         [nodeStateKey]: children,
       }));
     } catch {
+      if (!scope.current.mounted || scope.current.revision !== requestRevision) return;
       setChildErrorsByNodeKey((currentErrors) => ({
         ...currentErrors,
         [nodeStateKey]: '하위 분류 정보를 불러오지 못했습니다.',
       }));
     } finally {
-      setLoadingChildKeys((currentKeys) => {
+      if (scope.current.mounted && scope.current.revision === requestRevision) setLoadingChildKeys((currentKeys) => {
         const nextKeys = new Set(currentKeys);
         nextKeys.delete(nodeStateKey);
         return nextKeys;
       });
     }
-  }, [repository]);
+  }, [repository, revision]);
 
   const handleToggleNode = (node: TaxonomyTreeNode) => {
     if (!node.hasChildren) return;

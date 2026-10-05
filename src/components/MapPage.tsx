@@ -21,6 +21,7 @@ interface MapPageProps {
   onSelect: (obs: Observation) => void;
   taxonomyRepository?: TaxonomyTreeRepository;
   MapComponent?: typeof MapPreview;
+  revision?: number;
 }
 
 const SPECIES_SUGGESTION_LIMIT = 6;
@@ -37,6 +38,7 @@ export const MapPage = ({
   onSelect,
   taxonomyRepository = activeTaxonomyTreeRepository,
   MapComponent = MapPreview,
+  revision = 0,
 }: MapPageProps) => {
   const [areFiltersExpanded, setAreFiltersExpanded] = useState(true);
   const filterControlsId = useId();
@@ -92,7 +94,7 @@ export const MapPage = ({
     return () => {
       isCurrent = false;
     };
-  }, [selectedTaxonomyNode, taxonomyRepository]);
+  }, [selectedTaxonomyNode, taxonomyRepository, revision]);
 
   const filteredObservations = useMemo(() => {
     return filterMapObservations(observations, {
@@ -354,7 +356,8 @@ export const MapPage = ({
             </fieldset>
 
             <p className="mt-3 text-[11px] leading-5 text-zinc-500">분류 옆 숫자는 전체 기록 기준</p>
-            <TaxonomyTreePanel
+          <TaxonomyTreePanel
+            revision={revision}
               repository={taxonomyRepository}
               selectedNode={selectedTaxonomyNode}
               onSelectNode={(node) => setSelectedTaxonomyNode(node)}

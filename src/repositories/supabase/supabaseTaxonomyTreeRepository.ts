@@ -122,12 +122,18 @@ const mapObservationRowToTreeSummary = (
 };
 
 let cachedSummaries: TaxonomyTreeObservationSummary[] | null = null;
+let cacheGeneration = 0;
+export const invalidateTaxonomyTreeCache = () => {
+  cacheGeneration++;
+  cachedSummaries = null;
+};
 
 const loadApprovedLinkedSummaries = async () => {
   if (cachedSummaries) {
     return cachedSummaries;
   }
 
+  const generation = cacheGeneration;
   const { data, error } = await getSupabaseClient()
     .from(OBSERVATIONS_TABLE)
     .select(TAXONOMY_TREE_SELECT)
@@ -138,11 +144,12 @@ const loadApprovedLinkedSummaries = async () => {
     throw createRepositoryError('Failed to load taxonomy tree rows from Supabase.', error);
   }
 
-  cachedSummaries = ((data ?? []) as SupabaseTaxonomyTreeObservationRow[])
+  const summaries = ((data ?? []) as SupabaseTaxonomyTreeObservationRow[])
     .map(mapObservationRowToTreeSummary)
     .filter((summary): summary is TaxonomyTreeObservationSummary => summary !== null);
 
-  return cachedSummaries;
+  if (generation === cacheGeneration) cachedSummaries = summaries;
+  return summaries;
 };
 
 export const supabaseTaxonomyTreeRepository: TaxonomyTreeRepository = {
