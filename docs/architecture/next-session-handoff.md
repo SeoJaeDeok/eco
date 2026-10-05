@@ -2,9 +2,50 @@
 
 ## Purpose
 
-This document records Phase 28 local verification reports and Preview preparation, the mock approval/date correction, inherited Phase 28A work and historical Phase 27 closeout. Preserve deployed work; do not execute integration, deployment or another feature without a separate request.
+This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current State: Phase 28 API And Preview Evidence Consolidated
+## Current State: Phase 29 And 32 Local Fast-Track Candidate
+
+- 2026-10-05. Branch `feature/phase-29-32-observation-delete-comments-fast-track`
+  starts from Phase 28 `2b2ce5a`. Main/origin/main remain `a3887a7`; prior features
+  and backups are preserved. This branch includes Phase 28 + 29 + 32, not 30/31.
+- Implementation commit: `4e4f9eb feat: add observation deletion and identification comments`.
+  The following documentation commit does not change that tested application code.
+- Local observation delete: owner/admin confirmation; DB-first trusted-path
+  best-effort image cleanup; detail closes and list/map/summary/tree refresh without
+  reload. Admin reuses all-status query; public pending/rejected protection stays.
+- New comments repository/provider/detail UI: approved-parent public read, logged-in
+  create, own/admin confirmed delete, comment/identification kinds, 1000-character
+  plain text, safe nickname, 20-row more, independent errors and stale response guards.
+  Identification never changes official taxonomy. Mock cascade is memory-only.
+- New **unapplied candidates** `0012_observation_owner_delete.sql` and
+  `0013_observation_comments.sql`; existing migrations unchanged. No SQL, actual
+  observation/comment/account writes, package/settings changes, push or deployment.
+- Permission limit: owner pending/rejected rows are hidden by preserved SELECT RLS.
+  Public owner deletion therefore reaches approved records only. Scope question
+  remains unanswered; do not silently widen SELECT or add a delete RPC. Admin all-
+  status deletion is supported. Storage object DELETE policies are absent for both
+  roles; cleanup may leave orphans with a safe warning. No frontend service-role.
+- Fresh automated run: **208 Node tests PASS**, typecheck/build PASS, dev-inclusive
+  audit 0 vulnerabilities. Candidate SQL checks are static; live RLS/trigger/cascade
+  and real Storage deletion are NOT_RUN. Prior 174 tests belong to Phase 28 history.
+- Actual detail fixture is served at
+  `http://127.0.0.1:3000/tests/fixtures/observation-community.html`, isolated 27 comments
+  and role selector; no real login/writes. HTML/proxy/modules/CSS checked. Browser
+  tool failed at initialization, so visual/keyboard/layout remains PARTIAL. Existing
+  Phase 28 user PASS is not promoted to this modified app's live PASS.
+- Read [combined readiness](phase-29-32-fast-track-readiness.md),
+  [deletion](observation-delete.md) and [comments](observation-comments-identification.md)
+  for full candidate links, pre/post SQL, rollback concepts and manual test steps.
+- Next: decide documented permission boundary, review migration/rollback, operator
+  manual apply under separate approval, authorized live smoke, then Preview. No
+  Phase archive, Verified status or automatic next feature. Local commits only.
+
+**한국어:** Phase 28 위에 삭제·댓글 기능을 함께 구현했습니다. 실제 DB 적용이나
+삭제·댓글 생성은 하지 않았습니다. 작성자의 비공개 기록 삭제와 이미지 정리 권한은
+별도 확인이 필요하며, 로컬 검사 통과를 실제 운영 검증 완료로 기록하지 않습니다.
+
+## Previous State: Phase 28 API And Preview Evidence Consolidated
 
 - Date: 2026-09-30. Branch `feature/phase-28b-observation-month-filter`; entry
   local/remote `8435383`, main/origin/main `a3887a7`. Three intentional dirty docs
