@@ -4,7 +4,59 @@
 
 This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current State: Dependency Fix Checked, Feature Push Gate
+## Current State: e7703f8 Preview UI Confirmed By Operator
+
+- 2026-10-09. Branch `feature/phase-29-32-observation-delete-comments-fast-track`,
+  stacked on Phase 28 `2b2ce5a`. Entry local/remote HEAD **e7703f8**, clean;
+  main/origin/main **a3887a7**. Preserve all prior feature/backup history.
+- Feature push already succeeded at `e7703f8`. Read-only GitHub deployment metadata
+  in that task showed Preview, matching feature commit, non-Production and success;
+  the deployment ref was a commit, not a branch-name field. No automatic screen PASS.
+- The user now answered **"전부 검증했고 에러없어"** to all five Preview checklist
+  steps. Record **OPERATOR_PREVIEW_UI**, an aggregate user confirmation, not Codex
+  browser automation or fresh Supabase mutation/API verification.
+- Target repository **supabase** and existing shared connection match are
+  **confirmed_by_operator** within that all-items response, not a direct configuration
+  comparison by Codex. Do not request keys, sessions or repeat confirmed checks.
+- UI **PASS**: public intro/list/map/detail, comment area/empty state and signed-out
+  controls, owner's approved-delete button/dialog/cancel, comment kind/input controls,
+  non-owner/admin button visibility, pagination/fade/no-auto-scroll/search/photo/detail
+  state, shared summary, map dates/collapse/data separation, narrow-window/keyboard.
+  Basic real Kakao display **PASS, operator-reported**; raw email exposure **no**;
+  errors **none reported**. Existing comments/counts or measured pixel values were
+  not supplied; do not invent them or extend narrow-window evidence to all devices.
+- This Preview smoke did not authorize final delete, comment submit/delete or other
+  DB writes. Prior Phase 29/32 local live evidence and cleanup remain unchanged.
+  **0014/0012/0013 APPLIED + post PASS** remain operator/manual apply results.
+- Non-owner actual DELETE remains **PARTIAL**, actual admin deletion **NOT_RUN**,
+  delete-driven Kakao marker removal **PARTIAL**, image cleanup **NOT_TESTED**.
+  UI visibility/basic display PASS does not close these server/action checks.
+  Best-effort image cleanup may leave orphans; pending/rejected owner deletion stays
+  deferred. Map row-cap, live cascade/last-page edge checks and exact rollback SQL
+  not documented remain as recorded, with no weakened permissions or new feature.
+- `source-map-js@1.2.2`, **213 tests/typecheck/build PASS, audit 0** are the prior
+  `e7703f8` checks, not rerun for this docs-only task. App/tests/packages/SQL/settings
+  are unchanged. Fresh document diff/Markdown whitespace/EOF/links, forbidden paths
+  and secret-like checks **PASS**, two intended documents only.
+- Only readiness and handoff change, with a local documentation commit authorized.
+  **Do not push this follow-up automatically.** Documentation push is a separate
+  decision; the tested Preview remains `e7703f8`. No new deployment, main merge/push,
+  Production promotion, Phase archive or overall Verified closure.
+- No reported core Preview UI blocker. Next decisions: accept the documented
+  residual risks or authorize targeted checks; separately approve documentation push
+  and any eventual Production release. Do not repeat DB smoke without authorization.
+- Detailed table: [Preview UI evidence](phase-29-32-fast-track-readiness.md#preview-ui-smoke-at-e7703f8).
+
+**한국어:** 이번 Preview 화면 확인은 사용자 수동 검증으로 통과했고 오류 보고가 없습니다.
+삭제 확인창에서는 취소만, 댓글은 입력 UI까지만 확인한 결과입니다. 버튼 표시 통과를
+실제 권한 요청이나 관리자 삭제 성공으로 바꾸지 않았습니다. 문서만 로컬 커밋하며,
+남은 제한 수용 여부와 문서 push·Production 승인은 별도 결정입니다.
+
+## Previous State: Dependency Fix Checked, Feature Push Gate
+
+Historical pre-push checkpoint at `e7703f8` below. Its then-unconfirmed deployment/UI
+status is superseded by the metadata and operator evidence above. Its tests/audit
+remain prior-run results, not new executions in this documentation task.
 
 - 2026-10-09. Same branch `feature/phase-29-32-observation-delete-comments-fast-track`,
   based on live-smoke record `db37ba1`, stacked on Phase 28 `2b2ce5a`.

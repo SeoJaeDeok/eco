@@ -8,21 +8,96 @@
 - Initial implementation: `4e4f9eb`; prior documentation: `77a394e`.
   Final approved-only code/migration correction: `62c57c0`.
   Earlier readiness: `23d634a`; helper correction and actual smoke code: `74fba30`.
-  Live-smoke documentation commit: `db37ba1`. Its four-document-only close-out
-  is preserved; the subsequent security correction changes only the lockfile
-  and the three documentation files identified below.
+  Live-smoke documentation commit: `db37ba1`. Security correction: `e7703f8`,
+  normally pushed and deployed to Preview. This follow-up changes only this
+  readiness and the handoff to record the operator's Preview UI results.
 - State: **0014/0012/0013 remote APPLIED + post PASS**, operator-reported SQL Editor
   execution. Phase 29 core owner smoke and Phase 32 limited comment smoke passed
-  with the evidence/limitations below. **No Verified closure or release**.
+  with the evidence/limitations below. **No Verified closure or Production release**.
 - The `db37ba1` audit hold is resolved by the separately authorized minimal
-  `source-map-js` correction below. Fresh audit: **zero vulnerabilities**.
-  Normal feature-only push is authorized after final checks; automatic Git Preview
-  is allowed, but main merge/push and Production deployment/promotion are not.
+  `source-map-js` correction below. Audit at `e7703f8`: **zero vulnerabilities**.
+  The feature push and automatic Preview succeeded. This follow-up authorizes only
+  a local documentation commit; its push needs a separate decision. No main
+  merge/push or Production deployment/promotion is authorized.
   Existing Phase 28/backup branches are preserved.
 - Phase 30/31 skipped intentionally; no Phase history archive or new feature.
 - Phase 28 API/Preview evidence remains historical and is not a live PASS for
   this newly modified application. Its coverage/date diversity/Kakao/log limits
   remain recorded in [Phase 28 readiness](phase-28-integration-release-readiness.md).
+
+## Preview UI Smoke At e7703f8
+
+2026-10-09. The operator responded **"전부 검증했고 에러없어"** to the complete
+five-step Preview checklist. The table records that aggregate confirmation as
+**OPERATOR_PREVIEW_UI**, not an itemized measurement log or Codex browser automation.
+No exclusion or failure was reported. No extra test records or comments were requested.
+
+### Target And Evidence
+
+- Target: the current fast-track branch's **e7703f8 Preview**. The previous task's
+  read-only GitHub deployment metadata reported environment Preview, matching feature
+  HEAD, production=false and deployment/Vercel status success. The deployment ref was
+  the commit rather than a branch-name field; feature HEAD agreement was checked
+  separately. This metadata proves deployment status, not screen behavior.
+- `preview_repository=supabase`; `shared_supabase_match=confirmed_by_operator`,
+  covered by the operator's all-items confirmation of the target check. No protected
+  configuration values, application session or secrets were extracted. This is not
+  a new Codex comparison of Preview connection settings.
+- The operator used their browser and existing accounts. This checklist allowed only
+  existing-record reads, delete-dialog **cancel**, and unsubmitted comment controls.
+  It did not authorize observation/comment creation or deletion, SQL, Storage writes,
+  new accounts or settings changes. Codex sent no new Supabase probe in this close-out.
+
+| Preview result | Status | Evidence and boundary |
+| --- | --- | --- |
+| public_pages | PASS | OPERATOR_PREVIEW_UI; intro/list/map and public detail |
+| public_comments_ui | PASS | OPERATOR_PREVIEW_UI; comment area or empty state; no assumed existing comment count |
+| anon_controls_hidden | PASS | OPERATOR_PREVIEW_UI; login prompt, no anonymous observation/comment delete controls |
+| owner_delete_button | PASS | OPERATOR_PREVIEW_UI; own approved observation |
+| delete_confirmation_cancel | PASS | OPERATOR_PREVIEW_UI; dialog and cancel only, no deletion |
+| comment_type_selector | PASS | OPERATOR_PREVIEW_UI; comment/identification controls, no submit |
+| comment_input_ui | PASS | OPERATOR_PREVIEW_UI; input limit/empty input/button state, no server write |
+| non_owner_controls | PASS | OPERATOR_PREVIEW_UI; visibility only, not actual DELETE denial |
+| admin_controls | PASS | OPERATOR_PREVIEW_UI; visibility only, not actual admin deletion |
+| pagination_regression | PASS | OPERATOR_PREVIEW_UI; pages, fade/no-auto-scroll, search/photo filters, detail-close state |
+| map_date_filters | PASS | OPERATOR_PREVIEW_UI; dates, collapse/expand and separation from list page data |
+| common_summary | PASS | OPERATOR_PREVIEW_UI; shared species/records display retained |
+| real_kakao | PASS, basic display | OPERATOR_PREVIEW_UI; not delete-driven marker removal or full camera/resize regression |
+| responsive_keyboard | PASS | OPERATOR_PREVIEW_UI; narrow-window/keyboard checklist, not every mobile device |
+| raw_email_exposed | no, operator-reported | Covered by the requested screen checks; no new log/network audit |
+| errors | None reported | Operator aggregate confirmation |
+
+No per-record counts, coordinates, screenshots, measured scroll positions or network
+captures were supplied or inferred. Existing comment-kind row/API success remains
+the earlier local live smoke below; an empty Preview comment panel does not prove
+both kinds were present. A visible button does not prove server authorization.
+
+### Remaining Limits And Decision
+
+- Preserve `db37ba1` local UI/LIVE_API evidence and **0014/0012/0013 APPLIED + post PASS**.
+  No live DB test was repeated. Previous disposable observation/comments remain
+  recorded as cleaned up; no new cleanup or physical-row inspection is claimed.
+- Non-owner actual observation/comment DELETE **PARTIAL**; actual admin deletion
+  **NOT_RUN**; delete-driven Kakao marker removal **PARTIAL**. Today's basic Kakao
+  display PASS does not overwrite those narrower untested actions.
+- Image cleanup **NOT_TESTED** and best-effort: Storage permission failure can leave
+  an orphan without reversing successful row deletion. Pending/rejected owner deletion
+  stays **deferred**; approved-only public-path scope is unchanged.
+- Live cascade, disappearing-last-page boundary, full map coverage and detailed
+  camera/resize regression retain their previous limits. Build-log secret review is
+  not added by this UI report. **exact rollback SQL not documented** remains unchanged.
+- No confirmed core Preview UI blocker was reported. Before Production, explicitly
+  decide whether to accept the listed residual risks or authorize targeted additional
+  checks, and separately approve the release/merge/deployment. No automatic release,
+  Phase history archive or overall Verified status follows from this smoke.
+
+### Documentation Verification
+
+This follow-up changes only two Markdown documents. Full **213 tests/typecheck/build
+PASS and audit 0** belong to `e7703f8`; they were not rerun or relabeled as fresh here.
+Document diff/Markdown whitespace/EOF/links, forbidden files and secret-like checks:
+**PASS**, two intended documents only; app/tests/packages/migrations/settings unchanged.
+No push/deployment in this follow-up.
 
 ## Dependency Security Correction
 
@@ -74,12 +149,12 @@ below is preserved, not rerun: no observation/comment/account/Storage/DB changes
 Non-owner actual DELETE remains PARTIAL, admin deletion NOT_RUN, actual Kakao
 PARTIAL and image cleanup NOT_TESTED. No phase archive or Verified closure.
 
-Before the authorized push, remote feature was absent and fetched main/origin/main
-were `a3887a7`. The checked correction commit is the feature push candidate; verify
-the resulting remote ref separately. No Vercel/GitHub deployment connector or installed
-gh/vercel CLI is available here. Preview build/Ready and its UI smoke remain unconfirmed
-for this correction; push success is not deployment/UI evidence. Production is not
-authorized. Next: confirm the new feature Preview commit/Ready, then a short UI smoke.
+At the security commit's pre-push checkpoint, remote feature was absent and fetched
+main/origin/main were `a3887a7`; Preview status/UI were then unconfirmed. Subsequently
+`e7703f8` was normally pushed with matching local/remote HEAD. Although no deployment
+connector or gh/vercel CLI was installed, public GitHub deployment/status metadata
+confirmed that commit's Preview success. The operator's later UI report is recorded
+above, separately from metadata. Main/Production remain unchanged.
 
 ## Current Live Smoke Evidence
 
