@@ -11,16 +11,21 @@
   Live-smoke documentation commit: `db37ba1`. Security correction: `e7703f8`,
   normally pushed and deployed to Preview. Preview UI record `00d05aa` was later
   pushed; it is the local/remote entry HEAD and code basis for the final admin
-  deletion smoke below. This follow-up changes three existing documents only.
+  deletion smoke below. That result was committed as `0f2fdae`; a separately
+  authorized documentation-only feature push has now succeeded at that commit.
+  The current read-only history follow-up also adds an evidence document and
+  diagnostic SQL files; app/package/migration files remain unchanged.
 - State: **0014/0012/0013 remote APPLIED + post PASS**, operator-reported SQL Editor
   execution. Phase 29 core owner smoke and Phase 32 limited comment smoke passed
   with the evidence/limitations below. **No Verified closure or Production release**.
 - The `db37ba1` audit hold is resolved by the separately authorized minimal
   `source-map-js` correction below. Audit at `e7703f8`: **zero vulnerabilities**.
   The feature push and automatic Preview succeeded. The `00d05aa` deployment is
-  reported successful; actual Preview UI evidence remains at `e7703f8`, not a new
-  screen check of a documentation deployment. This follow-up authorizes only
-  a local documentation commit; no push. No main
+  reported successful; `0f2fdae` Preview also has matching non-Production success
+  metadata after the authorized push. Actual Preview UI evidence remains at
+  `e7703f8`, not a new screen check of a documentation deployment. The current
+  history-result edits are preserved in the local-only reconciliation audit commit;
+  remote feature remains `0f2fdae`, with no further push performed. No main
   merge/push or Production deployment/promotion is authorized.
   Existing Phase 28/backup branches are preserved.
 - Phase 30/31 skipped intentionally; no Phase history archive or new feature.
@@ -28,7 +33,203 @@
   this newly modified application. Its coverage/date diversity/Kakao/log limits
   remain recorded in [Phase 28 readiness](phase-28-integration-release-readiness.md).
 
+## Migration Evidence Reconciliation In Progress
+
+2026-10-09, READ ONLY follow-up from entry local/remote `0f2fdae`. The pre-existing
+uncommitted history-diagnosis edits below are preserved in this local-only audit.
+All 14 migration bodies were reviewed; no migration, app, test or package file changed.
+
+- [Migration evidence inventory](migration-reconciliation-evidence.md) records every
+  filename, retained effect, superseding change, previous evidence and missing check.
+  Provisional whole-migration statuses: **MATCH 11 / MISMATCH 2 / UNVERIFIABLE 1 /
+  SUPERSEDED 0**. Individual superseded effects are separately listed; a mixed
+  migration is not wholly superseded. MATCH 0012/0013/0014 reuses exact existing
+  operator post-check results. Two operator metadata runs now support retained
+  structural/privilege effects of 0001/0003-0009; descriptive COMMENT text is outside
+  that scope. 0002 differs in bucket configuration; 0011 has an invalid combined
+  amphibian/reptile return literal, while 0010's final RPC assessment remains blocked.
+  None proves historical full-file execution.
+- The [single read-only bundle](sql-checks/0001-0014-reconciliation-read-only.sql)
+  has now been executed by the operator: **28 false gates** (12 CHECK, 12 partial
+  indexes, four function definitions); all other supplied gates true. The index
+  comparison omitted case normalization; CHECKs assumed btrim instead of
+  TRIM(BOTH FROM) rendering. The operator's [second diagnosis](sql-checks/0001-0014-reconciliation-diagnose-false.sql)
+  now confirms all 24 CHECK/index diagnostics and three function token comparisons.
+  All four functions' security/signature/language/search-path/volatility checks match.
+  Only the create RPC body-token comparison remains false; original results are
+  preserved, not overwritten. This is not yet a proven runtime/security defect.
+- **Third OPERATOR_SQL result:** the [RPC section diagnosis](sql-checks/0011-reconciliation-diagnose-rpc-body.sql)
+  matches seven whole sections and every string-masked section. Only category string
+  literals differ. Reviewed token fingerprint and all anchor/lexer guards match.
+  The raw reviewed-text hash is false, but that alone does not establish corruption;
+  external formatting can alter that hash without changing token content.
+  Exact differing values/cause/runtime impact remain unconfirmed. No create was run.
+- **Fourth OPERATOR_SQL result:** the [category-literal SELECT](sql-checks/0011-reconciliation-diagnose-category-literals.sql)
+  has run. Function/structure/count guards and all six exact conditions match.
+  Six return values match; only `amphibia_reptilia` differs. Its NFC comparison and
+  the all-returns-in-reviewed-set check are false. Expected local value is `양서/파충류`.
+  Prior validated `observations_taxon_check` evidence uses that same label set.
+  An affected taxonomy-linked create can fail that CHECK (**STATIC inference**);
+  no create request or new live failure was run. The actual remote literal and its
+  origin are unknown, not printed or requested. No new query is needed to isolate it.
+- A documented replay gap needs separate treatment: 0002 configures a 5 MiB bucket;
+  Phase 22C reports a manual 20 MB bucket increase. 0006 changes only the DB CHECK.
+  Operator metadata now confirms **20 MiB**, private bucket and expected MIME types.
+  This is a confirmed manual configuration/replay difference, not an application
+  failure. No setting is changed or lowered.
+- `migration_history=missing_schema` remains operator-confirmed. Canonical order
+  `0001...0012 -> 0013 -> 0014` and actual recent manual order
+  `0014 -> 0012 -> 0013` remain distinct. No all-version applied marking is ready.
+- CLI 2.108.0 source confirms history repair initializes schema/table and stores
+  version/name/statements; it is a write, not a migration replay or read-only check.
+  The connection path can also create a login role. No remote CLI is executed.
+- Current decision: confirmed single return-literal mismatch plus configuration drift;
+  history reconciliation and Production clearance held. Next decision is separate
+  approval for a new minimal RPC correction candidate and exact pre/post checks,
+  followed by a separate manual-application decision. Preserve all other function
+  logic/signature/ACLs and the taxon CHECK; no applied-file edit or old migration replay.
+  History initialization/repair, schema correction and operating-mode transition
+  need separate approval; **exact rollback SQL: not documented**.
+- Non-owner server DELETE stays PARTIAL, image cleanup NOT_TESTED/best-effort,
+  actual Kakao deletion marker PARTIAL. Earlier live and Preview evidence is unchanged.
+  Historical 213-test/typecheck/build/audit results are not rerun; this is docs/check
+  SQL only, under the working guide's documentation-only verification exception.
+  New document/SQL checks PASS. The authorized local evidence commit records a
+  blocker, not readiness completion; no push/merge/deployment or remote DB change.
+
+## Migration History And Remaining Permission Gate
+
+Historical checkpoint before the four-query evidence audit above. Its two pending
+documentation edits are now preserved in the local-only audit commit; references
+below to uncommitted work/no new commit describe that earlier checkpoint.
+
+2026-10-09, after the authorized `0f2fdae` feature push. Local/remote HEAD match,
+main/origin/main remain `a3887a7`. The pushed range contains exactly three Markdown
+documents; app/tests/assets/packages/migrations/deployment inputs are unchanged
+from the UI-tested `e7703f8`. Read-only public GitHub metadata confirms matching
+commit, Preview/non-Production and success. New Preview rendering is **NOT_RUN**.
+The two documentation edits for the following result are not yet committed/pushed.
+
+### History Result: Schema Absent
+
+Installed project CLI **2.108.0** was checked with its existing executable's version
+flag only. Local migrations are 14 unique numeric prefixes `0001` through `0014`;
+their names match this version's numeric-prefix parser. No renumbering is required
+by that parser. See the [versioned file parser](https://github.com/supabase/cli/blob/v2.108.0/apps/cli-go/pkg/migration/file.go).
+This filename check does not establish remote application or ledger agreement.
+
+Linked-project marker files exist; their contents were not printed. No DB password
+or CLI token was present in the checked process variables. The reviewed
+[CLI connection path](https://github.com/supabase/cli/blob/v2.108.0/apps/cli-go/internal/utils/flags/db_url.go)
+can create a temporary login role when a password is absent, with a pooler retry
+path that can alter network bans. Therefore no linked remote CLI connection/list
+was run, and no keychain credentials were retrieved to bypass that restriction.
+
+The operator executed the supplied catalog-only SELECT in SQL Editor and reported
+**all six booleans false**. It queried system metadata, never the possibly absent
+history relation itself, and did not return identities, configuration or SQL bodies.
+
+| Catalog result | Operator-reported value |
+| --- | --- |
+| history_schema_exists | false |
+| history_schema_readable | false |
+| history_table_exists | false |
+| history_version_column_valid | false |
+| history_select_allowed | false |
+| history_rls_disabled | false |
+
+**migration_history=missing_schema, OPERATOR_SQL**, replacing the prior unknown
+for the database where this check ran. In particular, schema existence was false;
+the other false values follow from the absent objects and are not evidence that
+application observation privileges or RLS broke. The configured default history
+table and its version entries cannot exist inside that absent schema. No follow-up
+query against the missing table is needed or issued. Duplicate-row testing is
+**NOT_APPLICABLE (table absent)**, not an executed PASS; per-version application
+equivalence has not been reconstructed. No independent Codex remote SQL or target
+configuration comparison is claimed.
+
+**0014/0012/0013 APPLIED + post PASS remain intact.** Working schema/policy changes
+and CLI bookkeeping are different evidence. The missing ledger does not prove
+manual application failed, nor when or why the ledger was absent. The CLI's
+[history implementation](https://github.com/supabase/cli/blob/v2.108.0/apps/cli-go/pkg/migration/history.go)
+uses `supabase_migrations.schema_migrations` and a text version primary key; the
+operator result shows that standard ledger is absent here. Do not run migrations
+again to populate it or silently mark unreviewed versions as applied.
+
+**Reconciliation plan only:** review application evidence and superseding effects
+for all 14 local versions, not just 0012/0013/0014, because the entire history schema
+is absent. Preserve manual order `0014 -> 0012 -> 0013` separately from canonical
+replay `0001 -> ... -> 0014`; version bookkeeping alone does not record that manual
+chronology. Only versions with established application evidence can be proposed for
+future history-only reconciliation. Review ledger initialization, exact correction
+scope, connection side effects and rollback expectations before requesting separate
+write approval. No repair command/SQL, ledger creation/update, migration replay or
+DB push/reset is executed or supplied as the next runnable step here. See the
+[official history repair reference](https://supabase.com/docs/reference/cli/supabase-migration-repair).
+
+### Non-Owner Denial: Static Evidence And Minimum Next Test
+
+- `STATIC`: 0012 grants table DELETE to `authenticated`, revokes it from `anon`,
+  and restricts permissive row policies to approved owner
+  (`observer_id = auth.uid()`) or approved admin (`public.is_admin()`). The helper
+  checks the current user's profile role, not merely authentication. Admin and
+  ordinary authenticated sessions must not be treated as interchangeable.
+- The existing 0012 post-check verifies the exact two DELETE/ALL policies, RLS,
+  grants and preserved SELECT/UPDATE rules; its prior operator PASS is not a new
+  live non-owner DELETE. Current authenticated non-owner server denial stays
+  **PARTIAL / actual request NOT_RUN**. UI hiding and simulated tests are separate.
+- Two ordinary test accounts and an admin account were confirmed in the preceding
+  smoke. Do not ask for their credentials or create accounts. The blocker was the
+  browser request path, not missing accounts. All prior disposable data is cleaned up.
+
+Minimum future procedure, **not approved for execution in this history task**:
+
+1. First establish a reviewed one-shot request path inside the ordinary account's
+   existing signed-in app environment, using the existing SDK without exporting
+   cookies/tokens. Verify ordinary/non-admin identity safely before generating data.
+   If this path is unavailable, stop with PARTIAL; do not create another leftover target.
+2. After separate write approval, the operator creates one new approved image-free
+   observation. Bind it by unique marker, creation time and in-memory identity; verify
+   the probe account is neither its owner nor an admin. No existing record substitution.
+3. Send one DELETE limited to that exact approved ID from the ordinary non-owner
+   session; inspect affected-row outcome and confirm the same observation remains.
+   HTTP success alone is insufficient. Unexpected removal is CRITICAL FAIL: stop,
+   create no replacement, and do not proceed to Production.
+4. If retained, the owner/admin performs final UI deletion. Verify public absence,
+   counts and cleanup. No images/comments, service-role/SQL impersonation or broad
+   DELETE. Admin/owner/anon success is not a substitute for the non-owner request.
+
+### Current Gate And Verification
+
+No new observation/comment/account, remote DELETE, remote CLI/SQL operation by
+Codex, schema/RLS/Storage change, or test-data reuse occurred in this preparation.
+The operator's read-only metadata check does not change remote state. Image cleanup
+NOT_TESTED/best-effort, actual delete-driven Kakao PARTIAL and pending/rejected
+deletion deferred remain unchanged. All earlier live/UI results below are preserved.
+
+Push preparation verified the normal ancestry and docs-only scope, diff/whitespace,
+forbidden files and secret-like additions. A new dev-inclusive audit in that push
+step returned **0 vulnerabilities**, exit 0. The **213 tests/typecheck/build PASS**
+remain historical at `e7703f8`; none was rerun or relabeled fresh. History-result
+documentation checks **PASS**: two files, 29 local links, diff/Markdown whitespace/EOF,
+forbidden tracked paths, secret-like additions and state consistency. Earlier admin
+and Phase 32 live evidence is unchanged; no app/package/migration change or staged file.
+No new commit, additional push, main merge/push, Production deployment or Verified
+closure. Before release approval, the missing ledger requires a reviewed handling
+decision and non-owner actual denial still requires verification or an explicit
+decision; neither is automatically accepted by successful Preview deployment.
+
+**한국어:** 적용한 DB 구조와 CLI의 적용 이력은 별개입니다. 이번 사용자 조회에서는
+이력 스키마 자체가 없었으므로 기존 migration을 다시 실행하면 안 됩니다. 0001부터
+0014까지 적용 근거를 대조해 이력만 보정할 범위를 먼저 정해야 합니다. 비작성자의
+서버 삭제 차단은 안전한 인증 요청 경로를 확보한 뒤, 별도 승인한 새 전용 관찰로만
+검증합니다. 이번에는 자료 생성·삭제나 이력 보정을 하지 않았습니다.
+
 ## Final Observation Permission Smoke At 00d05aa
+
+Historical deletion-run record below. Its migration-history unknown and no-push
+checkpoint are superseded by the later operator catalog result and authorized push
+above; its actual deletion evidence is preserved unchanged.
 
 2026-10-09, **local_supabase**, not a new Preview smoke. Exactly one newly authorized
 image-free approved observation was created by the operator through the ordinary

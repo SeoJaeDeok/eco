@@ -4,7 +4,142 @@
 
 This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current State: Admin Observation Deletion Smoke Recorded
+## Current Task: Migration Evidence Blocker Identified
+
+- Same stacked Phase 28/29/32 branch, entry local/remote `0f2fdae`, main/origin/main
+  `a3887a7`. Remote feature remains `0f2fdae`; this local-only audit preserves and
+  consolidates the existing uncommitted history-diagnosis edits below.
+  This follow-up adds one evidence document and four SELECT-based inspection files;
+  no app/package/test/migration edits. Only these seven documents/check files belong
+  in the authorized local evidence commit; no push.
+- [0001-0014 evidence table](migration-reconciliation-evidence.md): every actual
+  migration body reviewed; provisional MATCH 11 (0001/0003-0009 retained effects plus
+  prior exact 0012/0013/0014 post PASS), UNVERIFIABLE 1 (0010 final RPC assessment),
+  MISMATCH 2 (0002 bucket; 0011 invalid amphibian/reptile return literal),
+  whole-file SUPERSEDED 0. Replaced individual policies,
+  grants, CHECKs and function bodies are explicitly distinguished. A MATCH is final
+  state evidence within its stated scope, not proof of historical full-file execution.
+  Exact descriptive COMMENT agreement is outside these MATCH scopes.
+- Operator ran the [first bundle](sql-checks/0001-0014-reconciliation-read-only.sql):
+  28 false gates (12 CHECKs, 12 partial indexes, four function definitions), all
+  other supplied gates true. Original SQL/results preserved. Comparator defects
+  include index predicate case and a TRIM/BTRIM deparser assumption.
+- **Second OPERATOR_SQL result received:** all 12 CHECK presence/trim and 12 index
+  structure/case checks true; guard, provisioning and normalizer body tokens match.
+  All four function security/signature/language/search-path/volatility/strict/lexer
+  checks true. The create RPC body-token comparison alone remains false. Exact-body
+  and original-comparison `info.*` false results are preserved; not all-true gates.
+  Thus 27 of the original 28 failed gates are explained within the comparison scope.
+- **Third OPERATOR_SQL result received:** the [RPC-only diagnosis](sql-checks/0011-reconciliation-diagnose-rpc-body.sql)
+  matches seven of eight whole sections; only category string literals differ.
+  All string-masked sections/whole body, both lexer/anchor guards, token counts and
+  the reviewed local token fingerprint match. Raw reviewed-body hash is false;
+  formatting can cause that without changed tokens, but its precise cause is unknown.
+  Do not attribute this to encoding damage or runtime failure without evidence.
+- **Fourth OPERATOR_SQL result received:** [category-literal diagnosis](sql-checks/0011-reconciliation-diagnose-category-literals.sql)
+  guards and all six condition groups match; six return labels match. Only
+  `amphibia_reptilia` return is false, both exact and NFC, and it is outside the
+  reviewed seven-label set. Expected value is `양서/파충류`; prior catalog evidence
+  matched the validated observation taxon CHECK using that set. No raw remote value
+  was disclosed; its actual spelling/origin remain unknown. It is not a mere NFC
+  composition difference. Do not ask the user to expose the function body.
+- **Blocker / STATIC inference:** a trusted taxonomy-linked create reaching this
+  branch can fail the taxon CHECK. No actual create was run to reproduce it; do not
+  report a new live failure, row corruption or a deletion/comment permission defect.
+  Stop further diagnostics/reconciliation here. Next decision is approval to prepare
+  a new one-literal RPC correction candidate (recheck next number, currently 0015),
+  preserving all other logic/security/grants and the CHECK, with metadata pre/post
+  checks. Remote manual application is a separate decision. No correction file or
+  executable write SQL is prepared in this audit; never replay/edit 0010/0011.
+- Important documented exception: 0002's bucket limit is 5 MiB; Phase 22C records
+  a manual 20 MB bucket change. 0006 updates only the observation DB size CHECK.
+  Operator now confirms **20971520 bytes / 20 MiB**, private and expected MIME types.
+  This is a confirmed replay/configuration mismatch, not a new functional failure.
+  No silent MATCH, automatic bucket change or schema correction.
+- `migration_history=missing_schema` remains OPERATOR_SQL evidence. No history
+  initialization/repair is approved. Reviewed CLI 2.108.0 repair writes schema/table
+  and version/name/statements; linked connection may create a role. Do not run it.
+  Canonical `0001...0012 -> 0013 -> 0014` and actual `0014 -> 0012 -> 0013` remain
+  distinct. Future manual-register versus CLI transition options are in the evidence
+  document; both require duplicate-application safeguards. Exact rollback not documented.
+- The four actual operator metadata results are sufficient to commit the diagnosis,
+  not to claim history consistency or Production readiness. Non-owner actual DELETE
+  remains PARTIAL, image cleanup NOT_TESTED,
+  actual Kakao deletion PARTIAL remain. No new data or DB changes, no Production
+  deployment/Verified closure. Historical 213 tests/typecheck/build/audit not rerun:
+  only documentation/check SQL changed, using the working guide's docs-only exception.
+  Current diff/SQL/Markdown whitespace/EOF, secret/forbidden-file and unchanged
+  migration checks PASS. Existing original query results remain preserved.
+
+## Previous Checkpoint: Feature Pushed, Migration Ledger Absent
+
+Historical checkpoint: the then-uncommitted two-document result below is preserved
+in this local audit commit. It is not the latest commit/worktree status.
+
+- 2026-10-09. Same stacked Phase 28/29/32 branch
+  `feature/phase-29-32-observation-delete-comments-fast-track`. The separately
+  authorized normal push of documentation commit **0f2fdae** succeeded; local/remote
+  match, main/origin/main **a3887a7**. Worktree was clean after push. Current new
+  history-result edits affect only readiness and this handoff and remain uncommitted.
+- App/tests/assets/packages/migrations/deployment inputs are unchanged from
+  UI-tested `e7703f8`. Read-only public GitHub metadata confirms **0f2fdae Preview,
+  matching commit, non-Production, success**. New Preview UI **NOT_RUN**; do not move
+  the earlier operator UI evidence to this documentation deployment.
+- Installed project CLI **2.108.0**, local `0001` through `0014` filenames compatible
+  with its numeric-prefix parser and versions unique. Linked marker files exist,
+  but no secret file or marker contents were printed. The checked process has no
+  DB-password/CLI-token values supplied; stored credentials were not extracted.
+  Reviewed CLI initialization can create a login role, so no linked remote command
+  was executed. Never use a listing command as a supposed side-effect-free shortcut.
+- **OPERATOR_SQL:** the user ran the catalog-only history prerequisite SELECT and
+  reported all six booleans false: schema/table existence, schema readability,
+  expected text-version column, table SELECT and disabled RLS. Therefore
+  **migration_history=missing_schema** in the checked database, superseding unknown.
+  This is not a Codex remote query. The missing schema explains the dependent false
+  values; it does not indicate broken public observation grants or failed migrations.
+- Do not query the absent ledger, rerun migrations, initialize bookkeeping or use
+  migration repair/db push/reset. Per-version ledger entries are absent with that
+  schema; duplicate-row testing is not applicable, not a fresh successful test.
+  **0014/0012/0013 APPLIED + post PASS** remain the separate application evidence.
+  No claim is made about when/why the ledger became absent.
+- Reconciliation is a **plan only**: inventory all `0001`-`0014` application evidence
+  and superseding changes before proposing history-only correction; do not mark all
+  files applied just because current features work. Retain the one-time manual
+  `0014 -> 0012 -> 0013` order separately. Any ledger creation/repair and its connection
+  side effects need a reviewed exact scope and new write approval, not migration replay.
+- **Non-owner actual DELETE PARTIAL / request NOT_RUN**. Static review confirms
+  approved owner-or-admin policies, authenticated table grant and anonymous denial;
+  old post-check/automatic/UI PASS is not the missing live request. Two ordinary
+  accounts and an admin are already available. First establish a safe one-shot
+  request path in the ordinary account's existing SDK environment without token
+  export. Only after separate approval create one new image-free approved target,
+  check non-owner/non-admin identity, attempt exact-ID DELETE once, verify retention,
+  then owner/admin UI cleanup. No target exists or may be reused/created now.
+- Earlier owner/admin/anon/Phase 32 success and cleanup remain unchanged. No new
+  data creation/deletion, accounts, SQL/migration/RLS/Storage changes or app/package
+  edits occurred. Local actual Kakao deletion remains PARTIAL; image cleanup remains
+  NOT_TESTED/best-effort and pending/rejected deletion deferred.
+- Push checks passed for the prior three-document commit and a dev-inclusive audit
+  returned **0 vulnerabilities** in that push step. **213 tests/typecheck/build** are
+  still historical `e7703f8` results, not rerun. New two-document checks **PASS**:
+  diff/Markdown whitespace/EOF, 29 local links, secrets, forbidden paths and state
+  consistency. Prior admin and Phase 32 evidence is unchanged; no files are staged.
+- No new commit/additional push or Production deployment for this result. No main
+  merge/push, Phase archive or overall Verified closeout. Remaining decisions:
+  reviewed migration-history reconciliation and actual non-owner denial verification.
+  The catalog failure is a bookkeeping gap, not an instruction to reapply 0012/0013/0014.
+- Details and sources: [history and permission gate](phase-29-32-fast-track-readiness.md#migration-history-and-remaining-permission-gate).
+
+**한국어:** 문서 커밋 push와 새 Preview 배포는 성공했습니다. 사용자가 실행한 조회에서
+CLI 이력표를 담는 스키마가 없는 것으로 확인됐습니다. 앞서 확인한 실제 DB 적용은
+유지되며, migration을 재실행하지 않습니다. 이력 보정 범위 검토와 비작성자의 실제
+서버 삭제 차단이 남아 있습니다. 이번 새 문서 수정은 아직 커밋하지 않았습니다.
+
+## Previous State: Admin Observation Deletion Smoke Recorded
+
+Historical record at `0f2fdae`. Its pending push and unknown history status were
+subsequently resolved to a successful authorized push and operator-reported absent
+history schema above; the original local live-smoke evidence is unchanged.
 
 - 2026-10-09. Branch `feature/phase-29-32-observation-delete-comments-fast-track`,
   stacked on Phase 28 `2b2ce5a`. Entry local/remote **00d05aa**, clean;
