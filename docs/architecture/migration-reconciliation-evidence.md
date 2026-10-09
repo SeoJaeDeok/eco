@@ -1,5 +1,65 @@
 # Migration Reconciliation Evidence
 
+## Release Management Decision: 2026-10-09
+
+The operator explicitly accepts the current known limitations for the Phase
+28/29/32 Production release, including manual SQL Editor application records as
+this release's DB evidence and deferred CLI history reconciliation. Earlier
+candidate/proposal statements below are historical, not unresolved acceptance.
+This is not history initialization, a whole-ledger MATCH, or proof that every
+0001-0015 file previously ran. The CLI history schema remains absent.
+
+0012-0015 remain APPLIED + post PASS by the existing operator evidence; 0015 resolved
+the specific return-label final-state mismatch. Storage's 37 metadata gates PASS
+does not remove the 0002 5 MiB / running 20 MiB replay gap, test near-limit uploads,
+or prove actual cleanup. These limits are now accepted for this release, not fixed.
+Manual 0014 -> 0012 -> 0013, then 0015 remains distinct from canonical replay order.
+No db push/reset/repair, migration replay, history/schema/config mutation or remote
+test write is part of deployment. Future CLI adoption and fresh provisioning need
+separate reconciliation, backup/recovery review and approval. Non-owner actual
+DELETE stays PARTIAL. No new Production deployment or UI result is claimed here.
+
+## Current Follow-Up: 0015 And Storage Operator Results
+
+- 0015 is now **APPLIED + post PASS**, based on the operator's pre/apply/post
+  reports recorded in [readiness](phase-29-32-fast-track-readiness.md#latest-0015-manual-application-and-post-check-pass).
+  The specific 0011 return-label final-state mismatch is resolved, not proof of
+  historical full-file execution. Do not rerun the historical candidate below.
+- The focused [Storage metadata check](sql-checks/storage-production-readiness-read-only.sql)
+  returned **37 gates true** and 5 informational rows (OPERATOR_SQL). The private
+  bucket uses 20971520 bytes and the three reviewed MIME types; read/upload policies
+  match. Browser Storage UPDATE/DELETE policy count is 0 despite table DELETE grants.
+- 0002's 5242880-byte bucket setting still differs from the manually configured
+  20 MiB running setting. This is **ACCEPTED_LIMITATION_CANDIDATE**, not a discovered
+  security/functional blocker in this check or an automatically accepted risk.
+  See [scope and limitations](phase-29-32-fast-track-readiness.md#latest-storage-configuration-operator-check-pass).
+- The candidate and 14-migration tally below are historical pre-0015 evidence;
+  this follow-up is not a fresh whole-ledger reconciliation. CLI history schema
+  remains absent, repair not performed, non-owner actual DELETE PARTIAL, cleanup
+  best-effort/NOT_TESTED and Production NOT_DEPLOYED. No new remote writes.
+
+## Manual-Management Proposal For This Candidate
+
+The next candidate review may use the recorded SQL Editor apply/post evidence and
+defer CLI reconciliation **only after explicit operational acceptance**. This is
+not a repaired ledger or a declaration that every 0001-0015 file was executed.
+0012-0015 retain APPLIED + post PASS; CLI history schema remains absent. Preserve
+known manual order, file identities, post checks and configuration exceptions in
+the application register; do not invent missing historical provenance.
+
+No db push/reset, migration repair, history initialization/writes or wholesale
+0001-0015 replay. Fresh-environment equivalence remains unproven, notably 0002's
+5 MiB bucket versus the running 20 MiB setting. A later CLI transition needs its
+own evidence/backup/recovery review and separate write approval. See the
+[explicit acceptance items](phase-29-32-fast-track-readiness.md#manual-migration-management-proposal).
+No history command or remote DB operation was performed for this proposal.
+
+The remaining actual non-owner DELETE test is independent of this ledger decision.
+Local served-module availability and a safe browser-session probe plan are now
+documented, but **non_owner_actual_delete=PARTIAL** until authorized execution and
+independent target-preservation evidence. Existing account reports are not a new
+role-session test. No target created, request sent or cleanup run in preparation.
+
 ## 0015 Correction Candidate: Not Applied
 
 2026-10-09, entry local `88cd663`, remote `0f2fdae`, clean worktree. The separate

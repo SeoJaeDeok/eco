@@ -1,6 +1,326 @@
 # Phase 29 And 32 Fast-Track Readiness
 
-## Latest: 0015 Local Correction Candidate
+## Production Release Authorization: 2026-10-09
+
+The operator explicitly authorized releasing the existing stacked Phase 28/29/32
+candidate, including normal feature push, main fast-forward/push and Vercel Git
+Production deployment. Phase 30/31 are not implemented. Earlier no-deployment and
+unaccepted-proposal statements below describe their historical stages, not this
+new authorization. No release or new Production UI PASS is claimed by this entry.
+
+- Entry HEAD `4ba06e2`, remote feature `0f2fdae`, main/origin/main `a3887a7`.
+  Preserve and consolidate the existing three documents and Storage read-only SQL.
+- **Fresh local checks:** all 221 Node tests PASS (0 failures/skips), typecheck PASS,
+  Vite build PASS, development-inclusive audit 0 vulnerabilities. The existing
+  mixed static/dynamic import build warning is non-fatal. No dependencies changed.
+- **STATIC security review:** `is_admin()` requires a profile matching `auth.uid()`
+  with `role=admin`; a missing profile returns false. The auth repository also
+  requires `profile?.role === 'admin'`. Client profile updates cannot write role.
+  Observation DELETE is guarded by server approved + owner/admin RLS, not only UI
+  visibility. No new privilege-escalation path found. This is not B's live denial.
+- **LOCAL/REMOTE Git:** the app, lockfile, build config and public assets match the
+  operator-smoked Preview `e7703f8`. Later 0015 is already manually applied and
+  post-checked; it is not a new deployment-time DB task. Current main has no branch
+  protection or active branch rules requiring PR according to GitHub metadata.
+- **PUBLIC_HTTP / public-bundle inspection:** the existing Production homepage
+  returns app HTML; its actual Supabase client configuration uses Supabase mode,
+  a public anon key, and the same project/bucket as the existing local public
+  configuration. Kakao public configuration is present. Values were used only in
+  memory. This confirms connection settings, not rendered UI or Kakao operation.
+- GitHub's Vercel-created deployment record reports the existing Production
+  `a3887a7` successful. Protected unique deployment links were not bypassed.
+  Local package/build/Vercel files contain no DB push, migration, seed or destructive
+  deployment hook. Dashboard-only branch/build overrides still require confirmation
+  before main push. Browser automation initialization failed before page access.
+
+### Accepted Release Limitations
+
+The operator expressly accepts shipping with the following known limitations;
+acceptance does not change any verification result to PASS:
+
+- Non-owner authenticated server DELETE **PARTIAL**, request NOT_RUN. B's profile
+  is missing or not visible; its cause and ordinary role remain unresolved. The
+  interrupted attempt created no target. Owner/admin/anon and Phase 32 live PASS
+  remain their prior separate OPERATOR_UI/LIVE_API evidence.
+- Storage **37 metadata/policy gates PASS / OPERATOR_SQL**. Current private bucket
+  is 20 MiB with JPEG/PNG/WebP. Near-limit upload and actual cleanup NOT_TESTED;
+  best-effort cleanup can leave orphan objects without reversing row deletion.
+- 0002 replay configures 5 MiB rather than the running manual 20 MiB configuration.
+  New-environment equivalence is not assumed. No bucket change or new migration.
+- CLI migration history schema remains absent. For this release use recorded SQL
+  Editor application/post evidence (0012-0015 APPLIED + post PASS), and defer CLI
+  reconciliation. No db push/reset/repair, history creation/writes or migration
+  replay. Manual 0014 -> 0012 -> 0013, then 0015 differs from canonical file order;
+  matching final state is not proof of historical full-file execution.
+- Pending/rejected deletion remains deferred; limited date diversity and actual
+  Kakao deletion-marker removal remain partial. General Preview map UI PASS does
+  not establish deletion-marker removal. Exact rollback SQL is not documented.
+
+No app/package/migration, account, observation, comment or Storage data change is
+part of this release operation. New confirmed security flaws or serious data-loss
+risks stop deployment; UI refinements can follow the operator's post-release plan.
+Production status and read-only smoke must be recorded only after actual deployment,
+without repeated documentation pushes/redeployments or a full Verified closeout.
+
+## Latest: Non-Owner Smoke Stopped At Account B Preflight
+
+At `4ba06e2`, preserve all four incoming uncommitted documentation/check files.
+The operator subsequently authorized exactly one new image-free approved target,
+B's denial probe and A/admin cleanup. Execution stopped before target creation:
+B's authenticated ordinary role could not be verified. This is not a failed DELETE
+or evidence of an RLS bypass. No target, DELETE request or Production authorization.
+
+### Current Account Preflight Result
+
+- **OPERATOR_BROWSER_READ:** the user ran reviewed local-app snippets using the
+  existing SDK/AuthRepository, then supplied only safe result summaries. These
+  are operator-executed authenticated API reads, not Codex browser automation.
+- A reported `account_a_role=PASS`, authenticated and ordinary user. The checker
+  recorded only a per-run salted identity hash in a dedicated tab sessionStorage
+  smoke key with a 45-minute expiry. No original user ID, email, JWT, cookie or
+  auth-session storage was exported or written into the smoke record.
+- B's first check returned `PROFILE_ID_MISMATCH`. That guard covers both a missing
+  visible profile and a different profile ID; the error alone was not a diagnosis.
+- The focused diagnostic then reported authenticated=true, session_stable=true,
+  profile_read_succeeded=true, own_profile_visible=false, different_from_a=true,
+  account_a_comparison_available=true and no query error. Profile identity and
+  ordinary/admin role flags were null: **PROFILE_MISSING_OR_NOT_VISIBLE**.
+- Therefore A and B are distinct authenticated accounts within this check, but
+  **account_roles_verified=PARTIAL**. B's profile may be absent or not visible;
+  physical absence, its cause and B's role are not established. No automatic profile
+  provisioning, RLS change or assumption that missing profile means ordinary user.
+- **non_owner_actual_delete=PARTIAL**, request NOT_RUN. Dedicated observation
+  creation and deletion NOT_RUN; cleanup not applicable because no target was
+  created in this attempt. No comments/images or changes to existing observations
+  were performed by this workflow. No mutation of accounts, DB settings or policies.
+- Temporary files outside the repository: `check-account-a.js`, `check-account-b.js`
+  and `diagnose-account-b-profile.js` under the dedicated Phase 29 TEMP directory.
+  Syntax/local isolated guard cases passed (14, 24 and 14 respectively); these are
+  NOT live permission tests or a rerun of the historical 221 app tests. The DELETE
+  probe has not been created or executed. No raw API responses or credentials logged.
+- Resume only with a separately usable existing ordinary B whose profile/role can
+  be verified, or after a separately approved diagnosis resolves the current B
+  prerequisite. Do not replace B with an admin, create an account/profile or loosen
+  the guard. Expired comparison state must not be treated as a current role proof.
+  No completed-smoke commit is made while this prerequisite remains unresolved.
+
+| Readiness State | Evidence And Boundary |
+| --- | --- |
+| PASS | Historical 221 tests/typecheck/build/audit, Phase 28/29/32 operator Preview UI, owner/admin deletion and anon denial, Phase 32 live comments, 0012-0015 application/post checks, and 37 Storage metadata gates. These are the existing distinct automatic, OPERATOR_UI, LIVE_API and OPERATOR_SQL records, not reruns. |
+| ACCEPTED_LIMITATION_CANDIDATE | Image cleanup best-effort/NOT_TESTED; manual 20 MiB bucket versus 0002's 5 MiB replay; deferred CLI history reconciliation; approved-only deletion with pending/rejected deferred; actual Kakao deletion-marker verification PARTIAL. No new Production acceptance is inferred. |
+| REQUIRES_VERIFICATION | Authenticated ordinary non-owner observation DELETE remains PARTIAL. Button hiding and catalog/test results are not a live server-denial result. |
+
+Storage's reviewed metadata/policies are PASS with no immediate SECURITY_BLOCKER
+or FUNCTIONAL_BLOCKER found in scope. Near-20 MiB upload remains NOT_TESTED, current
+service-global cap unverified, and existing signed-image successes stay historical.
+Do not change the bucket, add a migration or repeat the 37-gate query for this step.
+
+### Non-Owner Request Path And Execution Gates
+
+- **STATIC:** `0012` grants table DELETE to authenticated, not anon. Its only DELETE
+  policies require approved plus owner identity, or approved plus `is_admin()`.
+  Existing operator post PASS checked both expressions and no extra DELETE/ALL
+  policies. General account B must satisfy neither permitted branch.
+- `supabaseObservationRepository.deleteObservation` verifies a signed-in user,
+  sends exact-ID/approved DELETE with a returning projection, and rejects missing
+  rows. It does not block non-owners before the server. Its generic error loses
+  the server error distinction, so merely catching that error is not proof of RLS.
+- **LOCAL_HTTP, not LIVE_API:** read only the existing local Vite modules in memory.
+  Supabase mode, configured public auth, the real deletion query and the shared
+  client import path were confirmed. No env file or settings value was printed,
+  no source module evaluated, and no Supabase request or session read was made.
+- Earlier OPERATOR_UI described A and B as ordinary; current read-only checks above
+  qualify that assumption: A's ordinary role passed, while B's did not resolve.
+  Administrator availability remains confirmed but cannot substitute for B. Before
+  any future write, require a current matching profile and `role=user`, not just
+  absence of an admin button or the existence of an authenticated session.
+- Browser-control initialization failed before opening any page. The available
+  fallback is **operator-run, one-shot browser DevTools code in the existing local
+  app**, with the received one-target approval and snippet review. Import the already-served
+  `supabaseClient.ts` module at the same URL as the app, reusing `getSupabaseClient()`.
+  The SDK handles the user's existing authentication; never extract/copy JWTs,
+  cookies, localStorage, auth headers or passwords, or construct a replacement
+  Bearer header. No new account/client login, dependency or app modification.
+- The proposed probe uses that client for the repository-equivalent table DELETE
+  with exact target ID and approved status. It adds only target guard filters
+  (pinned owner, dedicated marker, empty image metadata) and returns only ID for an
+  internal affected-row check. This is an authenticated Data API probe, **not a
+  claim of exercising the UI or the full repository cleanup method**. It avoids
+  Storage calls and preserves status/error-code/row-count evidence unavailable from
+  the repository's generic error. The executable probe is not created/run yet.
+- Only after both ordinary account prerequisites pass, establish a unique harmless marker absent from the public data
+  and a creation-time baseline, then have A create exactly one image-free approved
+  observation through the ordinary UI. Confirm A's ownership, empty image metadata
+  and unique public identity before switching to B. Keep target identity/owner only
+  in the local verification process memory, never chat or result files.
+- The app intentionally reloads after login/logout. Do not rely on page globals
+  surviving the A-to-B switch. Resolve the exact unique new marker after B logs
+  in, cross-check the pinned target in the independent public verifier, and stop
+  for ambiguity, old target, image, ownership/status drift or missing state. Never
+  use the first card, a pre-existing observation or a broad name search as a target.
+- Immediately before the single request, require B's current authenticated user
+  and matching profile, `role=user`, `isAdmin=false`, and B different from A/the
+  target owner. Session changes, missing profiles or expired authentication stop
+  the test. Browser safety/paste restrictions must not be disabled or bypassed.
+- Send at most one authorized exact-target DELETE. A successful server response
+  with zero returned rows (or an explicit authorization denial) **and** an
+  independent sessionless public read preserving the same approved target are
+  required for PASS. Network/timeout/401 errors, client exceptions without request
+  evidence or failed guard filters are inconclusive, not PASS. Nonzero affected
+  rows or unexpected disappearance stop the test and Production review; do not
+  create another observation to repeat it.
+- Only after preservation is confirmed, A or the administrator removes this one
+  target through normal UI as cleanup, not another owner/admin regression run.
+  Public exact-target absence and no leftover test data are required for cleanup
+  PASS. No comments or images, no anon repeat and no other observation changes.
+- Output is restricted to safe status/boolean/count/error categories. Never show
+  UUIDs, profile data, returned rows, headers or original error objects. Module
+  access is confirmed, but actual authenticated DELETE execution is **NOT_RUN**.
+  The one-target approval exists; the account prerequisite, not consent, blocks it.
+
+### Manual Migration Management Proposal
+
+For this candidate, propose review against the existing SQL Editor application and
+post-check evidence, while deferring CLI reconciliation. **Not yet adopted by the
+operator.** History schema remains absent; 0012-0015 are APPLIED + post PASS without
+implying all 0001-0015 files have proven historical execution. The app does not use
+the CLI ledger for its public/repository operations.
+
+Final operational acceptance would need to explicitly acknowledge:
+
+1. Manual application records, not CLI history, are this candidate's deployment
+   evidence. Preserve file/version/hash, known execution order, target category,
+   operator reports and post checks; mark unknown dates/provenance as unknown.
+2. No `supabase db push`, migration repair, history writes, reset or full 0001-0015
+   replay. SQL Editor changes do not establish a synchronized CLI ledger. See the
+   [official migration-history explanation](https://supabase.com/docs/guides/deployment/database-migrations#how-migration-tracking-works).
+3. Fresh-environment equivalence is not established: 0002 still initializes a
+   5 MiB bucket, whereas the running environment is 20 MiB. Applied files stay
+   immutable; future provisioning and history reconciliation need a separately
+   reviewed plan, backup/recovery preparation and write approval. Exact rollback
+   SQL remains not documented; no speculative reverse operation is supplied.
+4. The remaining limitation candidates above are not silently promoted to accepted
+   risks. Actual non-owner denial is still the priority verification gate, and any
+   final Production deployment requires its own explicit approval.
+
+No CLI connection/history command was run. Existing 37-gate/0015 PASS evidence is
+preserved. Only the three existing documents change; the read-only Storage SQL,
+app/packages/tests/migrations remain untouched. Document/security checks are local;
+the historical 221-test/build/typecheck/audit results were not rerun. No commit,
+push, merge, deployment, test data creation or DELETE request in this preparation.
+
+## Latest: Storage Configuration Operator Check PASS
+
+Local analysis at `4ba06e2`; incoming uncommitted 0015 application records below
+are preserved. The operator executed the prepared read-only SQL and supplied its
+safe result table: **37 gate checks true**, 5 informational rows. Evidence is
+**OPERATOR_SQL**, not a Codex API or browser run. No DB mutation, new migration,
+app/package edit or commit.
+
+| Source | Actual Scope / Expected State |
+| --- | --- |
+| 0002 | Private `observation-images`, 5242880-byte bucket and image metadata CHECK, JPEG/PNG/WebP, approved-reference public SELECT and admin SELECT. Upload alternatives are comments, not active policies. |
+| 0003 | Removes old pending-upload policies; authenticated INSERT only under the current user's generated owner path. No Storage UPDATE/DELETE policy. |
+| 0006 | Changes only the observation size CHECK to 20971520 bytes; does not change the bucket. |
+| Phase 22C operator record | Manually raised the private bucket to 20 MB, retained the three MIME types; global limit recorded as 50 MB. About 9 MB upload/detail smoke passed. Near-20 MB upload was not tested. |
+| 0004-0015 otherwise | No later bucket configuration or Storage UPDATE/DELETE grant/policy. 0010/0011 RPC image validation uses the same 20971520-byte cap; 0015 changes only the category label. |
+| Current app | Actual cap is 20 MiB (`20 * 1024 * 1024`), despite UI wording MB. Same three MIME types; authenticated owner path and `upsert: false`. Bucket comes from the existing browser setting or code default above; no env file was read. |
+
+- **Current OPERATOR_SQL:** exactly one expected bucket, private/MIME checks PASS,
+  actual limit **20971520 bytes**, not 0002's **5242880** or decimal **20000000**.
+  Thus the known mismatch is the historical replay configuration versus the intended
+  20 MiB running configuration, not evidence that the bucket became public.
+- Public display issues a runtime signed URL through the repository helper with
+  a default 600-second lifetime. Approved observation references scope public image
+  SELECT; admins use the existing `is_admin()` path. Phase 28's one-image signing/
+  access PASS and earlier display/upload smoke remain historical, not blanket
+  security or current full-boundary upload verification.
+- Deletion is DB-first. The returned trusted image reference is validated before
+  best-effort Storage API cleanup; failure/empty removal does not reverse row
+  deletion. Current migrations provide no owner/admin object DELETE policy. Losing
+  the approved reference also removes that public SELECT route. Orphans and already
+  issued signed URLs until expiry remain known limits; no file erasure is promised.
+- **Risk classification after SQL:** size/replay mismatch and known cleanup limits
+  remain **ACCEPTED_LIMITATION_CANDIDATE**, not automatic Production risk acceptance.
+  No SECURITY_BLOCKER or FUNCTIONAL_BLOCKER was identified within this metadata
+  check. The prior UNKNOWN for reviewed bucket/policy configuration is resolved;
+  service-global limits and actual boundary upload behavior remain unverified.
+  Do not claim an upload/delete test or that all Storage security is proven.
+- The operator ran the [read-only Storage bundle](sql-checks/storage-production-readiness-read-only.sql).
+  It reads one bucket's configuration, catalog policies/dependencies/privileges,
+  helper definition and DB size/MIME CHECKs. It does not list Storage objects,
+  read application rows, invoke business functions or issue Storage API requests.
+  A guarded fixed metadata SELECT uses `query_to_xml`; no generated write SQL.
+- Every `gate.*` returned true. Exact reviewed public approved-reference SELECT,
+  admin SELECT and authenticated owner-path INSERT policies matched. Anonymous
+  INSERT, browser UPDATE/DELETE and bucket-management policies are absent. Table
+  RLS, client non-owner/non-bypass roles, helper definition/EXECUTE permissions and
+  DB image size/MIME CHECKs passed. Regex literals were preserved in comparison.
+- Informational results: bucket count **1**, limit **20971520 bytes**, applicable
+  browser Storage UPDATE/DELETE policy count **0**; DELETE table privileges are
+  **1 for anon and 1 for authenticated**. Their `passed=null` cells are intentional.
+  The table grants alone do not bypass enabled RLS. No applicable DELETE policy
+  means these client roles lack the reviewed row-deletion path; this supports the
+  cleanup limitation, not successful file deletion. No permission change is needed
+  merely because these table-grant flags are 1.
+- This bundle does **not** read the service's current global file-size setting,
+  exercise an upload, prove every object's availability, test browser rendering or
+  audit arbitrary additional RPC/view access. Global 50 MB is historical only;
+  current global limit and near-20 MiB end-to-end behavior remain unverified.
+- **Minimum next decision:** no running bucket correction or new migration is
+  indicated by the observed mismatch. Production review can continue conditionally
+  on explicit acceptance of the manual 20 MiB configuration/replay gap and known
+  best-effort cleanup limit, while the separate readiness issues remain open.
+  Fresh replay would still set the bucket to 5 MiB;
+  keep this gap explicit in future provisioning/history decisions. Do not rerun or
+  edit 0002 to make the running DB match, and do not add a migration automatically.
+- No public bucket, unexpected client mutation policy or bucket/DB cap/MIME
+  mismatch was found in this result. No new signing, upload, image display or
+  deletion smoke was performed; retain those older runtime results separately.
+- Official references: [bucket access models](https://supabase.com/docs/guides/storage/buckets/fundamentals),
+  [global/bucket limits](https://supabase.com/docs/guides/storage/uploads/file-limits),
+  [Storage RLS](https://supabase.com/docs/guides/storage/security/access-control),
+  [Storage API deletion](https://supabase.com/docs/guides/storage/management/delete-objects).
+- **0015 APPLIED + post PASS is preserved.** Its return mismatch is resolved, not
+  historical 0011 execution proof. CLI history remains absent; non-owner actual
+  observation DELETE remains PARTIAL, image cleanup NOT_TESTED, Kakao deletion
+  PARTIAL. No history repair, Production deployment or Verified closure.
+- Local SQL comparison/negative-case/lexical review: STATIC PASS. Remote metadata
+  bundle **OPERATOR_SQL PASS**. Historical 221 tests/typecheck/build/audit
+  were not rerun for this SQL/documentation-only task.
+
+## Latest: 0015 Manual Application And Post-Check PASS
+
+- Evidence: **OPERATOR_SQL**, reported in this session against the unchanged SQL
+  files at `4ba06e2`. The operator reported all pre-check values true, SQL Editor
+  application success, then explicitly `0015-post=PASS`.
+- Results: **0015-pre PASS / 0015-apply PASS / 0015-post PASS**.
+  **0015 remote APPLIED + post PASS**. Codex did not execute remote SQL.
+- The complete corrected RPC body and its precise amphibian/reptile return slot
+  match the reviewed definition: `양서/파충류`. Other conditions/return labels,
+  signature/defaults, SECURITY DEFINER, search_path, volatility and the reviewed
+  EXECUTE contract passed the post-check. Exact owner/OID/ACL preservation is
+  supported by the successful migration's internal before/after guards, not an
+  independent raw ACL snapshot returned to Codex.
+- The specific **0011-related return-string MISMATCH is resolved in current
+  final-state metadata**. This is not proof of historical full-file execution.
+  Earlier MATCH 11 / MISMATCH 2 / UNVERIFIABLE 1 counts below and in the evidence
+  document describe the pre-0015 audit; no fresh all-migration reconciliation or
+  blanket applied marking was performed in this step.
+- Recent manual order is now **0014 -> 0012 -> 0013 -> 0015**; canonical replay
+  remains **0001 -> ... -> 0014 -> 0015**. Do not rerun the applied migration.
+- Actual amphibian/reptile registration/browser end-to-end smoke: **NOT_RUN**.
+  No new observation/comment/account/image was created or deleted in this step.
+  No app/package/migration/check-SQL edits or other RLS/Storage changes by Codex.
+- Separate issues remain: **0002 bucket MISMATCH**, CLI history schema absence
+  (last operator evidence, not repaired/rechecked here), non-owner actual DELETE
+  PARTIAL, image cleanup best-effort/NOT_TESTED and Kakao deletion marker PARTIAL.
+  Exact rollback SQL remains not documented. No Production clearance or Verified closure.
+- Only readiness/handoff records are updated, left uncommitted for the next
+  Production-preparation consolidation. No new commit, push, merge or deployment.
+  Prior 221 tests/typecheck/build/audit results were not rerun for this record.
+
+## Previous: 0015 Local Correction Candidate (4ba06e2)
 
 2026-10-09, entry local `88cd663`, remote `0f2fdae`, main/origin/main `a3887a7`.
 The approved follow-up prepares a single-literal RPC correction, not remote apply.

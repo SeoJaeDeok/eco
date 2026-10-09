@@ -4,7 +4,177 @@
 
 This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current Task: 0015 Manual-Apply Candidate Prepared
+## Current Task: Authorized Production Release
+
+2026-10-09: the operator explicitly authorized the existing Phase 28/29/32 stacked
+candidate's feature push, main fast-forward/push and Production deployment while
+accepting the known limitations. Earlier pending-acceptance/no-deployment sections
+are historical. Entry branch is the Phase 29/32 feature branch, HEAD `4ba06e2`,
+remote feature `0f2fdae`, main/origin/main `a3887a7`. Preserve all four incoming
+documentation/check files. Phase 30/31 are not implemented.
+
+- Fresh checks: **221/221 Node tests PASS**, typecheck/build PASS, audit including
+  development dependencies **0 vulnerabilities**. Existing non-fatal build warning
+  only. App, lockfile, build config and public assets match UI-smoked `e7703f8`.
+- Static review finds no missing-profile admin escalation: SQL helper requires
+  current user profile role=admin; client uses explicit role equality. Approved
+  owner/admin DELETE is enforced by RLS. Non-owner live DELETE remains PARTIAL.
+- Existing Production public bundle confirms Supabase mode, public anon client,
+  project/bucket matching existing local public configuration, and Kakao setting
+  present. No setting values or credentials printed. HTTP/config inspection is
+  not UI smoke. Existing Vercel Production `a3887a7` reports success via GitHub.
+- Tracked build configuration has no DB deployment hooks. Dashboard-only branch
+  and command overrides await operator confirmation before main push. Browser
+  automation failed to initialize; actual Production UI may need operator review.
+- Preserve 0012-0015 APPLIED/post PASS, 37 Storage metadata gates PASS, prior
+  Preview and owner/admin/anon/comments live evidence. Do not repeat remote writes.
+- Accepted for this release, still unresolved: B missing/hidden profile and
+  non-owner live DELETE PARTIAL; absent CLI history; 5/20 MiB replay difference;
+  cleanup best-effort/NOT_TESTED and possible orphans; pending/rejected deletion
+  deferred; limited date diversity and actual Kakao deletion-marker PARTIAL.
+- Manual SQL Editor evidence is the accepted release-management basis, not a
+  repaired history ledger. No db push/reset/repair, history writes, migration
+  replay, bucket/RLS/Auth changes or new smoke records. Exact rollback SQL remains
+  undocumented. New actual security/data-loss findings stop deployment.
+- Next: consolidate intended files, normal feature push and latest Preview status,
+  confirm main fast-forward/settings, main push through Git integration, then
+  read-only Production smoke. Do not mark deployment/UI successful in advance.
+  Record actual deployment and smoke afterward without repetitive doc deployments.
+  [Release scope](phase-29-32-fast-track-readiness.md#production-release-authorization-2026-10-09).
+
+## Historical: Non-Owner DELETE Stopped Before Target Creation
+
+- Branch/HEAD `4ba06e2`, remote-tracking `0f2fdae`, main/origin/main `a3887a7`.
+  Preserve the three uncommitted documents plus Storage read-only SQL. No commit.
+- Storage **37 gates PASS / OPERATOR_SQL** and 0015 **APPLIED + post PASS** remain
+  recorded below, not rerun. No immediate Storage security/functional blocker found
+  in the checked metadata. Near-20 MiB upload and image cleanup remain NOT_TESTED.
+- One-target creation/probe/cleanup approval has been received. A's ordinary role
+  passed a reviewed SDK-based operator browser check. B then returned
+  `PROFILE_ID_MISMATCH`; the narrow follow-up confirmed authenticated and stable
+  login, successful own-profile query but **no visible profile**, distinct from A,
+  and no query error. B's ordinary/admin roles are unknown, not false/ordinary.
+  Evidence: **OPERATOR_BROWSER_READ**, not Codex browser automation or DELETE.
+- **account_roles_verified=PARTIAL**. Physical profile absence versus RLS visibility
+  is unresolved. Do not auto-create a profile/account, change RLS or substitute the
+  available administrator for B. Stop before all target creation/DELETE operations.
+- Account comparison stores only per-run salted hashes in a dedicated tab smoke
+  sessionStorage key (45-minute expiry), not auth storage or raw IDs/credentials.
+  TEMP-only role/diagnostic snippets have local syntax/isolated checks, not live
+  DELETE coverage. Full details: [current preflight](phase-29-32-fast-track-readiness.md#current-account-preflight-result).
+- This turn's **LOCAL_HTTP** inspection confirms existing local Vite Supabase mode,
+  public auth configuration, actual DELETE repository query and shared SDK module.
+  No env file read, values printed, Supabase call or session extraction occurred.
+  Browser-control initialization failed before browser access; no automated login
+  or hidden session inspection. Do not call this a live permission test.
+- Safe DELETE fallback remains prepared at design level: after the role gates, the
+  user runs a reviewed one-shot DevTools probe in B's existing local-app session.
+  It imports the app's existing cached SDK client and issues repository-equivalent
+  exact-ID/approved DELETE with target guards, returning a safe affected-row count.
+  It does not invoke Storage cleanup. No JWT/cookie/localStorage/header extraction,
+  replacement login, service-role, app edit or browser safety bypass. The executable
+  probe is not yet created/run. See [execution gates](phase-29-32-fast-track-readiness.md#non-owner-request-path-and-execution-gates).
+- Once both ordinary roles pass: read-only preflight -> A creates exactly one new image-free
+  approved target -> B ordinary/non-owner identity check -> one actual DELETE
+  denial probe -> independent anonymous read confirming preservation -> A/admin UI
+  cleanup -> public absence check. Owner/admin/anon regression cases are not rerun.
+  Keep target identity in verification memory; login reload must not lose the
+  target safety boundary. Ambiguity/session drift/error stops; never target an old
+  observation or create a replacement after unexpected deletion.
+- **non_owner_actual_delete=PARTIAL**. Account availability and module access do
+  not prove server denial. A generic exception or 401/network failure is not PASS.
+- Candidate management proposal: base this deployment review on existing SQL Editor
+  apply/post evidence and defer CLI history reconciliation. This is a proposal,
+  not operator acceptance. History schema is still absent. Prohibit db push/reset,
+  migration repair/history writes and 0001-0015 replay; new-environment equivalence
+  is not assumed. [Final acceptance items](phase-29-32-fast-track-readiness.md#manual-migration-management-proposal).
+- Readiness split: prior implementation/tests/Preview/owner/admin/anon/comments,
+  Storage metadata and 0015 checks are PASS within their existing evidence scopes.
+  Cleanup, 5/20 MiB replay gap, deferred history management, pending/rejected delete
+  and Kakao deletion-marker gap stay ACCEPTED_LIMITATION_CANDIDATE. Non-owner
+  server DELETE stays REQUIRES_VERIFICATION. No Production clearance/Verified closeout.
+- Next user action: determine whether another existing ordinary account can replace
+  B; otherwise the current profile prerequisite needs separate read-only diagnosis.
+  This is not another request for the already-received one-target consent. No
+  credentials should be shared. No target was created, so cleanup is not applicable
+  and no new test record remains from this attempt. Request NOT_RUN, denial PARTIAL.
+  No data write, SQL/Storage/Auth setting change, migration rerun, commit/push/merge/
+  deployment. Past 221 tests/typecheck/build/audit were not rerun.
+
+## Storage Read-Only Operator Check PASS
+
+- Branch/HEAD unchanged at `4ba06e2`, remote-tracking `0f2fdae`. Preserve the
+  existing uncommitted readiness/handoff 0015 PASS record below. This task adds
+  only one inspection SQL and documentation. The evidence document links the new
+  result without rewriting its historical audit. No commit.
+- Local 0002 creates a private bucket at 5242880 bytes. 0003 supplies authenticated
+  owner-path INSERT only; 0006 raises the observation DB CHECK to 20971520 bytes,
+  not the bucket. Phase 22C documented the manual bucket increase and about-9 MB
+  upload smoke. Subsequent migrations through 0015 do not add Storage mutations.
+- Current OPERATOR_SQL confirmed private bucket, three expected MIME types and
+  **20971520 bytes / 20 MiB**. App/RPC/DB use the same cap. The 5-to-20 MiB delta is
+  an explicit replay/configuration mismatch, not evidence of an exposed public bucket.
+- Size/replay and cleanup risk: **ACCEPTED_LIMITATION_CANDIDATE**, not automatic
+  Production acceptance. No SECURITY_BLOCKER or FUNCTIONAL_BLOCKER identified
+  within the reviewed metadata scope. Details and remaining evidence boundaries
+  are in [Storage readiness](phase-29-32-fast-track-readiness.md#latest-storage-configuration-operator-check-pass).
+- The operator ran the [Storage read-only bundle](sql-checks/storage-production-readiness-read-only.sql):
+  **37 gates true**, 5 informational rows. This is OPERATOR_SQL, not Codex LIVE_API
+  or browser execution. Bucket count 1, limit 20971520 bytes, browser Storage
+  UPDATE/DELETE policy count 0. DELETE table grants for anon/authenticated are
+  each 1, but enabled RLS with no applicable DELETE policy does not permit that
+  deletion path. Informational null PASS cells are not failures.
+- The query checks private/size/MIME settings, exact reviewed upload/read predicates,
+  applicable policy inventory, role privileges/ownership/RLS, admin helper and
+  observation image CHECKs. It reads no objects or observation rows and performs
+  no signing/upload/deletion. Extra policies or rendering differences require
+  review, not automatic RLS edits. A DELETE table grant is not an RLS permission.
+- The policy/role/privilege checks matched; no owner/admin Storage DELETE policy
+  exists in the reviewed client path, consistent with local design. Cleanup stays
+  DB-first/best-effort, with possible orphan files; observation deletion succeeds.
+  Historical signed-image/read/upload PASS is not fresh comprehensive security PASS.
+- Service-wide file-size setting is outside this catalog check. Historical global
+  50 MB and about-9 MB smoke are preserved; current global limit and near-20 MiB
+  upload remain unverified. Do not ask for an upload or delete in this step.
+- Next: consolidate explicit operational acceptance of the 20 MiB manual
+  configuration/replay gap and cleanup limit, separately from CLI history and
+  non-owner DELETE verification. No current bucket correction/new migration is
+  indicated by this result; do not repeat this SQL without a new reason. No 0002
+  replay, history initialization or repair. This is not Production authorization.
+- 0015 **APPLIED + post PASS** below remains current. CLI history absent,
+  non-owner actual DELETE PARTIAL, image cleanup NOT_TESTED and Kakao deletion
+  PARTIAL remain. App/packages/migrations unchanged; no remote DB changes, push,
+  merge, deployment or Verified closure. Past 221 tests/build/typecheck/audit not rerun.
+
+## Previous Task: 0015 Applied With Operator Post-Check PASS
+
+- Same stacked Phase 28/29/32 branch. Local HEAD `4ba06e2`, remote-tracking HEAD
+  `0f2fdae`. This result updates readiness/handoff only and stays uncommitted for
+  the next consolidation; no push, merge or deployment.
+- **OPERATOR_SQL:** user reported all 0015 pre-check values true, application
+  success in SQL Editor, and `0015-post=PASS`. The shown files match `4ba06e2`.
+  **0015-pre PASS / apply PASS / post PASS; remote APPLIED + post PASS**.
+  Codex did not execute remote SQL. Do not rerun 0015 or an earlier migration.
+- Corrected return is `양서/파충류`; full-body/branch and signature/default/security/
+  search_path/volatility/EXECUTE post-checks passed. Exact owner/OID/ACL preservation
+  relies on successful in-migration before/after guards, not a separate exposed ACL.
+  The specific 0011 return-string MISMATCH is resolved as a final-state comparison;
+  this is not migration-history consistency or historical execution proof.
+- Latest manual order: **0014 -> 0012 -> 0013 -> 0015**. Canonical order remains
+  0001 -> ... -> 0014 -> 0015. Earlier 14-file tallies below/in the evidence document
+  are historical pre-correction results; no fresh full-ledger reassessment here.
+- Registration/browser end-to-end smoke is still **NOT_RUN**; no new test data
+  was created or deleted. Do not turn metadata PASS into runtime/UI PASS.
+- 0002 bucket MISMATCH, CLI history schema absence, non-owner actual DELETE
+  PARTIAL, best-effort image cleanup NOT_TESTED and real Kakao deletion PARTIAL
+  remain. No history initialization/repair, RLS/Storage changes, app edits or
+  Production deployment. Exact rollback SQL not documented.
+- Next: consolidate Production-readiness decisions separately; any test-observation
+  creation or history/schema correction needs its own approval. Do not begin
+  another SQL/write/deployment step automatically. Historical 221-test/typecheck/
+  build/audit results were not rerun for this documentation-only update.
+
+## Previous Task: 0015 Manual-Apply Candidate Prepared (4ba06e2)
 
 - Entry branch `feature/phase-29-32-observation-delete-comments-fast-track`, local
   `88cd663`, remote `0f2fdae`, clean. Phase 28/29/32 remains stacked; main/origin/main
