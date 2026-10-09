@@ -1,5 +1,38 @@
 # Phase 29 And 32 Fast-Track Readiness
 
+## Latest: 0015 Local Correction Candidate
+
+2026-10-09, entry local `88cd663`, remote `0f2fdae`, main/origin/main `a3887a7`.
+The approved follow-up prepares a single-literal RPC correction, not remote apply.
+
+- [0015 candidate and preservation rationale](migration-reconciliation-evidence.md#0015-correction-candidate-not-applied):
+  `create_observation_with_verified_taxonomy` has a remote amphibian/reptile return
+  outside the validated CHECK set. Expected `양서/파충류`; remote spelling/origin
+  unknown. Local 0011 already has the correct value. No actual failed create was
+  reproduced. Keep all existing 0001-0014 files unchanged.
+- New candidate changes only that literal after whole-body/signature/security/ACL
+  guards. CREATE OR REPLACE reuses current options; OID, owner, ACL and other
+  attributes must survive an in-transaction comparison. No data writes, permissions,
+  other functions, policies, global defaults, Storage or app changes.
+- [Pre-check](sql-checks/0015-pre-apply.sql) and [post-check](sql-checks/0015-post-apply.sql)
+  are catalog-only SELECTs. Manual order, **after separate approval**: pre PASS ->
+  candidate once -> post PASS. Any false/null/error stops; no automatic retry or
+  speculative rollback. Exact rollback SQL not documented.
+- **0015 remote NOT_APPLIED; SQL STATIC; remote registration smoke NOT_RUN.**
+  Canonical replay appends 0015, which is a checked no-op for already-correct 0011.
+  0012/0013/0014 retain earlier APPLIED + post PASS, actual order 0014 -> 0012 -> 0013.
+- Newly executed local regression: **221 Node tests PASS (including 8 new checks)**,
+  typecheck/build PASS, dev-inclusive audit **0 vulnerabilities**. Existing 213-test
+  and live/Preview results remain historical. No package/app source changes or
+  new remote test data. Build's auth-provider chunk warning remains non-fatal.
+- Original 14-file evidence remains **MATCH 11 / MISMATCH 2 / UNVERIFIABLE 1**.
+  0011 cannot become MATCH until approved remote correction and post PASS. Bucket
+  0002 MISMATCH and CLI history schema absence are separate unresolved issues.
+  Non-owner actual DELETE PARTIAL, image cleanup NOT_TESTED/best-effort, actual
+  Kakao deletion PARTIAL and pending/rejected deferred remain unchanged.
+- Local commit only; no further push, merge or deployment. Production NOT_DEPLOYED.
+  No new history archive or Verified closure.
+
 ## Candidate
 
 - Updated: 2026-10-09. Branch: `feature/phase-29-32-observation-delete-comments-fast-track`.
@@ -13,8 +46,8 @@
   pushed; it is the local/remote entry HEAD and code basis for the final admin
   deletion smoke below. That result was committed as `0f2fdae`; a separately
   authorized documentation-only feature push has now succeeded at that commit.
-  The current read-only history follow-up also adds an evidence document and
-  diagnostic SQL files; app/package/migration files remain unchanged.
+  The read-only audit at `88cd663` added an evidence document and diagnostic SQL
+  without changing migrations. The separately approved 0015 candidate is above.
 - State: **0014/0012/0013 remote APPLIED + post PASS**, operator-reported SQL Editor
   execution. Phase 29 core owner smoke and Phase 32 limited comment smoke passed
   with the evidence/limitations below. **No Verified closure or Production release**.
@@ -33,7 +66,7 @@
   this newly modified application. Its coverage/date diversity/Kakao/log limits
   remain recorded in [Phase 28 readiness](phase-28-integration-release-readiness.md).
 
-## Migration Evidence Reconciliation In Progress
+## Historical Migration Evidence Audit (88cd663)
 
 2026-10-09, READ ONLY follow-up from entry local/remote `0f2fdae`. The pre-existing
 uncommitted history-diagnosis edits below are preserved in this local-only audit.

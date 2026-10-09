@@ -1,6 +1,113 @@
 # Migration Reconciliation Evidence
 
-## Scope And Decision
+## 0015 Correction Candidate: Not Applied
+
+2026-10-09, entry local `88cd663`, remote `0f2fdae`, clean worktree. The separate
+approval now permits a local correction candidate, read-only checks, regression
+tests and a local commit only. Remote SQL, push and deployment remain prohibited.
+The diagnostic record below is preserved, not a new remote verification.
+
+### Exact Scope And Evidence
+
+- Function: `public.create_observation_with_verified_taxonomy(text,text,uuid,text,date,double precision,double precision,text,text,text,integer)`.
+  Returns `public.observations`; PL/pgSQL, SECURITY DEFINER, empty `search_path`,
+  VOLATILE, called on null input, authenticated EXECUTE; PUBLIC/anon EXECUTE absent.
+  Previous operator catalog checks confirmed the reviewed contract, not an owner
+  name or complete raw ACL. Those are captured internally by 0015, never printed.
+- The remote wrong return's **exact spelling remains unknown**. The fourth operator
+  result proves only the `amphibia`/`reptilia` return differs from `양서/파충류`, is
+  not an NFC-only difference and lies outside the validated seven-category CHECK.
+  All six conditions and other six labels matched. Its origin is unknown.
+- Local immutable **0011 already contains the correct label**. Do not modify/replay
+  it. The existing authenticated repository's `createObservationWithVerifiedTaxonomy`
+  invokes this RPC with eleven named arguments; the function derives the broad
+  group from the trusted taxon, not a caller-selected classification. Returning the
+  invalid group can fail `observations_taxon_check` during insert (STATIC inference).
+  **Actual failing registration NOT_REPRODUCED**; no observation or comment created.
+
+### Candidate And Preservation Guards
+
+- [0015 candidate](../../supabase/migrations/0015_fix_observation_taxon_group_label.sql)
+  is one atomic DO statement. It validates the exact signature, parameter defaults,
+  attributes, access contract, validated CHECK and entire reviewed body. A restricted
+  lexer admits only the previously reviewed syntax; unfamiliar escapes, dollar
+  strings or block comments stop the candidate instead of guessing equivalence.
+- It compares all 773 meaningful tokens with unchanged 0011, excluding **only token
+  604**, the one combined-category return literal. The local regression recalculates
+  both comparison fingerprints from 0011. This is a bounded source-equivalence
+  guard, not a claim that MD5 authenticates untrusted input.
+- If that token is an invalid ordinary string, change precisely its character span
+  to `양서/파충류`. No global string replacement, other branch/label change, taxonomy
+  re-resolution, data UPDATE, extra overload, new helper or dependency on 0012-0014.
+  Existing comments/formatting outside the literal are preserved. SQL files use
+  ASCII Unicode escapes to avoid relying on clipboard Korean encoding.
+- The existing `pg_get_functiondef` CREATE OR REPLACE wrapper is reused, replacing
+  its single full source-body occurrence. This preserves signature, return type,
+  language, security, search path, volatility and other existing options. The
+  migration compares before/after OID, owner, complete ACL and every `pg_proc` field
+  except source/default parse text. Argument default expressions are compared via
+  `pg_get_expr` because parser source locations can change without changing defaults.
+  Any mismatch raises a safe error and rolls back the DO statement. Do not perform
+  concurrent function DDL during application.
+- PostgreSQL specifies that replacement of an existing function preserves ownership
+  and permissions, but unspecified attributes can reset. Reusing the complete
+  decompiled wrapper plus the transaction comparison avoids silently relying on
+  defaults. No GRANT/REVOKE, owner/default-privilege change or DROP is included.
+  Sources: [CREATE FUNCTION](https://www.postgresql.org/docs/current/sql-createfunction.html),
+  [pg_get_functiondef](https://www.postgresql.org/docs/current/functions-info.html).
+- Canonical replay is `0001 -> ... -> 0011 -> 0012 -> 0013 -> 0014 -> 0015`.
+  With canonical 0011's already-correct body, 0015 validates the same guards then
+  makes no change. Remote recent execution remains `0014 -> 0012 -> 0013`;
+  **0015 remote NOT_APPLIED**. This is not migration-history initialization.
+
+### Manual Readiness, Not Execution
+
+1. After **separate remote approval**, run the full [0015 pre-check](sql-checks/0015-pre-apply.sql).
+   Every boolean must be true. It specifically requires the current incorrect
+   target literal; an already-correct body stops this manual correction path.
+2. Only after PASS, execute the complete candidate once. A false/null/error or an
+   unexpected function definition means stop; do not force application or loosen
+   the checks. Never rerun 0011 or use guessed GRANT/rollback statements.
+3. Then run the full [0015 post-check](sql-checks/0015-post-apply.sql). It checks the
+   complete corrected body, the precise return slot, all other conditions/literals,
+   function metadata, CHECK and client privileges. All booleans must be true.
+   Standalone post checks do not reconstruct a historical owner/ACL snapshot;
+   exact preservation is enforced in the migration transaction itself.
+4. Record operator results before reassessing the remote 0011 final-state mismatch.
+   A real registration smoke needs separate data-write approval. **Exact rollback
+   SQL: not documented**; reintroducing an invalid label is not an approved rollback.
+
+### Local Verification And Remaining Gates
+
+- New focused file `tests/observation-taxon-label-migration.test.mjs`: **8 PASS**.
+  Tests cover both classes and other ranks/fallback, the CHECK label set, corrected
+  replay no-op, preservation outside the target, rejection of changes at all 772
+  other token positions, unsupported syntax, complete guard copies and SELECT-only
+  pre/post checks. The restricted CASE evaluator is a local model, **not PostgreSQL**.
+- Full `node --loader ./tests/ts-extension-loader.mjs --test tests/*.test.mjs`:
+  **221 PASS**, 0 failed/skipped/cancelled. This run includes existing Phase 28
+  pagination/date/summary, Phase 29 deletion, Phase 32 comments and migration tests.
+  The prior 213 PASS remains historical, not copied as this run's result.
+- `npm.cmd run typecheck` and `npm.cmd run build`: PASS. Build retains the existing
+  mixed static/dynamic auth-provider import warning and plugin timing advisory;
+  no build error. `npm.cmd audit --include=dev --audit-level=high` against the npm
+  public registry: 0 vulnerabilities. No package changes.
+- Current diff/SQL/Markdown whitespace/EOF, Markdown links/fences, secret-like and
+  forbidden tracked-file checks PASS. SQL lexical/delimiter review PASS (STATIC).
+  Unique sequential 0001-0015 numbering confirmed; 0001-0014 and existing checks,
+  app/package/deployment files unchanged. Only the candidate, two new checks,
+  focused test and three existing documents are intended for the local commit.
+- SQL review is **STATIC**. No installed PostgreSQL engine/parser was used and no
+  remote function/pre/post SQL was executed. App/UI behavior has not been freshly
+  live-tested or changed; no real data was created, updated or deleted.
+- Remote inventory remains **MATCH 11 / MISMATCH 2 / UNVERIFIABLE 1 / SUPERSEDED 0**
+  for 0001-0014. A fifteenth local candidate does not reclassify 0011 or 0010.
+  0002 bucket MISMATCH, CLI history `missing_schema`, non-owner actual DELETE
+  PARTIAL, best-effort image cleanup NOT_TESTED and Kakao deletion PARTIAL remain.
+  0012/0013/0014 previous APPLIED + post PASS evidence is unchanged.
+- No Production clearance, history repair, archive or Verified closeout.
+
+## Historical Scope And Decision (88cd663)
 
 2026-10-09, branch `feature/phase-29-32-observation-delete-comments-fast-track`,
 entry local/remote `0f2fdae`, main/origin/main `a3887a7`. READ ONLY diagnosis, not a
@@ -16,8 +123,8 @@ must be assessed separately. Working UI/live features alone cannot establish all
 
 This inventory reads the active SQL of every local file, including pre/post blocks,
 not just filenames. Commented upload candidates in 0002 are not active migration
-statements. All migration files and existing SQL checks are unchanged from
-`74fba30` through the current worktree. Existing 0012/0013/0014 post-check files
+statements. All 0001-0014 migration files and their existing SQL checks are unchanged
+from `74fba30` through this follow-up. Existing 0012/0013/0014 post-check files
 therefore retain their previous operator PASS evidence; they were not rerun here.
 
 ## Status Definitions
@@ -371,7 +478,7 @@ Production clearance. Do not replay 0010/0011 or overwrite applied migrations.
 | Continue manual SQL Editor application | No CLI ledger is required by the running app; preserves the existing operator-controlled process | Maintain a reviewed external application register: file/version/hash, target category, operator date, post-check result, manual exceptions and execution order. Freeze applied files; preflight every new file; prohibit blind CLI push/replay. Manual record discipline remains essential. |
 | Adopt CLI migration management later | Explicit version accounting and consistent pending-file selection | Complete baseline evidence and discrepancy decisions first; backup and exact recovery procedure; explicit version list and write/connection approval; validate local/remote agreement before any later push. Never treat repair as executing SQL or proof an old file ran. |
 
-## Other Gates And Local Verification
+## Historical Audit Verification (88cd663)
 
 - `non_owner_actual_delete=PARTIAL`; no new DELETE or test data in this task.
 - Owner/admin/anon deletion, Phase 32 smoke and cleanup evidence are preserved.

@@ -4,7 +4,47 @@
 
 This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current Task: Migration Evidence Blocker Identified
+## Current Task: 0015 Manual-Apply Candidate Prepared
+
+- Entry branch `feature/phase-29-32-observation-delete-comments-fast-track`, local
+  `88cd663`, remote `0f2fdae`, clean. Phase 28/29/32 remains stacked; main/origin/main
+  `a3887a7`. This follow-up is authorized for local SQL/check/test/docs and a local
+  commit only. No push, remote SQL, migration repair or deployment.
+- [0015 details](migration-reconciliation-evidence.md#0015-correction-candidate-not-applied):
+  the RPC's sole incorrect remote amphibian/reptile return must become `양서/파충류`.
+  Its actual wrong spelling/origin is unknown; do not invent it. Local 0011 already
+  contains the correct label. Other branch/condition comparisons passed previously;
+  no actual registration failure was reproduced.
+- New `0015_fix_observation_taxon_group_label.sql` validates the complete reviewed
+  function except that one ordinary literal, then changes only its character span.
+  It retains the current CREATE OR REPLACE wrapper and checks OID/owner/ACL/other
+  metadata afterward. Parser locations in argument defaults are compared by
+  expression text. Any unexpected difference aborts the atomic DO statement.
+  No changes to 0001-0014, their prior checks, app/packages, RLS, rows or Storage.
+- **0015 remote NOT_APPLIED.** After separate remote approval, run
+  [0015-pre](sql-checks/0015-pre-apply.sql); every boolean true -> candidate once ->
+  [0015-post](sql-checks/0015-post-apply.sql), every boolean true. Pre intentionally
+  stops if already corrected. Any false/null/error means read-only diagnosis, no
+  forced retry/old migration replay/guessed rollback. Exact rollback SQL not documented.
+  Do not run concurrent function DDL. No SQL is being applied in this preparation turn.
+- Canonical order 0001 -> ... -> 0014 -> 0015; a correct canonical 0011 body makes
+  0015 a checked no-op. Remote recent order remains 0014 -> 0012 -> 0013 with their
+  prior APPLIED/post PASS results. CLI history schema remains absent, not repaired.
+- Actual new local verification: **221 Node tests PASS**, 0 failed/skipped/cancelled,
+  including 8 new static/unit checks; typecheck/build PASS; dev-inclusive audit 0.
+  No PostgreSQL engine/parser or remote SQL/RPC execution: SQL assurance is STATIC,
+  not a remote execution PASS. Existing 213 PASS/live/Preview results stay historical.
+  Diff/SQL/Markdown whitespace/EOF, links, secrets/forbidden paths, numbering and
+  protected-file checks PASS; only seven intended candidate/check/test/docs files.
+- Remote 0001-0014 inventory remains MATCH 11 / MISMATCH 2 / UNVERIFIABLE 1 /
+  whole-file SUPERSEDED 0. Candidate creation does not resolve 0011 remotely or
+  0010's blocked assessment. 0002 bucket MISMATCH is separate. Non-owner actual
+  DELETE PARTIAL, Storage cleanup NOT_TESTED/best-effort, real Kakao deletion PARTIAL,
+  pending/rejected deletion deferred. No Production clearance/Verified closure.
+- Next action: obtain separate approval for **0015 Step 1 - pre-apply** only;
+  wait for operator results before showing/applying the migration. No automatic SQL.
+
+## Previous Task: Migration Evidence Blocker Identified (88cd663)
 
 - Same stacked Phase 28/29/32 branch, entry local/remote `0f2fdae`, main/origin/main
   `a3887a7`. Remote feature remains `0f2fdae`; this local-only audit preserves and
