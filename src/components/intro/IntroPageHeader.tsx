@@ -26,12 +26,6 @@ export const IntroPageHeader = ({
           경북대학교 대구캠퍼스<br className="hidden sm:inline" /> 생물다양성 도감
         </h1>
       )}
-      description={(
-        <p className="font-sans text-sm text-zinc-500 leading-relaxed max-w-3xl">
-          경북대학교 대구캠퍼스는 일청담, 지도못 등 풍부한 녹지 환경 덕분에 도심 속에서도 다양한 야생 생물의 안식처 역할을 하고 있습니다.
-          현재 파일은 외부 API 없이 디자인과 화면 흐름만 확인하는 정적 시안입니다.
-        </p>
-      )}
       meta={(
         <div className="flex flex-wrap items-center gap-8 mt-8">
           <div className="flex flex-col">

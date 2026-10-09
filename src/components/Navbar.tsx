@@ -117,11 +117,6 @@ export const Navbar = ({
         </button>
 
         <div className="order-last flex w-full min-w-0 flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border border-zinc-100 bg-zinc-50/70 px-3 py-1 lg:order-none lg:w-auto">
-          <div className="flex shrink-0 items-center gap-1.5">
-            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-400" />
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-tighter text-zinc-700">정적 디자인 시안</span>
-          </div>
-          <span className="text-[9px] font-light opacity-20" aria-hidden="true">|</span>
           <div className="flex min-w-0 flex-wrap items-center gap-1 font-mono text-[10px] font-semibold uppercase text-zinc-700 opacity-60">
             <span role="status" aria-busy={summaryStatus === 'loading'} className="min-w-[11rem] break-words tabular-nums">
               {publicSummary
