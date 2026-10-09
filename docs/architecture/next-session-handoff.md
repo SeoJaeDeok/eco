@@ -4,7 +4,73 @@
 
 This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current State: e7703f8 Preview UI Confirmed By Operator
+## Current State: Admin Observation Deletion Smoke Recorded
+
+- 2026-10-09. Branch `feature/phase-29-32-observation-delete-comments-fast-track`,
+  stacked on Phase 28 `2b2ce5a`. Entry local/remote **00d05aa**, clean;
+  main/origin/main **a3887a7**. The existing documentation push already occurred.
+  `00d05aa` Preview is reported successful; actual Preview UI smoke remains at
+  `e7703f8`. This new smoke used **local_supabase** serving matching `00d05aa` code.
+- User authorized exactly one **new, image-free approved observation**, created
+  through the ordinary user UI and finally deleted by the administrator. No existing
+  observation was a test target. No comments, images or accounts were created, and
+  no app/package/migration/RLS/Auth/Storage configuration was changed.
+- **OPERATOR_UI PASS:** writer creation, non-owner hidden delete button, existing
+  admin-role confirmation, cancel then final admin delete, detail close, card removal
+  and common-summary refresh without manual reload. Accounts/ownership are reported
+  through operator switching, not obtained from tokens or independent ID comparison.
+- **LIVE_API_FROM_LOCAL_PUBLIC_CONFIG PASS:** fresh baseline **105 records / 91
+  species**, after create **106 / 92**, after admin delete **105 / 91**. Marker was in
+  name rather than description; bounded discovery verified one new approved image-free
+  target. No rename/substitution. Target/owner fingerprints matched before deletion;
+  final marker/detail reads were empty and original identity absent from all 105
+  approved narrow summary rows. Actual summary method and count-only agreed.
+- Final safe run `phase29-final-permission-20261009-161442`, final read at
+  `2026-10-09T07:27:58.741Z`: **4 reads / 0 writes**, exit 0. Settings came only from
+  the browser-served public module into memory; no `.env.local`, login/session export,
+  service role or session extraction. No raw identifiers/rows or image paths were
+  written to output files.
+- **Admin observation deletion and cleanup PASS, public repository contract scope**:
+  operator success + matching-deleted-ID repository guard + public after-state.
+  No privileged physical-row inspection or administrator request capture. No other
+  row was intentionally changed; whole-DB field invariance remains unknown.
+- **Non-owner actual DELETE PARTIAL:** a separate ordinary account exists and UI
+  hiding passed, but browser connection failed before an authenticated request could
+  run. No request/token workaround and no false server-denial PASS. This is a remaining
+  security-verification decision, not a proven permission bug or missing account.
+- Small-map-list removal in this admin run was not separately confirmed (**PARTIAL**).
+  The operator reports no local Kakao integration/markers; actual deletion-driven
+  marker removal **PARTIAL**. Earlier owner small-list
+  PASS and basic Preview Kakao display PASS remain separate. Storage cleanup
+  **NOT_TESTED**, best-effort/orphan risk unchanged; no image API was used. Live cascade,
+  disappearing-last-page, map row-cap/date-diversity limits are not newly verified.
+- **0014/0012/0013 APPLIED + post PASS** retain operator evidence. **Migration CLI
+  history unknown**; no SQL/history/repair/replay performed. Never infer ledger rows
+  from post-check PASS. Exact rollback SQL not documented. Pending/rejected deletion
+  remains deferred. Preserve earlier Phase 32 live results, including admin comment
+  deletion NOT_RUN and non-owner server DELETE PARTIAL; no comment smoke repeated.
+- Only observation-delete, combined readiness and this handoff change. **213 Node
+  tests, typecheck/build PASS and audit 0** remain historical at `e7703f8`; no pointless
+  rerun for documentation. Fresh diff/Markdown whitespace/EOF/links, forbidden-path,
+  secret-like and status-consistency checks **PASS**, three documents and 36 local
+  links checked; the original Phase 32 result section is unchanged.
+- Local documentation commit only: **no push/merge/deployment in this task**.
+  Production not deployed, no Phase archive or overall Verified closure. Before a
+  Production decision, resolve or explicitly decide on the actual non-owner DELETE
+  verification and migration-history uncertainty; admin observation deletion is no
+  longer NOT_RUN. Do not create more test data without a new targeted approval.
+- Full table: [final permission smoke](phase-29-32-fast-track-readiness.md#final-observation-permission-smoke-at-00d05aa).
+
+**한국어:** 전용 관찰 1건의 관리자 삭제와 정리를 확인했고 공통 요약도 등록 전으로
+돌아왔습니다. 다른 일반 계정의 버튼 숨김은 확인했지만 실제 서버 요청은 도구 연결
+문제로 실행하지 못했습니다. migration 이력과 이 권한 검증은 다음 판단 항목이며,
+이번에는 문서만 로컬 커밋합니다. 실제 이미지 정리나 Production 배포를 한 것은 아닙니다.
+
+## Previous State: e7703f8 Preview UI Confirmed By Operator
+
+Historical record at `00d05aa`. Its then-pending documentation push was later
+completed. Actual admin observation deletion is updated above; earlier Preview UI
+and Phase 32 results are not relabeled as a new screen or server test.
 
 - 2026-10-09. Branch `feature/phase-29-32-observation-delete-comments-fast-track`,
   stacked on Phase 28 `2b2ce5a`. Entry local/remote HEAD **e7703f8**, clean;

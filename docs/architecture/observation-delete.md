@@ -2,6 +2,16 @@
 
 ## Status And Scope
 
+2026-10-09 final permission follow-up at `00d05aa`: **administrator observation
+deletion PASS within the public repository contract**, using one newly authorized
+image-free approved observation. User-operated admin role/cancel/delete and public
+API after-state are separate evidence; non-owner actual DELETE remains **PARTIAL**.
+See [final permission smoke](phase-29-32-fast-track-readiness.md#final-observation-permission-smoke-at-00d05aa).
+Migration CLI history remains **unknown** despite operator application/post PASS.
+This follow-up changes documentation only, with no push or Production deployment.
+
+Earlier owner-smoke record (preserved):
+
 2026-10-09: **core owner-delete live smoke PASS** for code `74fba30`, using the
 ordinary local Supabase app and exactly one newly authorized image-free observation.
 The operator created/deleted that record through the app; Codex performed public
@@ -144,7 +154,42 @@ Those automated results remain historical; no full-suite rerun occurred during
 this app-code-unchanged smoke. The operator applied SQL and exercised the ordinary
 local app; Codex did not automate its browser or use privileged DB reads.
 
-### Current Live Evidence
+### Final Admin Permission Smoke
+
+- The operator used the ordinary writer account for one new image-free approved
+  observation, then a separate ordinary account (delete button hidden), then the
+  administrator. Existing admin UI confirmed the role; this is **OPERATOR_UI**, not
+  extracted authentication/session evidence or an independently compared owner ID.
+- Admin cancel preserved the target; subsequent confirmed deletion, detail closing,
+  list card removal and common-summary refresh passed by explicit user report.
+- **LIVE_API:** newly measured records/species **105/91 -> 106/92 -> 105/91**. The
+  marker was in name, so the temporary additional species follows existing grouping.
+  Unique target creation time, approved state, empty image metadata and comparison
+  hashes were checked. Post-delete marker/detail queries returned zero and the
+  original identity was absent from all 105 approved narrow summary rows.
+- Admin-server PASS is scoped to normal UI success + the repository's returned-ID
+  requirement + public disappearance. Public reads alone cannot inspect hidden or
+  physically deleted rows; no privileged SQL or captured administrator request is
+  claimed. No authenticated non-owner DELETE was sent because browser automation
+  was unavailable. A separate regular account exists; **PARTIAL is not due to lack
+  of an account**. The UI PASS does not close the server-denial gap.
+- Cleanup **PASS** for this one new target under that contract scope. No test
+  comments/images, changes to existing observations, account/configuration changes
+  or Codex write requests were made. Existing-row field invariance was not audited
+  across the whole database; record it as unknown rather than inferring it from counts.
+- This admin run's small-map-list UI was not separately confirmed (**PARTIAL**); the
+  operator reported unavailable local Kakao integration/no markers, so actual marker
+  removal stays **PARTIAL**. Earlier owner small-list PASS is preserved,
+  not copied to this run. Image cleanup **NOT_TESTED**, live comment cascade **NOT_RUN**,
+  pending/rejected deletion deferred, best-effort orphan risk unchanged.
+- 0014/0012/0013 remain **APPLIED + post PASS**, operator-reported. CLI history is
+  **unknown**; do not replay/repair migrations. Exact rollback SQL not documented.
+  Existing 213 tests/typecheck/build/audit-0 evidence is historical, not rerun here.
+
+### Earlier Owner Live Evidence
+
+Historical `74fba30` smoke below. Its admin NOT_RUN status is superseded only for
+observation deletion by the separate follow-up above; Phase 32 evidence is unchanged.
 
 - **OPERATOR_UI PASS:** creation, non-owner delete button hidden, owner confirmation
   cancel preserves the record, subsequent confirmed deletion closes detail, removes
@@ -180,7 +225,7 @@ local app; Codex did not automate its browser or use privileged DB reads.
 Safe execution evidence and current push blocker are in the
 [combined readiness record](phase-29-32-fast-track-readiness.md#current-live-smoke-evidence).
 
-**한국어:** 이번 삭제 범위는 승인된 공개 관찰로 확정됐습니다. 작성자의 비공개
+**한국어 (이전 작성자 검증):** 당시 삭제 범위는 승인된 공개 관찰로 확정됐습니다. 작성자의 비공개
 기록 삭제는 후속 기능이며 버그가 아닙니다. 관리자도 이번에는 approved만 삭제하도록
 0012와 버튼/조회 조건을 제한했습니다. 파일 정리 실패가 관찰 삭제 성공을 취소하지
 않습니다. 사용자가 migration을 적용했고, 별도로 승인한 이미지 없는 새 관찰 1건의

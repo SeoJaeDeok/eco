@@ -9,15 +9,18 @@
   Final approved-only code/migration correction: `62c57c0`.
   Earlier readiness: `23d634a`; helper correction and actual smoke code: `74fba30`.
   Live-smoke documentation commit: `db37ba1`. Security correction: `e7703f8`,
-  normally pushed and deployed to Preview. This follow-up changes only this
-  readiness and the handoff to record the operator's Preview UI results.
+  normally pushed and deployed to Preview. Preview UI record `00d05aa` was later
+  pushed; it is the local/remote entry HEAD and code basis for the final admin
+  deletion smoke below. This follow-up changes three existing documents only.
 - State: **0014/0012/0013 remote APPLIED + post PASS**, operator-reported SQL Editor
   execution. Phase 29 core owner smoke and Phase 32 limited comment smoke passed
   with the evidence/limitations below. **No Verified closure or Production release**.
 - The `db37ba1` audit hold is resolved by the separately authorized minimal
   `source-map-js` correction below. Audit at `e7703f8`: **zero vulnerabilities**.
-  The feature push and automatic Preview succeeded. This follow-up authorizes only
-  a local documentation commit; its push needs a separate decision. No main
+  The feature push and automatic Preview succeeded. The `00d05aa` deployment is
+  reported successful; actual Preview UI evidence remains at `e7703f8`, not a new
+  screen check of a documentation deployment. This follow-up authorizes only
+  a local documentation commit; no push. No main
   merge/push or Production deployment/promotion is authorized.
   Existing Phase 28/backup branches are preserved.
 - Phase 30/31 skipped intentionally; no Phase history archive or new feature.
@@ -25,7 +28,106 @@
   this newly modified application. Its coverage/date diversity/Kakao/log limits
   remain recorded in [Phase 28 readiness](phase-28-integration-release-readiness.md).
 
+## Final Observation Permission Smoke At 00d05aa
+
+2026-10-09, **local_supabase**, not a new Preview smoke. Exactly one newly authorized
+image-free approved observation was created by the operator through the ordinary
+account UI and subsequently deleted through the administrator UI. No existing
+observation was substituted; no new account, comment or image was created. The
+earlier owner/anon and Phase 32 evidence below is historical and unchanged.
+
+### Evidence And Safe Target Binding
+
+- `OPERATOR_UI`: the operator reported ordinary writer login/create, a distinct
+  ordinary account with no delete button, administrator login with the existing
+  admin-role confirmation, then cancel followed by confirmed deletion. The final
+  reply confirmed detail closing, card removal and summary refresh without manual
+  reload. Account switching/ownership are operator-confirmed, not extracted session
+  identities. Admin confirmation uses the existing profile-role path (`STATIC`).
+- `LIVE_API_FROM_LOCAL_PUBLIC_CONFIG` (`LIVE_API` below): current Vite-served source
+  matched `00d05aa` and repository mode was Supabase. Only the browser-exposed public
+  connection was read in memory, without reading `.env.local` or browser sessions.
+  Read-only clients disabled session persistence, token refresh and URL session
+  detection; no login, Storage, SQL, resolver or write request was made by Codex.
+- A fresh baseline, not the previous smoke's totals, measured **105 records / 91
+  species**. The marker was entered in name instead of description. Exact-description
+  lookup therefore stopped; a bounded name/description query found exactly one new
+  approved image-free row after baseline. The record was not renamed or replaced.
+  Its identity/owner comparison hashes bound later checks without recording raw IDs.
+- After creation: **106 records / 92 species**. The original target remained present
+  and image-free before admin deletion. After operator deletion, the marker count
+  and scoped public-detail result were both **0**. The original target fingerprint
+  was absent from all **105** approved `id,name` rows read by the actual bounded
+  summary method; independent count-only agreed. Summary returned to **105 / 91**.
+  Only narrow summary metadata was enumerated, not all observation/image fields.
+- Safe run reference: `phase29-final-permission-20261009-161442`; baseline at
+  `2026-10-09T07:15:29.574Z`, bound target at `07:20:39.562Z`, final check at
+  `07:27:58.741Z`. Final probe: **4 reads, 0 writes**, exit code 0. These are new
+  results, not recreated copies of earlier result files. API traffic can create logs.
+
+| Final permission result | Status | Evidence and limit |
+| --- | --- | --- |
+| environment | local_supabase | LIVE_API; local served source/config match, not Preview rendering |
+| test_observation_created | PASS | OPERATOR_UI + LIVE_API; one new marked row after baseline |
+| approved_and_image_free | PASS | LIVE_API; approved, no image reference/metadata |
+| non_owner_delete_ui | PASS | OPERATOR_UI; separate ordinary account, delete button hidden |
+| non_owner_delete_denied | PARTIAL | Actual authenticated DELETE NOT_RUN; browser connection tool unavailable, not account absence |
+| admin_role_confirmed | PASS | OPERATOR_UI admin-role message + STATIC existing profile-role check; no token extraction |
+| admin_delete_ui | PASS | OPERATOR_UI; cancel preserved record, subsequent final confirm succeeded |
+| admin_delete_server | PASS, public repository contract scope | OPERATOR_UI + LIVE_API + STATIC returned-deleted-ID guard; limitation below |
+| public_observation_removed | PASS | LIVE_API; scoped public detail empty, original identity absent from complete summary metadata |
+| list_refresh | PASS | OPERATOR_UI; detail closed and card removed without manual reload |
+| summary_refresh | PASS | OPERATOR_UI + LIVE_API; 106/92 returned to 105/91 records/species |
+| map_data_refresh | PARTIAL | STATIC refresh wiring and public target absence; this admin run's small-list UI was not separately confirmed |
+| real_kakao_marker_removal | PARTIAL | OPERATOR_UI reports no local Kakao integration/markers; earlier basic Preview map display is separate |
+| image_cleanup | NOT_TESTED | Image-free target; no Storage API request |
+| cleanup_complete | PASS, contract scope | Operator deletion and public absence/baseline totals; no additional test data generated |
+| existing_observations_unchanged | unknown, whole-DB comparison not performed | No existing row was a test target; unchanged totals do not prove all other fields unchanged |
+| errors | None reported in admin flow | Browser automation unavailable; marker lookup mismatch diagnosed without writes |
+
+Public absence alone is not a privileged proof of physical-row deletion. Admin
+server PASS combines the user's normal delete success, the reviewed repository's
+requirement for a matching returned deleted-row ID, and the public after-state.
+No direct authenticated request capture, privileged SQL inspection or independent
+admin/owner identity comparison is claimed. Non-owner button hiding is **not**
+server denial: the second ordinary account exists, but the browser execution tool
+failed before access. No credentials were copied and no alternate-role request was
+substituted. Keep that security verification **PARTIAL**.
+
+When asked about map removal, the operator reported that local Kakao integration
+was unavailable and markers were not displayed. This does not establish a deletion
+regression or a successful marker refresh. Small-map-list removal was not answered
+separately, so it also stays PARTIAL for this run; prior owner evidence is preserved.
+
+### Remaining Decisions And Document Gate
+
+- **READY evidence:** prior owner/anon and Phase 32 limited smoke, applied migrations,
+  Preview UI, and this admin observation deletion within the stated evidence scope.
+- **REQUIRES_DECISION_OR_VERIFICATION:** ordinary non-owner actual DELETE denial and
+  **migration_history=unknown**. No history query/repair, ledger write, SQL or migration
+  replay ran here. Applied/post PASS does not prove a CLI ledger entry. Do not reapply.
+- **Recorded MVP limitations:** image cleanup is best-effort and may leave orphan
+  objects; live Storage deletion remains NOT_TESTED. Pending/rejected deletion is
+  deferred. Date-diversity/map-row-cap, actual delete-driven Kakao marker removal,
+  live cascade and disappearing-last-page limitations are unchanged. No new risk
+  acceptance or Production approval is inferred. **exact rollback SQL not documented**.
+- App/tests/packages/migrations/settings are unchanged. **213 tests/typecheck/build
+  PASS and audit 0** belong to `e7703f8`, not this task. Fresh three-document checks
+  **PASS**: diff, Markdown whitespace/EOF and 36 local links, forbidden tracked paths,
+  secret-like additions and evidence consistency; Phase 32 history unchanged.
+  Only a local documentation commit is allowed;
+  no push/merge/deployment, archive or overall Verified closure.
+
+**한국어:** 새로 만든 이미지 없는 관찰 1건을 관리자로 취소 후 삭제했고, 공개 API에서도
+사라진 것을 확인했습니다. 공통 요약은 이번 등록 전의 91종·105건으로 돌아왔습니다.
+비작성자의 버튼 숨김은 확인했지만 실제 서버 삭제 차단은 도구 연결 문제로 미검증입니다.
+계정이 없어서 생긴 제한은 아니며, migration 이력도 아직 확인되지 않았습니다.
+
 ## Preview UI Smoke At e7703f8
+
+Historical Preview evidence. Admin observation deletion was then NOT_RUN; the new
+local smoke above supersedes that one item without changing this Preview record or
+the Phase 32 admin-comment status.
 
 2026-10-09. The operator responded **"전부 검증했고 에러없어"** to the complete
 five-step Preview checklist. The table records that aggregate confirmation as
@@ -157,6 +259,10 @@ confirmed that commit's Preview success. The operator's later UI report is recor
 above, separately from metadata. Main/Production remain unchanged.
 
 ## Current Live Smoke Evidence
+
+Historical owner/anon and Phase 32 evidence from `74fba30`, recorded in `db37ba1`.
+The separate final permission section above updates only the later administrator
+observation deletion result. Keep this original run and Phase 32 evidence intact.
 
 ### Applied Migrations
 
