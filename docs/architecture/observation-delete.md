@@ -9,8 +9,9 @@ reads and one explicitly authorized anonymous DELETE-denial probe on that new re
 No existing user observation was deleted. Stacked on Phase 28 `2b2ce5a`, not main
 (`a3887a7`). Manual 0014/0012/0013 application and post-checks are operator-reported
 PASS. App Preview/Production integration is separate; no release/Verified closure.
-Feature push is currently held by a fresh High dependency advisory, not a deletion
-failure. See [combined evidence and blocker](phase-29-32-fast-track-readiness.md#current-live-smoke-evidence).
+At `db37ba1`, feature push was held by a High dependency advisory, not a deletion
+failure. See the subsequent [dependency correction](phase-29-32-fast-track-readiness.md#dependency-security-correction)
+and preserved [live evidence](phase-29-32-fast-track-readiness.md#current-live-smoke-evidence).
 
 **Phase 29 MVP deletion scope = approved observations visible through
 the current public observation path**

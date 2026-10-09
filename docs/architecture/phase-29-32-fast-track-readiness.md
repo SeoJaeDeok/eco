@@ -8,19 +8,78 @@
 - Initial implementation: `4e4f9eb`; prior documentation: `77a394e`.
   Final approved-only code/migration correction: `62c57c0`.
   Earlier readiness: `23d634a`; helper correction and actual smoke code: `74fba30`.
-  This close-out edits only four existing feature/readiness/handoff documents.
-  App, tests, packages, SQL and settings are unchanged from the smoke code.
+  Live-smoke documentation commit: `db37ba1`. Its four-document-only close-out
+  is preserved; the subsequent security correction changes only the lockfile
+  and the three documentation files identified below.
 - State: **0014/0012/0013 remote APPLIED + post PASS**, operator-reported SQL Editor
   execution. Phase 29 core owner smoke and Phase 32 limited comment smoke passed
   with the evidence/limitations below. **No Verified closure or release**.
-- Fresh pre-push dependency audit: **FAIL, one High**. Feature push is **held**;
-  package remediation or a reviewed risk decision needs separate authorization.
-  No main merge/push, Preview/Production deployment or promotion was performed.
+- The `db37ba1` audit hold is resolved by the separately authorized minimal
+  `source-map-js` correction below. Fresh audit: **zero vulnerabilities**.
+  Normal feature-only push is authorized after final checks; automatic Git Preview
+  is allowed, but main merge/push and Production deployment/promotion are not.
   Existing Phase 28/backup branches are preserved.
 - Phase 30/31 skipped intentionally; no Phase history archive or new feature.
 - Phase 28 API/Preview evidence remains historical and is not a live PASS for
   this newly modified application. Its coverage/date diversity/Kakao/log limits
   remain recorded in [Phase 28 readiness](phase-28-integration-release-readiness.md).
+
+## Dependency Security Correction
+
+2026-10-09, after `db37ba1`. This is a dependency-only correction, not another live
+smoke or a change to the deletion/comments implementation.
+
+- Reproduced the pre-fix audit failure: `source-map-js@1.2.1`, one High,
+  [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
+  Both dependency paths are transitive:
+  `@tailwindcss/vite@4.3.1 -> @tailwindcss/node@4.3.1 -> source-map-js` and
+  `vite@8.0.16 -> postcss@8.5.28 -> source-map-js`. Both parents allow `^1.2.1`.
+- Normal targeted npm resolution selected **1.2.2**. `package.json` is unchanged;
+  the only package-lock change is one package entry's **version, resolved URL and
+  integrity** (three removed/three added lines). No parent, unrelated dependency,
+  source registry, install lifecycle, override or audit threshold was changed.
+- This is a build-tool dependency, with no direct application import. The project
+  declares its parent tools under dependencies, so npm does not mark it dev-only;
+  the audit included development dependencies as well.
+- Commands: targeted `npm.cmd update source-map-js --package-lock-only --ignore-scripts
+  --no-audit --no-fund --registry=https://registry.npmjs.org/`, followed by installation
+  with the same script/audit/fund/registry options. npm's generated hidden install
+  lock temporarily said 1.2.2 while the actual installed manifest still said 1.2.1.
+  Only `node_modules/.package-lock.json` was invalidated; normal installation then
+  changed exactly one package. No node_modules tree removal or lockfile regeneration.
+- Actual installed manifest, lockfile, `npm ls` and `npm explain` agree on **1.2.2**.
+  Registry tarball/integrity metadata was checked. No vulnerable copy remains in
+  this dependency graph; no auto audit fix or unrelated update was used.
+
+| Fresh check after installing 1.2.2 | Result |
+| --- | --- |
+| `npm.cmd run typecheck` | PASS |
+| `node --loader ./tests/ts-extension-loader.mjs --test tests/*.test.mjs` | **213 PASS**, 0 failed/skipped/cancelled |
+| `npm.cmd run build` | PASS; normal app entry/assets generated, no source-map error |
+| `npm.cmd audit --include=dev --audit-level=high --registry=https://registry.npmjs.org/` | **0 total / 0 High / 0 Critical**, advisory absent |
+| Diff, Markdown/SQL/JSON whitespace/EOF, forbidden paths, secret-like changes | PASS; 27 files checked, 4 JSON files parsed, no new findings |
+
+The full suite includes Phase 26/27, pagination/fades/no-auto-scroll, date filters,
+public summary, approved owner/admin deletion, comments and migration static tests.
+The test loader emits its existing experimental-loader warning. Build warnings about
+mixed static/dynamic auth imports and plugin timings are non-fatal; they are not
+source-map failures. Artifact checks do not claim a new browser render/live PASS.
+An additional encoding check found the pre-existing BOM in unchanged migration 0010;
+it was compared with HEAD and left intact, not treated as a new dependency defect.
+
+Changed tracked scope: `package-lock.json`, this readiness, `next-session-handoff.md`
+and a historical-status link in `observation-delete.md`. App, tests, package.json,
+migrations and deployment settings stay unchanged. Existing db37ba1 live evidence
+below is preserved, not rerun: no observation/comment/account/Storage/DB changes.
+Non-owner actual DELETE remains PARTIAL, admin deletion NOT_RUN, actual Kakao
+PARTIAL and image cleanup NOT_TESTED. No phase archive or Verified closure.
+
+Before the authorized push, remote feature was absent and fetched main/origin/main
+were `a3887a7`. The checked correction commit is the feature push candidate; verify
+the resulting remote ref separately. No Vercel/GitHub deployment connector or installed
+gh/vercel CLI is available here. Preview build/Ready and its UI smoke remain unconfirmed
+for this correction; push success is not deployment/UI evidence. Production is not
+authorized. Next: confirm the new feature Preview commit/Ready, then a short UI smoke.
 
 ## Current Live Smoke Evidence
 
@@ -128,7 +187,10 @@ row inspection or owner network capture is claimed. Last-page collapse, double-c
 tree aggregate refresh and live FK cascade retain prior static/automatic evidence,
 not newly invented live PASS. The map's original server row-cap limitation remains.
 
-### Checks And Push Hold
+### Historical Checks And Push Hold At db37ba1
+
+The following records the original docs-only close-out. Its audit failure/push hold
+is superseded by the fresh dependency correction above, not erased or relabeled PASS.
 
 - Core Phase 29 smoke has no confirmed functional blocker; the two Phase 32 comments
   and the one Phase 29 disposable observation are cleaned up. Original parent stays.

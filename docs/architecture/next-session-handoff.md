@@ -4,7 +4,53 @@
 
 This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current State: Phase 29 And 32 Live Smoke Recorded, Push Held
+## Current State: Dependency Fix Checked, Feature Push Gate
+
+- 2026-10-09. Same branch `feature/phase-29-32-observation-delete-comments-fast-track`,
+  based on live-smoke record `db37ba1`, stacked on Phase 28 `2b2ce5a`.
+  Fetched main/origin/main remain `a3887a7`; feature remote was absent before push.
+- User separately authorized a minimal fix for the audit blocker and normal feature
+  push only after all checks pass. `source-map-js` **1.2.1 -> 1.2.2**, transitive via
+  `@tailwindcss/node` and Vite/PostCSS; both parent ranges already permit the patch.
+  Only one lock entry's version/resolved/integrity changed. `package.json`, all other
+  package versions, app/tests/SQL/settings are unchanged. No overrides or audit fix.
+- Actual installed package and lock/graph now all say **1.2.2**. A stale generated
+  npm install-cache file was invalidated before normal installation changed one
+  package; the node_modules tree was not removed and the lock was not regenerated.
+- Fresh dev-inclusive audit: **0 total / 0 High / 0 Critical vulnerabilities**;
+  GHSA-68fv-2mgg-jv7q no longer reported. Fresh typecheck/build **PASS** and full
+  Node run **213 PASS, 0 failed/skipped/cancelled**. These are new executions after
+  installation, separate from the earlier 213-test record and db37ba1 audit failure.
+  Build produced the normal app assets without a source-map error; existing auth
+  import/plugin-timing warnings are non-fatal. No new browser/live smoke claimed.
+- Final diff/Markdown/SQL/JSON whitespace/EOF, forbidden-path and secret-like checks:
+  **PASS** (27 files, 4 JSON parses; existing unchanged 0010 BOM left intact).
+  Changed files: lockfile, this handoff, combined readiness
+  and the deletion document's historical push-status link; no feature code change.
+- All existing live results below remain intact. Remote **0014/0012/0013 APPLIED +
+  post PASS**; no SQL or data operation in this security task. No observations,
+  comments, accounts or images were created/deleted and no live smoke was repeated.
+- Remaining limits: non-owner actual DELETE **PARTIAL** for observations/comments,
+  admin deletion **NOT_RUN**, actual Kakao **PARTIAL**, image cleanup **NOT_TESTED**.
+  Pending/rejected owner deletion stays deferred. Exact rollback SQL not documented.
+- This commit is the checked candidate for the authorized normal feature-only push.
+  Verify local/remote HEAD agreement after push; no main merge/push or Production.
+  Auto Git Preview is allowed, but this correction's Preview build/Ready status and
+  UI are not yet confirmed. No deployment connector/installed gh/vercel CLI here.
+  Do not transfer previous Phase 28 Preview PASS to this stacked branch.
+- Next: confirm the new feature Preview's commit and Ready status, then short
+  Phase 29/32 UI smoke. No repeated live writes or Production without approval.
+  Full correction details: [dependency correction](phase-29-32-fast-track-readiness.md#dependency-security-correction).
+
+**한국어:** source-map-js 한 패키지만 보안 수정 버전으로 올렸습니다. 새로 실행한
+213개 테스트·타입 검사·빌드가 통과했고 보안 감사는 0건입니다. 기존 실제 삭제·댓글
+검증은 보존하며 다시 실행하지 않았습니다. 이번 승인은 기능 브랜치 push와 자동 Preview까지이고,
+Production 배포나 전체 검증 완료를 뜻하지 않습니다.
+
+## Previous State: Phase 29 And 32 Live Smoke Recorded, Push Held
+
+Historical `db37ba1` snapshot below. Its audit/push hold is superseded by the
+authorized correction above; the live smoke results and limitations remain valid.
 
 - 2026-10-09. Branch `feature/phase-29-32-observation-delete-comments-fast-track`,
   smoke code/entry HEAD `74fba30`, stacked on Phase 28 `2b2ce5a`.
