@@ -2,24 +2,170 @@
 
 ## Candidate
 
-- Date: 2026-10-05. Branch: `feature/phase-29-32-observation-delete-comments-fast-track`.
+- Updated: 2026-10-09. Branch: `feature/phase-29-32-observation-delete-comments-fast-track`.
 - Base: Phase 28 `2b2ce5a`, main/origin/main `a3887a7`. This is a **stacked candidate**
   containing Phase 28 + 29 + 32; it did not restart from main.
 - Initial implementation: `4e4f9eb`; prior documentation: `77a394e`.
   Final approved-only code/migration correction: `62c57c0`.
-  The earlier readiness commit is `23d634a`. The current follow-up adds only 0014,
-  its two catalog checks and readiness/handoff documentation; 0001~0013 and all
-  existing checks are unchanged from `23d634a`. No application/test/package edits.
-- State: **0012-pre FAIL** on the operator's target; limited 0014 correction
-  prepared, not yet applied. **Not Verified, not released**. 0014/0012/0013 are
-  all remote **NOT_APPLIED**, live smoke **NOT_RUN**.
-- Existing Phase 28/backup branches are preserved. No push, merge or deployment.
+  Earlier readiness: `23d634a`; helper correction and actual smoke code: `74fba30`.
+  This close-out edits only four existing feature/readiness/handoff documents.
+  App, tests, packages, SQL and settings are unchanged from the smoke code.
+- State: **0014/0012/0013 remote APPLIED + post PASS**, operator-reported SQL Editor
+  execution. Phase 29 core owner smoke and Phase 32 limited comment smoke passed
+  with the evidence/limitations below. **No Verified closure or release**.
+- Fresh pre-push dependency audit: **FAIL, one High**. Feature push is **held**;
+  package remediation or a reviewed risk decision needs separate authorization.
+  No main merge/push, Preview/Production deployment or promotion was performed.
+  Existing Phase 28/backup branches are preserved.
 - Phase 30/31 skipped intentionally; no Phase history archive or new feature.
 - Phase 28 API/Preview evidence remains historical and is not a live PASS for
   this newly modified application. Its coverage/date diversity/Kakao/log limits
   remain recorded in [Phase 28 readiness](phase-28-integration-release-readiness.md).
 
+## Current Live Smoke Evidence
+
+### Applied Migrations
+
+| Migration | Remote state | Evidence |
+| --- | --- | --- |
+| 0014 | APPLIED, pre/apply/post PASS | Operator SQL Editor results; anon-only helper EXECUTE correction |
+| 0012 | APPLIED, pre/apply/post PASS | Original precheck rerun after 0014; approved-only delete |
+| 0013 | APPLIED, pre/apply/post PASS | Operator table/constraint/privilege/RLS checks after 0012 |
+
+The one-time manual order was **0014 -> 0012 -> 0013**. Canonical repository replay
+is still `0001 -> ... -> 0012 -> 0013 -> 0014`. Codex did not operate SQL Editor,
+run remote SQL/CLI migration commands or modify the reviewed files during smoke.
+Do not infer a migration-tool ledger entry, rerun applied migrations or repair
+history automatically. **exact rollback SQL not documented** remains in effect.
+Current anon grant origin is still unknown; global default privileges were not changed.
+
+### Environment And Evidence Types
+
+- `OPERATOR_UI`: user-operated ordinary local app, not a synthetic fixture or
+  Codex browser session. Current Vite modules' source matched local code `74fba30`
+  and repository mode was Supabase. Browser automation failed to initialize.
+- `LIVE_API_FROM_LOCAL_PUBLIC_CONFIG`: public settings read from browser-served
+  Vite modules in memory; `.env.local` was not read. Dedicated public clients had
+  no user session, persistence, refresh or login. No service-role/admin SQL.
+- `STATIC` and historical automated tests: repository guards, refresh wiring,
+  SQL definitions and simulated transports; not substitutes for live role actions.
+- Safe temporary harnesses/results live outside the repository. Result artifacts
+  contain counts, booleans, safe errors and comparison hashes, not credentials,
+  raw observation/comment rows, identities, coordinates or image paths. Public API
+  reads and the authorized denial probe generated ordinary remote traffic/logs.
+
+### Phase 32
+
+The user designated an existing own approved parent. Ownership is operator-reported;
+the anonymous client did not authenticate as the writer. The operator created exactly
+one general and one identification comment through the normal UI, then deleted both.
+No observation content/taxonomy, account or image was modified for this test.
+
+| Result | Status | Evidence |
+| --- | --- | --- |
+| anon_comment_read | PASS | Actual comment repository + public count crosscheck; signed-out UI confirmation |
+| general_comment_create | PASS | OPERATOR_UI and one public comment-kind row |
+| identification_comment_create | PASS | OPERATOR_UI and one public identification-kind row |
+| taxonomy_unchanged | PASS | Before/during/after fingerprints of actual observation fields and public lineage |
+| raw_email_exposed | no | Operator screen report; safe mapped display fields while comments were present |
+| non_owner_delete | PARTIAL | Second regular account exists; hidden button PASS, actual DELETE request NOT_RUN |
+| own_comment_delete | PASS | OPERATOR_UI and public count/items back to zero |
+| admin_comment_delete | NOT_RUN | No extra comment or privileged session used |
+| cleanup_complete | PASS | 0 -> 2 -> 0; same approved parent/detail unchanged |
+| observation_modified | no | Compared fields unchanged; no observation mutation by this harness |
+
+Safe execution references: baseline `1791518017378`, both kinds present
+`1791518858287`, final zero-comment cleanup `1791519065367`. The first cleanup
+claim was followed by an API read still showing two comments; only after the user
+actually deleted them did the later check close cleanup. No failure was hidden.
+`scientific_name` is the observation's reported name column; the private resolver
+cache was not queried. Admin/non-owner request denial, 20+ live comments, malicious
+payloads, hidden-parent cases and live cascade remain outside this smoke result.
+
+### Phase 29
+
+Exactly one newly authorized approved image-free observation was created through
+the ordinary app. No existing user observation was a deletion target. Baseline
+records/species were **105/91**; after creation **106/92**. The operator put the
+test marker in name rather than description, so name-based species increased too.
+The first exact-description lookup stopped with **zero DELETE attempts**. A narrow
+new-row read found the unique image-free marked name; time/project/target fingerprints
+then bound the probe. No record was renamed or silently substituted.
+
+| Result | Status | Evidence |
+| --- | --- | --- |
+| environment | local_supabase | Served source/config checked, not Preview |
+| test_observation_created | PASS | Operator create + one new marked public record |
+| approved_and_image_free | PASS | Actual status and both image-reference fields checked |
+| public_visibility | PASS | Targeted public read + operator list/detail |
+| summary_after_create | PASS | Actual summary method/count-only agreement, 105 -> 106 records |
+| anon_delete_denied | PASS | One public-client DELETE: HTTP 401, code 42501; same unchanged target remained |
+| non_owner_delete_denied | PARTIAL | Operator confirmed button hidden using second regular account; actual request NOT_RUN |
+| owner_delete_ui | PASS | Operator explicitly confirmed cancel, later confirm, close and refresh without manual reload |
+| owner_delete_server | PASS, contract scope | Operator success + repository requires returned deleted ID + later public absence |
+| list_refresh | PASS | Operator saw card removal and refreshed list |
+| summary_refresh | PASS | Operator update + API records/species returned to 105/91 |
+| page_state_after_delete | PASS, observed case | Search/filter retention confirmed; disappearing-last-page case NOT_RUN |
+| map_data_refresh | PASS, small list | Operator confirmed removal from small map list; no new full-DB coverage claim |
+| real_kakao_marker_removal | PARTIAL | Not included in the final three-item confirmation |
+| admin_observation_delete | NOT_RUN | No second disposable observation created |
+| image_cleanup_case | not_applicable_no_image | Storage cleanup NOT_TESTED; no Storage mutation |
+| cleanup_complete | PASS | Authorized target absent, no extra smoke records/comments created on it |
+| errors | None in core flow | Expected 42501 denial is success; separate dependency audit failed below |
+
+Safe runs: precreate `1791519411759`, bound target/anon denial `1791520792589`,
+post-delete `1791526530750` (2026-10-09 06:15 UTC). The final read found **zero** marker
+matches and no target fingerprint among all **105** approved `id,name` metadata rows,
+using the actual bounded summary method. Independent count-only result agreed;
+species returned to **91**. No entire observation/image download was introduced.
+Final probe had four reads and zero writes; the earlier authorized anonymous probe
+made exactly one DELETE attempt and did not delete the record.
+
+Public absence alone cannot prove physical deletion rather than hidden status. The
+recorded owner-server PASS combines the operator's successful normal delete with the
+reviewed repository's returned-ID check and public after-state. No privileged physical
+row inspection or owner network capture is claimed. Last-page collapse, double-click,
+tree aggregate refresh and live FK cascade retain prior static/automatic evidence,
+not newly invented live PASS. The map's original server row-cap limitation remains.
+
+### Checks And Push Hold
+
+- Core Phase 29 smoke has no confirmed functional blocker; the two Phase 32 comments
+  and the one Phase 29 disposable observation are cleaned up. Original parent stays.
+- This close-out changes docs only. **213 Node tests, typecheck/build PASS** remain
+  historical at `23d634a`; no full-suite/build rerun and no copied fresh PASS count.
+  The 0014-focused three-test run is historical as well.
+- Fresh `npm.cmd audit --include=dev --audit-level=high --registry=https://registry.npmjs.org/`
+  exited **1**: **one High** in installed `source-map-js@1.2.1`. Registry audit
+  succeeded; this is not a connectivity error. `npm.cmd ls source-map-js` identifies
+  paths through `@tailwindcss/node` and Vite's `postcss`.
+- [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q) reports
+  event-loop denial of service from indexed source-map section offsets; patched
+  version is 1.2.2. The package is present in the build toolchain, but application-
+  specific exploitability has not been demonstrated or dismissed. No auto audit fix,
+  package/lockfile update or weakened audit threshold was performed.
+- **Feature push held for this new audit blocker.** Remote feature ref was absent
+  after fetch; main/origin/main remained `a3887a7`. Preserve the smoke in the requested
+  local docs commit; separately approve minimal dependency remediation/verification
+  or explicitly review the risk before a push. No main/Production operation.
+- No Vercel/GitHub deployment connector or existing `gh`/`vercel` CLI is available
+  here. With no feature push, no new Preview was requested; prior Phase 28 Preview
+  status is not this branch's deployment evidence. Do not equate push/build with UI.
+- Fresh document gate **PASS**: diff/Markdown whitespace/EOF/links, secret-like changes,
+  forbidden tracked paths, unchanged app/package/migration inputs and status consistency.
+  Four intended documents checked, no findings. These checks do not override the
+  separate failed dependency audit or guarantee against every possible secret.
+
+**한국어:** 실제 댓글 2개와 전용 관찰 1개를 각각 정리했고, 작성자 삭제의 핵심 동작은
+통과했습니다. 다른 계정의 실제 삭제 요청, 관리자 삭제, Kakao 마커 및 이미지 정리는
+확인하지 않았습니다. 새 High 의존성 문제가 나와 문서는 로컬 커밋하되 push는 보류하며,
+패키지 보정은 별도 승인 후 진행해야 합니다. Production 배포나 전체 완료는 아닙니다.
+
 ## 0014 Helper Permission Prerequisite
+
+Historical preparation below was recorded at `74fba30`; remote NOT_APPLIED and
+precheck-stop descriptions are that earlier state. The current applied/live state
+above supersedes them. Do not use the old runbook to repeat application.
 
 ### Evidence And Cause
 
@@ -88,8 +234,9 @@ alone. No other existing function is bulk-hardened in this task.
   Conservative function/view checks cover the known application public paths;
   absence of catalog references alone cannot prove absence of arbitrary dynamic SQL.
 - Only booleans are returned. No function is invoked, no raw ACL/body/application
-  rows/identities/configuration are returned, and no grants are modified. These two
-  new files are **not yet run against PostgreSQL**; local review is STATIC only.
+  rows/identities/configuration are returned, and no grants are modified. At
+  preparation time these files were not yet run against PostgreSQL. The operator
+  subsequently reported both checks PASS as recorded above; Codex did not run SQL.
 
 ### Link Back To The Original 0012 Precheck
 
@@ -129,10 +276,10 @@ CLI command is authorized here.
 On false/null/error, stop and diagnose read-only. Do not repeat the migration or
 add a compensating GRANT. **exact rollback SQL: not documented**. Restoring anon
 EXECUTE is not an approved rollback: no evidence establishes that it was intended.
-The present task prepares files only; no instruction to execute them immediately,
-no remote SQL, no accounts/observations/comments/images touched, and no push/deploy.
+The 74fba30 preparation task itself only prepared files and touched no remote data.
+The later authorized manual applications and smoke are separately recorded above.
 
-### Current Preparation Checks
+### Historical Preparation Checks At 74fba30
 
 Local checks **PASS** for the one-statement target/role, read-only catalog SQL structure,
 reviewed helper/policy definitions, consistent pre/post predicates, unchanged
@@ -262,8 +409,9 @@ the migration body. The pre/post files read only system catalogs and return bool
 they do not return observations, comments, identities, connection values or paths.
 Migration files contain their own transaction; verification files are separate reads.
 
-**Current target is paused before this sequence. First follow the one-time 0014
-order above, then return here.** The 0014 file is the single REVOKE statement;
+**Historical procedure: the current target has already completed this sequence.
+Do not reapply.** For the one-time order, 0014 preceded 0012/0013. The 0014 file is
+the single REVOKE statement;
 unlike 0012/0013, it does not add transaction wrapper commands.
 
 1. Run [0012 pre-apply](sql-checks/0012-pre-apply.sql).
@@ -297,7 +445,11 @@ alone does not block this user-requested readiness. Preserve baseline definition
 and recovery information; any actual rollback still needs a separately reviewed
 exact plan. Revoking permissions/dropping schema cannot restore deleted rows/files.
 
-## Later Live Smoke Plan (Not Run)
+## Original Live Smoke Plan And Remaining Cases
+
+This is the retained approval boundary, not a claim that the whole plan is still
+NOT_RUN or now fully PASS. The limited completed cases and remaining roles are in
+Current Live Smoke Evidence above. Any additional write still needs approval.
 
 Run only after both migrations and all postchecks succeed, under separate explicit
 approval for actual writes. Existing real user observations must never be test
@@ -324,10 +476,10 @@ one or any additional admin-delete record requires separate user approval first.
   is deferred, not a smoke requirement; comments on non-approved parents remain
   protected. Any denied-role test must not modify someone else's real record.
 
-No smoke observation, comment or account is created in this readiness task. After
-authorized live smoke, request Preview integration separately. No push/deployment
-or old Phase 28 approval is reused for these schema/write changes. Deployment before
-migrations would produce comment/delete errors and is not an acceptable release plan.
+No remote data was created during the earlier readiness-only task. Later smoke
+writes used their separate explicit approval. The latest feature-push approval is
+conditional on no blocker, and is held by the fresh audit finding. Production still
+requires separate approval; older Phase 28 approval does not authorize it.
 
 ## Previous Change Boundary At 23d634a
 
@@ -342,7 +494,6 @@ are not a guarantee against every possible secret. No JSON/TOML settings or Deno
 code changed; no additional parser/Deno rerun is needed. Docker/WSL/Supabase local
 stack was not started. Local normal commits only, no amend or self-hash edits.
 
-**한국어:** 현재는 0012 사전 검사에서 멈춘 상태입니다. 기본 권한에 따른 재발을 막기
-위해 0014에 함수 하나의 anon 권한 회수만 남겼습니다. 전체 설치 순서는 0012, 0013,
-0014지만, 현재 DB에서는 0014 검사·수동 보정·재검사 후 기존 0012 사전 검사로 돌아갑니다.
-아직 어느 migration도 원격 적용하지 않았으며, 앱 코드나 전역 기본 권한도 바꾸지 않았습니다.
+**한국어(이전 준비 기록):** 0012 사전 검사 중단 당시 0014에 함수 하나의 anon 권한
+회수를 준비했습니다. 이후 사용자가 0014, 0012, 0013을 순서대로 적용하고 검증했습니다.
+현재 상태와 남은 항목은 이 문서 상단의 실제 smoke 결과를 기준으로 합니다.

@@ -4,7 +4,91 @@
 
 This document records the stacked Phase 29/32 implementation and inherited Phase 28 evidence. Preserve deployed work; do not execute remote SQL, push, integration or deployment without a separate request.
 
-## Current State: 0014 Admin Helper Permission Correction Prepared
+## Current State: Phase 29 And 32 Live Smoke Recorded, Push Held
+
+- 2026-10-09. Branch `feature/phase-29-32-observation-delete-comments-fast-track`,
+  smoke code/entry HEAD `74fba30`, stacked on Phase 28 `2b2ce5a`.
+  Fetched main/origin/main remain `a3887a7`; remote fast-track branch is absent.
+  Preserve all existing feature/backup branches. No reset, rebase or main change.
+- Operator SQL Editor results: **0014 APPLIED + pre/apply/post PASS; 0012 APPLIED +
+  pre/apply/post PASS; 0013 APPLIED + pre/apply/post PASS**. One-time manual order
+  was 0014 -> 0012 -> 0013; canonical replay remains 0001...0012 -> 0013 -> 0014.
+  Codex did not execute SQL, change RLS/default privileges or update migration history.
+  Do not rerun already-applied migrations. **exact rollback SQL not documented**.
+- The local ordinary app at port 3000 served current Phase 29/32 code in Supabase
+  mode. Public configuration was read from served modules in memory, not `.env.local`.
+  The browser tool failed to initialize; all UI actions were operator-performed.
+  No password/token/session extraction, privileged client or new account.
+- **Phase 32 limited live smoke PASS:** operator created one general and one
+  identification comment on their designated existing approved parent, then deleted
+  both. Actual repository/public API checked `0 -> 2 -> 0`, kinds, exact count and
+  unchanged observation/taxonomy fingerprints. Raw email not exposed per operator.
+  The first claimed cleanup still had two rows; after actual user deletion, fresh
+  API run `1791519065367` confirmed zero. Do not use the earlier incomplete state.
+- Phase 32 non-owner **PARTIAL**: second regular account exists; button hidden
+  per operator, actual authenticated DELETE request NOT_RUN. Admin comment delete
+  **NOT_RUN**. No live malicious payload/hidden-parent/20+ paging/cascade claim.
+- **Phase 29 core owner smoke PASS:** exactly one separately authorized new approved
+  image-free observation, created/deleted through normal UI. Marker was in name,
+  not description; read-only discovery bound the unique new row before any DELETE.
+  Public count/summary: records **105 -> 106 -> 105**, species **91 -> 92 -> 91**.
+  Actual bounded summary method and independent count-only requests agreed.
+- Codex sent exactly **one authorized anonymous DELETE probe** on that new target:
+  HTTP `401`, code `42501`; follow-up read proved the unchanged observation still
+  existed. This is live anon denial, not HTTP-only inference or a logged-in request.
+- Operator explicitly confirmed three UI steps: second-account button hidden;
+  owner cancel preserves record then confirmed deletion; detail closes, list/card
+  and summary refresh without manual reload, search/filter retained, small map list
+  no longer contains it. No need to repeat this confirmed flow.
+- Final public read `1791526530750` (06:15 UTC) found zero marker matches and no
+  target hash in all 105 approved narrow summary rows. Summary returned to 105/91.
+  Owner server deletion PASS combines UI success, repository returned-ID guard and
+  public absence; no independent privileged physical-row inspection was performed.
+  **Cleanup complete:** two comments on the preserved original parent and the one
+  new disposable observation removed. No existing user observation/image deletion.
+- Phase 29 non-owner actual DELETE **PARTIAL** despite the existing second account;
+  actual request unavailable, UI hiding only. Admin observation delete **NOT_RUN**;
+  actual Kakao marker removal **PARTIAL**. Image cleanup **NOT_TESTED**, because
+  the smoke record was image-free. Live FK cascade and disappearing-last-page case
+  NOT_RUN; existing automated evidence remains separate. Map row-cap still applies.
+- MVP stays approved-only owner/admin deletion; pending/rejected owner deletion
+  **deferred**. Best-effort image cleanup can leave orphans and does not reverse
+  successful row deletion. Identification is reference text, never taxonomy mutation.
+- New **push blocker**: fresh dev-inclusive audit exited 1, **one High** in
+  `source-map-js@1.2.1` through Tailwind/Vite/PostCSS. See
+  [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
+  Registry access worked; this is not a network error. Patched version is 1.2.2,
+  but no dependency/lockfile was changed and no audit fix was run. Build-tool presence
+  alone does not establish or rule out app-specific exploitability.
+- User authorized docs commit and conditional normal feature push. **Hold push**
+  due to the new audit result; keep the local smoke documentation commit. Next:
+  separately approve narrow dependency remediation/checks or review the risk, then
+  perform normal feature push and check Preview. No new approval for main/Production.
+- Changed tracked files: only `observation-delete.md`,
+  `observation-comments-identification.md`, `phase-29-32-fast-track-readiness.md`
+  and this handoff. Temporary smoke harnesses/results are outside the repository.
+  **213 tests + typecheck/build PASS are historical**, not rerun for docs-only work.
+  The fresh audit is FAIL; do not copy historical zero vulnerabilities into this run.
+- Fresh four-document diff/Markdown whitespace/EOF/link, forbidden tracked path,
+  secret-like diff, unchanged code/SQL/package scope and migration-status checks
+  **PASS**. This does not cancel the failed dependency audit. Commit locally with
+  `docs: record phase 29 and 32 live smoke`; do not push while this hold remains.
+- No feature push, merge, Preview/Production deployment or promotion performed in
+  this close-out. No deployment connector/installed gh/vercel CLI is available.
+  Previous Phase 28 Preview evidence is not this stacked app's deployment proof.
+  No Phase 30/31 implementation, history archive or Verified/full-completion status.
+- Full evidence tables, limits and safe run references:
+  [combined readiness](phase-29-32-fast-track-readiness.md#current-live-smoke-evidence).
+
+**한국어:** migration 수동 적용과 댓글·작성자 삭제의 제한된 실검증을 마쳤고 테스트
+자료도 정리됐습니다. 새 High 의존성 문제가 발견돼 문서는 로컬 커밋하되 push는
+보류합니다. 다음은 패키지 최소 보정 또는 위험 검토를 별도로 승인받는 단계입니다.
+이미 확인한 화면 검사를 다시 요청하거나 실제 사용자 관찰을 삭제하지 마세요.
+
+## Previous State: 0014 Admin Helper Permission Correction Prepared
+
+Historical `74fba30` preparation snapshot below. Its NOT_APPLIED/NOT_RUN and next-step
+instructions are superseded by the applied/live results above, not current gates.
 
 - Same stacked branch `feature/phase-29-32-observation-delete-comments-fast-track`,
   entry `23d634a`, Phase 28 base `2b2ce5a`. Main/origin/main stay `a3887a7`.

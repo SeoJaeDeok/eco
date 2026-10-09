@@ -2,9 +2,12 @@
 
 ## Status And Meaning
 
-2026-10-05: implemented locally on the Phase 28 + 29 + 32 stacked branch.
-Migration candidate only; no shared DB comments or accounts created.
-Readiness follow-up after `77a394e`: 0013 is unchanged and remote **NOT_APPLIED**.
+2026-10-09: implemented on the Phase 28 + 29 + 32 stacked branch, smoke code
+`74fba30`. 0013 is unchanged and remote **APPLIED**, with operator-reported
+pre/apply/post PASS after 0014 and 0012. Two explicitly authorized live test
+comments were created through the ordinary local Supabase app and then removed
+by their author. No account was created and their existing approved parent was
+not edited/deleted. These results are not a Preview/Production release or closure.
 Phase 29 now deletes only approved observations; its pending/rejected owner scope
 is deferred, without changing the comments permission model.
 
@@ -72,14 +75,16 @@ from its supplied session; observation tombstone events cascade comments in memo
 The standalone fixture injects its own repository into the **actual detail UI**;
 it never uses real Auth, Supabase writes or Kakao. Its role selector is test-only.
 
-## Migration Candidate 0013
+## Migration 0013
 
 **Full executable candidate:** [0013_observation_comments.sql](../../supabase/migrations/0013_observation_comments.sql).
 The linked file contains the complete transaction, table, indices, trigger,
-explicit grants and policies. Apply only after 0012 and separate manual review.
+explicit grants and policies. The operator already applied it after 0012; do not
+rerun it. The retained references describe fresh-environment checks, not a request
+to repeat migration. SQL Editor success does not prove migration-tool ledger state.
 It does not alter existing observations/Storage/taxonomy policies or existing rows.
 
-### Pre-Apply Read-Only SQL (Not Run)
+### Pre-Apply Read-Only SQL (Operator PASS)
 
 Only after all 0012 post-checks pass, execute the entire
 [0013-pre-apply.sql](sql-checks/0013-pre-apply.sql). It checks observations/profiles
@@ -88,7 +93,7 @@ nickname column/admin helper, previous 0012 metadata and comments table/type/fun
 index name availability. All booleans must be `true`. Already-present objects,
 false/null or an error mean stop and inspect; do not overwrite or rerun migration.
 
-### Post-Apply Read-Only SQL (Not Run)
+### Post-Apply Read-Only SQL (Operator PASS)
 
 Execute the entire [0013-post-apply.sql](sql-checks/0013-post-apply.sql). Expected
 all `true`: seven columns/types/nullability/defaults, FKs and delete actions, exact
@@ -102,7 +107,8 @@ migration body before applying. No function definition or row data is returned.
 These are catalog/grant comparisons, not live RLS/cascade execution. PostgreSQL
 deparser differences or target drift can produce false results; report only the
 boolean name/result or safe error code. Do not modify policies to make checks green.
-Real role tests remain a separately approved smoke, never run in this task.
+The limited separately authorized live smoke below supplements these catalog
+checks. Other roles, malicious payloads and cascade are not inferred to pass.
 
 ### Rollback Concept
 
@@ -120,10 +126,42 @@ See [combined readiness](phase-29-32-fast-track-readiness.md). Isolated tests ex
 real repository query builders with fake responses and actual component functions
 with the project's hook-contract harness. They do not execute live RLS or measure
 browser layout. Real React fixture modules are served successfully; rendering is
-PARTIAL because the browser tool failed before opening a page. Live Supabase is
-NOT_RUN, including trigger SQL runtime, all role policies, cascade and Storage.
+PARTIAL because the browser tool failed before opening a page. The isolated fixture
+is not the following ordinary-app/live-data evidence.
+
+### Current Live Smoke
+
+| Item | Result | Evidence |
+| --- | --- | --- |
+| Environment | local_supabase, code 74fba30 | Current served source matched local files; no Preview claim |
+| Target | Approved existing parent designated by operator | Public detail read; ownership operator-reported, no identity disclosure |
+| Anonymous comments | PASS | Actual comment repository executed with a stateless public client; operator checked signed-out UI |
+| General comment | PASS | Operator UI create; public API observed one comment kind |
+| Identification comment | PASS | Operator UI create; public API observed one identification kind |
+| Taxonomy unchanged | PASS | Same-target fingerprints before, with both comments present, and after cleanup |
+| Raw email exposed | no | Operator screen confirmation; mapped public display fields had no email-like value while comments existed |
+| Non-owner deletion | PARTIAL | Existing second regular account: hidden button PASS; actual authenticated DELETE request NOT_RUN |
+| Own deletion | PASS | Operator deleted both; public repository count and result returned to baseline zero |
+| Admin deletion | NOT_RUN | No extra comment created for it |
+| Cleanup | PASS | 0 -> 2 -> 0 comments; original approved parent and compared fields unchanged |
+| Observation modified | no | Parent/detail and taxonomy fingerprints unchanged; no observation write by the harness |
+
+The taxonomy comparison uses the actual observation fields `scientific_name`
+(reported scientific name in this schema), `taxon_id`, `taxonomy_match_type`,
+`taxonomy_confidence`, `taxonomy_verified_at` and returned public lineage. It does
+not read the separate resolver cache. No raw field values, identities, object paths,
+keys or session tokens were retained in results or printed.
+
+An initial cleanup report was not accepted as API PASS: the read still found two
+comments. The operator then explicitly removed them, and a fresh read confirmed
+zero. Only that later result closes cleanup; no duplicate comments were generated.
+No live admin deletion, spoofed-author payload, hidden-parent attack, 20+ comment
+paging or FK cascade was performed. Earlier automated and manual catalog evidence
+for those contracts remains separate. See
+[combined readiness](phase-29-32-fast-track-readiness.md#current-live-smoke-evidence).
 
 **한국어:** 댓글과 동정 의견을 읽고 작성·삭제하는 화면과 저장소 연결을 구현했습니다.
 동정 의견은 참고 글이며 공식 분류를 바꾸지 않습니다. 익명 사용자는 읽기만 가능하고,
-댓글 작성자와 관리자가 삭제할 수 있도록 DB 후보를 준비했습니다. 아직 실제 DB에
-적용하거나 실제 댓글을 만들지는 않았습니다.
+댓글 작성자와 관리자가 삭제하도록 구현했습니다. 사용자가 migration을 적용한 뒤
+실제 일반 댓글과 동정 의견을 각 1개 작성하고 본인 삭제로 정리했습니다. 공개 API로
+댓글 0개 복귀와 원래 관찰의 분류 불변을 확인했으며, 관리자 삭제 등은 별도 미확인입니다.

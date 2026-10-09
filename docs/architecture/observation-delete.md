@@ -2,9 +2,15 @@
 
 ## Status And Scope
 
-2026-10-05: local implementation and automated contracts, **not live-verified**.
-Stacked on Phase 28 `2b2ce5a`, not on main (`a3887a7`). No remote SQL, real
-observation deletion, Storage mutation, push or deployment was performed.
+2026-10-09: **core owner-delete live smoke PASS** for code `74fba30`, using the
+ordinary local Supabase app and exactly one newly authorized image-free observation.
+The operator created/deleted that record through the app; Codex performed public
+reads and one explicitly authorized anonymous DELETE-denial probe on that new record.
+No existing user observation was deleted. Stacked on Phase 28 `2b2ce5a`, not main
+(`a3887a7`). Manual 0014/0012/0013 application and post-checks are operator-reported
+PASS. App Preview/Production integration is separate; no release/Verified closure.
+Feature push is currently held by a fresh High dependency advisory, not a deletion
+failure. See [combined evidence and blocker](phase-29-32-fast-track-readiness.md#current-live-smoke-evidence).
 
 **Phase 29 MVP deletion scope = approved observations visible through
 the current public observation path**
@@ -27,10 +33,11 @@ only approved records expose deletion. Its deletion delegates to
   grant. Restoring the grant in the original 0012 would enable all-status admin
   deletion, which conflicts with the newly confirmed MVP. This is a real scope/
   authorization mismatch, not a stylistic migration rewrite.
-- The **unapplied 0012 candidate is revised in `62c57c0`, after `77a394e`**: owner policy now
+- The **then-unapplied 0012 candidate was revised in `62c57c0`, after `77a394e`**: owner policy now
   explicitly requires approved; `ALTER POLICY` narrows the existing admin DELETE
   policy to approved using the same `public.is_admin()`. SELECT/UPDATE stay intact.
-  No 0014, new RPC, admin helper, Storage grant or permission expansion.
+  That scope correction added no 0014, RPC, admin helper or Storage grant. Later
+  0014 only removed anon EXECUTE from the existing helper; it did not expand deletion.
 - Supabase DELETE additionally filters `status=approved`; mock rejects other
   statuses and public/admin deletion controls follow the same condition.
 - 0013 and 0001~0011 are byte-for-byte unchanged. Use the current final 0012 file,
@@ -38,7 +45,7 @@ only approved records expose deletion. Its deletion delegates to
   the only DELETE policies are approved owner and approved admin, protecting non-owners.
 
 The SELECT dependency follows the [Supabase delete reference](https://supabase.com/docs/reference/javascript/delete).
-RLS grants/policies remain subject to actual database verification after manual application.
+Operator catalog checks and the limited live role evidence below are distinct.
 
 ## Repository, Images And UI
 
@@ -87,15 +94,16 @@ branches and map instance. Retry after a failed tree refresh includes children.
 The old server row-cap limitation is unchanged. Mock uses session-only tombstones
 without mutating bundled samples; listeners cascade its in-memory comments.
 
-## Migration Candidate 0012
+## Migration 0012
 
 **Full executable candidate:** [0012_observation_owner_delete.sql](../../supabase/migrations/0012_observation_owner_delete.sql).
 Read the entire linked file; it is the sole migration body, not an excerpt.
-0012 is remote **NOT_APPLIED**; only this unapplied candidate was corrected.
-Existing 0001~0011 and the comments candidate 0013 are unchanged. Check the actual
-target's boolean preconditions and preserve recovery information before applying.
+0012 is remote **APPLIED**, with pre/apply/post PASS reported by the operator after
+0014 pre/apply/post. Codex did not run SQL or populate migration-tool history.
+Existing SQL files are unchanged during this smoke. Do not rerun already-applied
+migrations; the references below describe the retained fresh-environment procedure.
 
-### Pre-Apply Read-Only SQL (Not Run)
+### Pre-Apply Read-Only SQL (Operator PASS)
 
 Execute the entire [0012-pre-apply.sql](sql-checks/0012-pre-apply.sql). It checks
 table/RLS, role bypass flags, the reviewed admin helper body/privilege, exact public
@@ -105,7 +113,7 @@ objects/grants indicate the candidate has not already been applied; SQL Editor
 manual application is not inferred from a migration-history filename alone.
 All booleans must be `true`; false/null/error means stop, not retry the migration.
 
-### Post-Apply Read-Only SQL (Not Run)
+### Post-Apply Read-Only SQL (Operator PASS)
 
 Execute [0012-post-apply.sql](sql-checks/0012-post-apply.sql). Expect all `true`:
 authenticated DELETE, anon denial, exact approved-and-owner/admin expressions,
@@ -131,10 +139,49 @@ See [combined readiness](phase-29-32-fast-track-readiness.md). Tests cover actua
 repository query construction with simulated responses, mock permissions,
 confirmation/double-click behavior, App revision wiring, last-page correction,
 search retention, admin repository delegation, safe cleanup and tree refresh.
-SQL is checked as a candidate, not executed against PostgreSQL. Shared DB deletion,
-real Storage removal and real browser interaction remain NOT_RUN/PARTIAL.
+Those automated results remain historical; no full-suite rerun occurred during
+this app-code-unchanged smoke. The operator applied SQL and exercised the ordinary
+local app; Codex did not automate its browser or use privileged DB reads.
+
+### Current Live Evidence
+
+- **OPERATOR_UI PASS:** creation, non-owner delete button hidden, owner confirmation
+  cancel preserves the record, subsequent confirmed deletion closes detail, removes
+  the list card and refreshes summary without manual reload. Search/filter state and
+  small map list removal were confirmed in the operator's final three-item reply.
+- **LIVE_API_FROM_LOCAL_PUBLIC_CONFIG PASS:** unique new approved image-free target,
+  public visibility, records `105 -> 106 -> 105`, species `91 -> 92 -> 91`. The test
+  marker was entered in name instead of description, so the temporary extra species
+  was expected under the existing name-based summary definition. No rename was made.
+- The first exact-description lookup stopped without a DELETE. A bounded read of
+  new approved rows identified exactly one image-free record containing the marker
+  in name. Creation time and a target fingerprint bound subsequent checks to it.
+- The single anonymous DELETE returned HTTP `401`, safe code `42501`. A following
+  read confirmed the same approved record and unchanged fields: anon denial **PASS**.
+  No login/session/service-role or Storage request was used by the probe.
+- Owner server deletion **PASS within the public repository contract**: operator
+  confirmed UI success; the actual repository rejects deletion without a returned
+  matching row ID. Subsequent approved metadata enumeration and marker/count queries
+  found no target and restored baseline totals. Public absence alone is not an
+  independent privileged physical-row inspection; no admin SQL was used.
+- Cleanup **PASS** for the one authorized new observation. No comments were created
+  on it. No image was attached: `image_cleanup_case=not_applicable_no_image`, live
+  Storage cleanup **NOT_TESTED**. The previously approved Phase 32 comments had
+  separately returned to zero on their preserved parent.
+- Non-owner actual authenticated DELETE request **PARTIAL**: a second regular
+  account exists and button hiding passed, but no request was issued from that
+  account. Account absence is not the reason. Admin live delete **NOT_RUN**;
+  actual Kakao marker removal **PARTIAL**, live comment cascade **NOT_RUN**.
+- Invalid-last-page reconciliation and duplicate-click protection retain automated
+  evidence; the current `105/106` totals did not exercise a disappearing last page.
+  Tree count refresh and large-data map completeness are not new live PASS claims.
+
+Safe execution evidence and current push blocker are in the
+[combined readiness record](phase-29-32-fast-track-readiness.md#current-live-smoke-evidence).
 
 **한국어:** 이번 삭제 범위는 승인된 공개 관찰로 확정됐습니다. 작성자의 비공개
 기록 삭제는 후속 기능이며 버그가 아닙니다. 관리자도 이번에는 approved만 삭제하도록
 0012와 버튼/조회 조건을 제한했습니다. 파일 정리 실패가 관찰 삭제 성공을 취소하지
-않습니다. 실제 DB 적용과 삭제 실험은 하지 않았습니다.
+않습니다. 사용자가 migration을 적용했고, 별도로 승인한 이미지 없는 새 관찰 1건의
+작성자 삭제와 정리를 확인했습니다. 비작성자의 실제 삭제 요청, 관리자 삭제 및
+이미지 정리는 이번 검증에서 확인하지 않았습니다.
